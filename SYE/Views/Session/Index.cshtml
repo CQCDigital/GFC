@@ -1,0 +1,23 @@
+﻿@using SYE.ViewModels
+@inject Microsoft.Extensions.Options.IOptions<ApplicationSettings> _config
+@{
+    var config = _config.Value;
+    ViewData["Title"] = "We've reset this form" + _config.Value.SiteTextStrings.SiteTitleSuffix;
+    Layout = "_Layout";
+}
+
+<gds-row>
+
+    <gds-column desktop-size="TwoThirds" tablet-size="FullWidth">
+
+        <gds-heading heading-type="H1" text="We've reset this form"></gds-heading>
+
+        <gds-paragraph>We're sorry. We had to reset this form because it had been 60 minutes since you'd clicked or typed anything. We do this to keep your information secure, for example if you're using a shared computer.</gds-paragraph>
+
+        <gds-paragraph>It means you'll need to <gds-link link-text="go back to the start" href="@config.GFCUrls.StartPage"></gds-link> <a class="govuk-link" href="start"></a> to enter your feedback.</gds-paragraph>
+
+        <gds-paragraph>We'd still like you to tell us about your experience. People's feedback helps us understand the quality of care they get. It makes care better for everybody.</gds-paragraph>
+
+    </gds-column>
+
+</gds-row>

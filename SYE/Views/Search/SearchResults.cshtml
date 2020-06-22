@@ -1,0 +1,351 @@
+﻿@using Microsoft.AspNetCore.Http
+@using Microsoft.Azure.Documents.SystemFunctions
+@using Microsoft.Azure.Search.Common
+@using SYE.Models
+@using SYE.Helpers
+@model SYE.ViewModels.SearchResultsVM
+
+<gds-row>
+
+    <gds-column desktop-size="FullWidth" tablet-size="FullWidth">
+
+
+        @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+        {
+            <div class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" tabindex="-1" data-module="error-summary">
+                <h2 class="govuk-error-summary__title" id="error-summary-title">
+                    There's a problem
+                </h2>
+                <div class="govuk-error-summary__body">
+                    <ul class="govuk-list govuk-error-summary__list">
+                        <li>
+                            <a href="#search">@Model.ErrorMessage</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        }
+
+        <gds-row>
+            <gds-column desktop-size="TwoThirds" tablet-size="TwoThirds">
+                <label for="search">
+                    @{
+                        <gds-heading heading-type="H1" text=@("Results for \"" + Model.Search.Truncate(35) + "\"")></gds-heading>
+                    }
+                </label>
+            </gds-column>
+        </gds-row>
+        <gds-row>
+            <gds-column desktop-size="TwoThirds" tablet-size="TwoThirds">
+
+                <form asp-action="SearchResults" method="get">
+
+                    <gds-form-group isError="@(!string.IsNullOrEmpty(Model.ErrorMessage))">
+                        <span id="search-error" class="govuk-error-message">
+                            <span class="govuk-visually-hidden">Error:</span> @Model.ErrorMessage
+                        </span>
+                        @{ var inputCss = !string.IsNullOrEmpty(Model.ErrorMessage) ? "govuk-input gfc-search-button govuk-input--error" : "govuk-input gfc-search-button"; }
+                        <input class="@inputCss" id="search" name="search" type="text" value="@Model.Search">
+                        <input alt="Search For A Service" class="search-button" type="image" name="submit" src="~/images/search.png" />
+                    </gds-form-group>
+
+                    @*<div class="govuk-form-group">
+                            @if (Model.ShowExceededMaxLengthMessage)
+                            {
+                                <label class="govuk-error-message" for="event-name">
+                                    Please reduce the number of characters in the text field below. (Max 1000)
+                                </label>
+                            }
+                            <input class="govuk-input gfc-search-button" id="search" name="search" type="text" value="@Model.Search">
+                            <input alt="Search For A Service" class="search-button" type="image" name="submit" src="~/images/search.png" />
+                        </div>*@
+
+                </form>
+
+            </gds-column>
+        </gds-row>
+
+    </gds-column>
+
+</gds-row>
+
+<gds-row>
+    <gds-column desktop-size="TwoThirds" tablet-size="FullWidth">
+        @if (Model.Data.Count == 0)
+        {
+            <gds-paragraph>
+                0 results
+            </gds-paragraph>
+            <gds-paragraph>
+                Improve your search results by:
+                <gds-ol list-id="Contents" class="govuk-list govuk-list--bullet">
+                    <gds-li>
+                        double-checking your spelling
+                    </gds-li>
+                    <gds-li>
+                        using fewer words
+                    </gds-li>
+                    <gds-li>
+                        trying something less specific
+                    </gds-li>
+                    <gds-li>
+                        if you searched for the service name, try something else - like a postcode
+                    </gds-li>
+                </gds-ol>
+            </gds-paragraph>
+            <gds-paragraph>
+                If you cannot find the service you want to tell us about, <a class="govuk-link" href="/Search/LocationNotFound">tell us the name you know it by or describe where it is.</a>
+            </gds-paragraph>
+        }
+    </gds-column>
+</gds-row>
+
+@if (Model.Data.Count > 0)
+{
+    <gds-row>
+        <div class="govuk-grid-column-full govuk-grid-column-one-third-from-desktop sticky-element-top hide-tablet-or-below">
+            <a id="results-skiplink" href="#search-results" class="govuk-skip-link">Skip to results</a>
+            
+            <details id="gfc-search-details" class="govuk-details" open>
+                <summary class="govuk-details__summary govuk-details__summaryboarder">
+                    <span class="govuk-visually-hidden">Filter by type of service</span>
+                    <span disabled="true" class="govuk-input gfc-filter-title">
+                        Filter by type of service
+                        <img class="gfc-filter-title-arrow" alt="Select Type Of Service" src="~/images/select.png" />
+                    </span>
+                </summary>
+                @if (Model.Facets.Count > 0)
+                {
+                    <div class="govuk-details__text">
+                        <form id="frm_facets" asp-action="SearchResults" method="post">
+                            <div class="govuk-form-group govuk-checkboxes--small gfc-filter-items">
+                                @for (var index = 0; index < Model.Facets.Count; index++)
+                                {
+                                    <div class="govuk-checkboxes__item">
+
+                                        <input class="govuk-checkboxes__input" asp-for="@Model.Facets[index].Selected" type="checkbox">
+                                        <label class="govuk-label govuk-checkboxes__label gfc-filter-item" asp-for="@Model.Facets[index].Selected">
+                                            @Model.Facets[index].Text
+                                        </label>
+                                        <input asp-for="@Model.Facets[index].Selected" value="false" type="hidden" />
+                                        <input asp-for="@Model.Facets[index].Text" type="hidden" />
+
+                                    </div>
+                                }
+                            </div>
+                            <input type="hidden" asp-for="Search" />
+                            <button type="submit" id="btn--filter" class="govuk-button link-button gfc-filter-apply-button">
+                                Apply filter
+                            </button>
+                        </form>
+                    </div>
+                }
+            </details>
+        </div>
+        <div id="filter-button-container-mobile" class="govuk-grid-column-full govuk-grid-column-one-third-from-desktop show-tablet-or-below">
+            <div class="govuk-grid-row">
+                <a class="govuk-link show-hide-modal-link" onclick="showModal();" href="#modalContent" tabindex="0">Filter results</a>
+            </div>
+        </div>
+
+        <gds-column desktop-size="TwoThirds" tablet-size="FullWidth">
+
+            <gds-row id="filter-results-header">
+                <gds-column desktop-size="OneThird" tablet-size="None" hide-at-or-below-size="Tablet">
+                    <h2 class="govuk-!-margin-0">
+                        <gds-paragraph>
+                            @Model.Count.ToString("#,##0") results
+                        </gds-paragraph>
+                    </h2>
+                </gds-column>
+                <gds-column desktop-size="TwoThirds" tablet-size="FullWidth">
+                    <gds-paragraph class="category">
+                        <a class="govuk-link" href="/Search/LocationNotFound"> The service I want to tell you about is not listed</a>
+                    </gds-paragraph>
+                </gds-column>
+            </gds-row>
+
+            <gds-row>
+                <gds-column id="search-results" desktop-size="FullWidth" tablet-size="FullWidth">
+                    @foreach (var result in Model.Data)
+                    {
+                        <form id="frm_@result.Id" class="search-result" asp-action="SelectLocation" method="post">
+                            <input id="ProviderId" name="ProviderId" value="@result.ProviderId" type="hidden" />
+                            <input id="LocationId" name="LocationId" value="@result.Id" type="hidden" />
+                            <input id="LocationName" name="LocationName" value="@result.Name" type="hidden" />
+                            <input id="page-@result.Page-page-pos-@result.Index" name="SelectedPosition" value="page-@result.Page-page-pos-@result.Index" type="hidden" />
+                            <gds-row>
+                                <gds-column desktop-size="FullWidth" tablet-size="FullWidth">
+                                    <button type="submit" id="btn-@result.Id" class="govuk-button link-button">
+                                        <gds-heading heading-type="H4" text="@result.Name"></gds-heading>
+                                    </button>
+                                    @if (!string.IsNullOrWhiteSpace(result.AlsoKnownAs) && result.AlsoKnownAs != result.Name)
+                                    {
+                                        <p class="govuk-hint">
+                                            @result.AlsoKnownAs
+                                        </p>
+                                    }
+                                    <p class="govuk-body">
+                                        @result.Address<br />
+                                        @if (!string.IsNullOrWhiteSpace(result.Address2))
+                                        {
+                                            @result.Address2<br />
+                                        }
+                                        @result.Town<br />
+                                        @result.PostCode<br />
+                                    </p>
+                                    <p class="govuk-body-s">@result.Category</p>
+                                </gds-column>
+                            </gds-row>
+                        </form>
+                    }
+                </gds-column>
+            </gds-row>
+
+            @if (Model.TotalPages > 1)
+            {
+                <form asp-action="SearchResults" method="get">
+                    <input type="hidden" id="search" name="search" value="@Model.Search" />
+                    <input type="hidden" id="selectedFacets" name="search" value="@Model.SelectedFacets" />
+
+                    <div class="govuk-body paging-wrapper govuk-!-margin-bottom-0">
+
+                        <gds-row>
+                            <gds-column desktop-size="FullWidth" tablet-size="FullWidth">
+                                @if (Model.ShowPrev)
+                                {
+                                    <a asp-route-search="@(Model.Search)" asp-route-pageNo="@(Model.CurrentPage - 1)" asp-route-selectedFacets="@(Model.SelectedFacets)" class="govuk-link">
+                                        <svg class="gem-c-pagination__link-icon" xmlns="http://www.w3.org/2000/svg" height="13" width="17" viewBox="0 0 17 13">
+                                            <path fill="currentColor" d="m6.5938-0.0078125-6.7266 6.7266 6.7441 6.4062 1.377-1.449-4.1856-3.9768h12.896v-2h-12.984l4.2931-4.293-1.414-1.414z"></path>
+                                        </svg>
+                                        <b> Previous Page</b><br />
+                                        @(Model.CurrentPage - 1) of @Model.TotalPages
+                                    </a>
+                                }
+                            </gds-column>
+                        </gds-row>
+
+                        <gds-row>
+                            <gds-column desktop-size="FullWidth" tablet-size="FullWidth">
+                                @if (Model.ShowNext)
+                                {
+                                    <a asp-route-search="@(Model.Search)" asp-route-pageNo="@(Model.CurrentPage + 1)" asp-route-selectedFacets="@(Model.SelectedFacets)" class="govuk-link">
+                                        <svg class="gem-c-pagination__link-icon" xmlns="http://www.w3.org/2000/svg" height="13" width="17" viewBox="0 0 17 13">
+                                            <path fill="currentColor" d="m10.107-0.0078125-1.4136 1.414 4.2926 4.293h-12.986v2h12.896l-4.1855 3.9766 1.377 1.4492 6.7441-6.4062-6.7246-6.7266z"></path>
+                                        </svg>
+                                        <b> Next Page</b><br />
+                                        @(Model.CurrentPage + 1) of @Model.TotalPages
+                                    </a>
+                                }
+                            </gds-column>
+                        </gds-row>
+
+                    </div>
+                </form>
+            }
+
+            <gds-row>
+                <gds-column desktop-size="FullWidth" tablet-size="FullWidth">
+                    <gds-paragraph class="govuk-!-margin-top-3">
+                        <a class="govuk-link" href="/Search/LocationNotFound"> The service I want to tell you about is not listed</a>
+                    </gds-paragraph>
+                </gds-column>
+            </gds-row>
+
+        </gds-column>
+
+    </gds-row>
+
+    @*<div class="gfc-modal-overlay"></div>*@
+    @*<div id="modalContent" class="css-dialog" aria-modal="true" role="dialog" tabindex="-1">
+
+        <form id="frm_facets_modal" asp-action="SearchResults" method="post">
+
+            <div class="modal-header-container">
+                <h1 class="govuk-heading-xl modal-title">Filter</h1>
+                <gds-paragraph class="category">
+                    <a id="modal-close-btn-header" class="govuk-link modal-close-link show-hide-modal-link tabbable" onclick="hideModal()" tabindex="0" href="#content">Return to results</a>
+                </gds-paragraph>
+            </div>
+
+            <div class="modal-body-container">
+                <div class="govuk-width-container">
+                    <div class="govuk-form-group govuk-checkboxes--small">
+
+                        @for (var index = 0; index < Model.FacetsModal.Count; index++)
+                        {
+                            <div class="govuk-checkboxes__item">
+
+                                <input class="govuk-checkboxes__input" asp-for="@Model.FacetsModal[index].Selected" type="checkbox">
+                                <label class="govuk-label govuk-checkboxes__label gfc-filter-item" asp-for="@Model.FacetsModal[index].Selected">
+                                    @Model.FacetsModal[index].Text
+                                </label>
+                                <input asp-for="@Model.FacetsModal[index].Selected" value="false" type="hidden" />
+                                <input asp-for="@Model.FacetsModal[index].Text" type="hidden" />
+
+                            </div>
+                        }
+                        <input type="hidden" asp-for="Search" />
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer-container">
+                <div class="govuk-width-container">
+                    <button type="submit" id="modal-close-btn-main" class="govuk-button modal-close-btn tabbable">Apply Filter</button>
+                </div>
+            </div>
+
+        </form>
+    </div>*@
+}
+<script src="~/lib/dialog-polyfill/dialog-polyfill.js"></script>
+<link href="~/css/filter-modal.css" rel="stylesheet" />
+<script src="~/js/filter-modal.js"></script>
+
+@section CssModal {
+    <div class="gfc-modal-overlay"></div>
+    <div id="modalContent" class="css-dialog" aria-modal="true" role="dialog" tabindex="-1">
+
+        <form id="frm_facets_modal" asp-action="SearchResults" method="post">
+
+            <div class="modal-header-container">
+                <h1 class="govuk-heading-xl modal-title">Filter</h1>
+                <gds-paragraph class="category">
+                    <a id="modal-close-btn-header" class="govuk-link modal-close-link show-hide-modal-link tabbable" onclick="hideModal()" tabindex="0" href="#content">Return to results</a>
+                </gds-paragraph>
+            </div>
+
+            <div class="modal-body-container">
+                <div class="govuk-width-container">
+                    <div class="govuk-form-group govuk-checkboxes--small">
+
+                        @for (var index = 0; index < Model.FacetsModal.Count; index++)
+                        {
+                            <div class="govuk-checkboxes__item">
+
+                                <input class="govuk-checkboxes__input" asp-for="@Model.FacetsModal[index].Selected" type="checkbox">
+                                <label class="govuk-label govuk-checkboxes__label gfc-filter-item" asp-for="@Model.FacetsModal[index].Selected">
+                                    @Model.FacetsModal[index].Text
+                                </label>
+                                <input asp-for="@Model.FacetsModal[index].Selected" value="false" type="hidden" />
+                                <input asp-for="@Model.FacetsModal[index].Text" type="hidden" />
+
+                            </div>
+                        }
+                        <input type="hidden" asp-for="Search" />
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer-container">
+                <div class="govuk-width-container">
+                    <button type="submit" id="modal-close-btn-main" class="govuk-button modal-close-btn tabbable">Apply Filter</button>
+                </div>
+            </div>
+
+        </form>
+    </div>
+}

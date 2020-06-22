@@ -1,0 +1,31 @@
+﻿@using SYE.ViewModels
+@inject Microsoft.Extensions.Options.IOptions<ApplicationSettings> _config
+@{
+    var config = _config.Value;
+    ViewData["Title"] = "Page not found" + _config.Value.SiteTextStrings.SiteTitleSuffix;
+}
+
+<gds-row>
+    <gds-column desktop-size="TwoThirds" tablet-size="FullWidth">
+
+        <gds-heading heading-type="H1" text="Page not found"></gds-heading>
+
+        <gds-paragraph>
+            We cannot find the page you’re looking for.
+            This might be because you’re returning to a form you have not finished or you’re using an old link.
+            If you typed the web address, check it is correct.
+        </gds-paragraph>
+        <gds-paragraph>
+            If you pasted the web address, check you copied the entire address.
+            You'll need to <gds-link class="govuk-link" link-text="go back to the start" href="@config.GFCUrls.StartPage"></gds-link>
+            to enter your feedback.
+        </gds-paragraph>
+
+        <gds-heading heading-type="H2" text="Get help with this form"></gds-heading>
+
+        <gds-paragraph>
+            You can get help on the phone if it's hard for you to do things online.
+        </gds-paragraph>
+
+    </gds-column>
+</gds-row>

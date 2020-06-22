@@ -1,0 +1,28 @@
+﻿@using SYE.ViewModels
+@inject Microsoft.Extensions.Options.IOptions<ApplicationSettings> _config
+@{
+    var config = _config.Value;
+    ViewData["Title"] = "There’s a problem" + _config.Value.SiteTextStrings.SiteTitleSuffix;
+}
+
+<gds-row>
+    <gds-column desktop-size="TwoThirds" tablet-size="FullWidth">
+
+        <gds-heading heading-type="H1" text="There is a problem with this form"></gds-heading>
+
+        <gds-paragraph>
+            We're sorry. You'll need to <gds-link class="govuk-link" link-text=@("go to the start") href="@config.GFCUrls.StartPage"></gds-link> to enter your feedback.
+        </gds-paragraph>
+
+        <gds-paragraph>
+            We'd still like to hear about your experience. People's feedback helps us understand the quality of care they get. It helps make care better for everyone.
+        </gds-paragraph>
+
+        <gds-heading heading-type="H2" text="Get help with this form"></gds-heading>
+
+        <gds-paragraph>
+            You can get help on the phone if it's hard for you to do things online.
+        </gds-paragraph>
+
+    </gds-column>
+</gds-row>

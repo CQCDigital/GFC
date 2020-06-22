@@ -1,0 +1,23 @@
+﻿@using SYE.ViewModels
+@inject Microsoft.Extensions.Options.IOptions<ApplicationSettings> _config
+@{
+    ViewData["Title"] = "Resource not found" + _config.Value.SiteTextStrings.SiteTitleSuffix;
+}
+
+<gds-row>
+    <gds-column desktop-size="TwoThirds" tablet-size="FullWidth">
+
+        <gds-heading heading-type="H1" text="Resource not found"></gds-heading>
+
+        <gds-paragraph>
+            If you typed the web address, check it is correct. If you pasted the web address, check you copied the entire address.
+        </gds-paragraph>
+
+        <gds-heading heading-type="H2" text="Get help with this form"></gds-heading>
+
+        <gds-paragraph>
+            You can get help on the phone if it's hard for you to do things online.
+        </gds-paragraph>
+
+    </gds-column>
+</gds-row>

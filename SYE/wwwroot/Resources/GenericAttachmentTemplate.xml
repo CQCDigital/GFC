@@ -1,0 +1,68 @@
+﻿<soapenv:Envelope xmlns:att="http://provider.model.service.ols.cqc.org.uk/generic/attachment" xmlns:mas="http://provider.model.service.ols.cqc.org.uk/masterdata" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+  <soapenv:Header>
+    <wsse:Security xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd">
+      <wsse:UsernameToken wsu:Id="UsernameToken-3D78C7F7D45CB562D8156092921928438">
+        <wsse:Username>{{authUsername}}</wsse:Username>
+        <wsse:Password Type="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordText">{{authPassword}}</wsse:Password>
+        <wsse:Nonce EncodingType="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0#Base64Binary">{{nonce}}</wsse:Nonce>
+        <wsu:Created>{{created}}</wsu:Created>
+      </wsse:UsernameToken>
+    </wsse:Security>
+    <mas:Credentials>
+      <mas:tokenId>{{token}}</mas:tokenId>
+      <mas:originatingSystem>SYE</mas:originatingSystem>
+      <mas:originatingSystemId>GFC</mas:originatingSystemId>
+      <mas:status>SUCCESS</mas:status>
+    </mas:Credentials>
+  </soapenv:Header>
+  <soapenv:Body>
+    <att:CreateEnquiry_Input>
+      <att:CQCEnquiry>
+        <att:Enquiry>
+          <att:OrganisationId>{{organisationId}}</att:OrganisationId>
+          <att:ListOfDataItems>
+            <att:Data>
+              <!--Optional:-->
+              <!--Optional:-->
+              <att:ListOfAttachments>
+                <!--Zero or more repetitions:-->
+                <att:Attachment>
+                  <att:PrimaryContent>
+                    <att:FileName>{{filename}}</att:FileName>
+                    <att:FileContent>{{payload}}</att:FileContent>
+                    <!--Optional:-->
+                    <att:ContentType>Safeguarding</att:ContentType>
+                  </att:PrimaryContent>
+                  <!--Optional:-->
+                  <att:ListOfAlternateFileRepresentations>
+                    <!--Zero or more repetitions:-->
+                    <att:AlternateFileRepresentations>
+                      <att:FileName/>
+                      <att:FileContent/>
+                      <!--Optional:-->
+                    </att:AlternateFileRepresentations>
+                  </att:ListOfAlternateFileRepresentations>
+                </att:Attachment>
+              </att:ListOfAttachments>
+            </att:Data>
+          </att:ListOfDataItems>
+          <att:Category>Monitor and Inspect</att:Category>
+          <att:Type>Share your experience</att:Type>
+          <att:Subtype>{{subtype}}</att:Subtype>
+          <att:SourceChannel>Share your experience</att:SourceChannel>
+          <att:Description><![CDATA[{{description}}]]></att:Description>
+          <att:CommMethod/>
+          <att:ContactPhone/>
+          <att:ContactLastName/>
+          <att:ContactFirstName/>
+          <att:ContactEmail>gfcPortal1@cqc.org</att:ContactEmail>
+          <att:sourceApplication>Drupal</att:sourceApplication>
+          <att:sourceSystem>Drupal</att:sourceSystem>
+          <att:initialReceiptDate>2019-04-18</att:initialReceiptDate>
+          <att:Creator>gfcPortal1</att:Creator>
+          <att:olsSubmissionNumber>{{submissionNumber}}</att:olsSubmissionNumber>
+        </att:Enquiry>
+      </att:CQCEnquiry>
+    </att:CreateEnquiry_Input>
+  </soapenv:Body>
+</soapenv:Envelope>

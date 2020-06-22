@@ -1,0 +1,522 @@
+{
+  "name": "gfc-search-index-v2",
+  "fields": [
+    {
+      "name": "providerId",
+      "type": "Edm.String",
+      "facetable": false,
+      "filterable": false,
+      "key": false,
+      "retrievable": true,
+      "searchable": false,
+      "sortable": false,
+      "analyzer": null,
+      "indexAnalyzer": null,
+      "searchAnalyzer": null,
+      "synonymMaps": [],
+      "fields": []
+    },
+    {
+      "name": "id",
+      "type": "Edm.String",
+      "facetable": false,
+      "filterable": false,
+      "key": true,
+      "retrievable": true,
+      "searchable": false,
+      "sortable": false,
+      "analyzer": null,
+      "indexAnalyzer": null,
+      "searchAnalyzer": null,
+      "synonymMaps": [],
+      "fields": []
+    },
+    {
+      "name": "locationName",
+      "type": "Edm.String",
+      "facetable": false,
+      "filterable": true,
+      "key": false,
+      "retrievable": true,
+      "searchable": true,
+      "sortable": true,
+      "analyzer": null,
+      "indexAnalyzer": "prefixCmAnalyzer",
+      "searchAnalyzer": "standardCmAnalyzer",
+      "synonymMaps": [],
+      "fields": []
+    },
+    {
+      "name": "locationNameClean",
+      "type": "Edm.String",
+      "facetable": false,
+      "filterable": false,
+      "key": false,
+      "retrievable": false,
+      "searchable": true,
+      "sortable": true,
+      "analyzer": "gfc_standard",
+      "indexAnalyzer": null,
+      "searchAnalyzer": null,
+      "synonymMaps": [],
+      "fields": []
+    },
+    {
+      "name": "locationNameCleanNoSpace",
+      "type": "Edm.String",
+      "facetable": false,
+      "filterable": true,
+      "key": false,
+      "retrievable": false,
+      "searchable": true,
+      "sortable": true,
+      "analyzer": "standard.lucene",
+      "indexAnalyzer": null,
+      "searchAnalyzer": null,
+      "synonymMaps": [],
+      "fields": []
+    },
+    {
+      "name": "fullAddress",
+      "type": "Edm.String",
+      "facetable": false,
+      "filterable": false,
+      "key": false,
+      "retrievable": true,
+      "searchable": true,
+      "sortable": false,
+      "analyzer": "gfc_phrase_analyzer",
+      "indexAnalyzer": null,
+      "searchAnalyzer": null,
+      "synonymMaps": [],
+      "fields": []
+    },
+    {
+      "name": "postalAddressLine1",
+      "type": "Edm.String",
+      "facetable": false,
+      "filterable": false,
+      "key": false,
+      "retrievable": true,
+      "searchable": true,
+      "sortable": false,
+      "analyzer": "gfc_phrase_analyzer",
+      "indexAnalyzer": null,
+      "searchAnalyzer": null,
+      "synonymMaps": [],
+      "fields": []
+    },
+    {
+      "name": "postalAddressLine1Clean",
+      "type": "Edm.String",
+      "facetable": false,
+      "filterable": false,
+      "key": false,
+      "retrievable": false,
+      "searchable": true,
+      "sortable": false,
+      "analyzer": "gfc_phrase_analyzer",
+      "indexAnalyzer": null,
+      "searchAnalyzer": null,
+      "synonymMaps": [],
+      "fields": []
+    },
+    {
+      "name": "postalAddressLine1CleanNoSpace",
+      "type": "Edm.String",
+      "facetable": false,
+      "filterable": false,
+      "key": false,
+      "retrievable": false,
+      "searchable": true,
+      "sortable": false,
+      "analyzer": "gfc_phrase_analyzer",
+      "indexAnalyzer": null,
+      "searchAnalyzer": null,
+      "synonymMaps": [],
+      "fields": []
+    },
+    {
+      "name": "postalAddressLine2",
+      "type": "Edm.String",
+      "facetable": false,
+      "filterable": false,
+      "key": false,
+      "retrievable": true,
+      "searchable": false,
+      "sortable": false,
+      "analyzer": null,
+      "indexAnalyzer": null,
+      "searchAnalyzer": null,
+      "synonymMaps": [],
+      "fields": []
+    },
+    {
+      "name": "postalAddressTownCity",
+      "type": "Edm.String",
+      "facetable": true,
+      "filterable": true,
+      "key": false,
+      "retrievable": true,
+      "searchable": false,
+      "sortable": true,
+      "analyzer": null,
+      "indexAnalyzer": null,
+      "searchAnalyzer": null,
+      "synonymMaps": [],
+      "fields": []
+    },
+    {
+      "name": "postalAddressCounty",
+      "type": "Edm.String",
+      "facetable": true,
+      "filterable": true,
+      "key": false,
+      "retrievable": true,
+      "searchable": false,
+      "sortable": true,
+      "analyzer": null,
+      "indexAnalyzer": null,
+      "searchAnalyzer": null,
+      "synonymMaps": [],
+      "fields": []
+    },
+    {
+      "name": "postalCode",
+      "type": "Edm.String",
+      "facetable": false,
+      "filterable": false,
+      "key": false,
+      "retrievable": true,
+      "searchable": true,
+      "sortable": false,
+      "analyzer": "gfc_whitespace_analyzer",
+      "indexAnalyzer": null,
+      "searchAnalyzer": null,
+      "synonymMaps": [],
+      "fields": []
+    },
+    {
+      "name": "postalCodeClean",
+      "type": "Edm.String",
+      "facetable": false,
+      "filterable": false,
+      "key": false,
+      "retrievable": false,
+      "searchable": true,
+      "sortable": false,
+      "analyzer": "standard.lucene",
+      "indexAnalyzer": null,
+      "searchAnalyzer": null,
+      "synonymMaps": [],
+      "fields": []
+    },
+    {
+      "name": "syeInspectionCategories",
+      "type": "Collection(Edm.String)",
+      "facetable": true,
+      "filterable": false,
+      "retrievable": true,
+      "searchable": true,
+      "analyzer": "standard.lucene",
+      "indexAnalyzer": null,
+      "searchAnalyzer": null,
+      "synonymMaps": [],
+      "fields": []
+    },
+    {
+      "name": "regulatedPeople",
+      "type": "Collection(Edm.String)",
+      "facetable": false,
+      "filterable": false,
+      "retrievable": true,
+      "searchable": true,
+      "analyzer": null,
+      "indexAnalyzer": "standard.lucene",
+      "searchAnalyzer": "gfc_person_analyzer",
+      "synonymMaps": [],
+      "fields": []
+    }
+  ],
+  "suggesters": [],
+  "scoringProfiles": [
+    {
+      "name": "LocationName",
+      "functions": [],
+      "functionAggregation": null,
+      "text": {
+        "weights": {
+          "locationName": 20,
+          "locationNameClean": 20,
+          "locationNameCleanNoSpace": 20
+        }
+      }
+    },
+    {
+      "name": "Postcode",
+      "functions": [],
+      "functionAggregation": null,
+      "text": {
+        "weights": {
+          "postalCode": 18
+        }
+      }
+    },
+    {
+      "name": "FullAddress",
+      "functions": [],
+      "functionAggregation": null,
+      "text": {
+        "weights": {
+          "fullAddress": 2
+        }
+      }
+    },
+    {
+      "name": "postalAddressLine1",
+      "functions": [],
+      "functionAggregation": null,
+      "text": {
+        "weights": {
+          "postalAddressLine1": 5,
+          "postalAddressLine1Clean": 5,
+          "postalAddressLine1CleanNoSpace": 5
+        }
+      }
+    },
+    {
+      "name": "regulatedPeople",
+      "functions": [],
+      "functionAggregation": null,
+      "text": {
+        "weights": {
+          "regulatedPeople": 20
+        }
+      }
+    }
+  ],
+  "defaultScoringProfile": "",
+  "corsOptions": {
+    "allowedOrigins": [
+      "*"
+    ],
+    "maxAgeInSeconds": null
+  },
+  "analyzers": [
+    {
+      "@odata.type": "#Microsoft.Azure.Search.CustomAnalyzer",
+      "name": "standardCmAnalyzer",
+      "tokenizer": "standard_v2",
+      "tokenFilters": [
+        "lowercase",
+        "asciifolding"
+      ],
+      "charFilters": []
+    },
+    {
+      "@odata.type": "#Microsoft.Azure.Search.CustomAnalyzer",
+      "name": "prefixCmAnalyzer",
+      "tokenizer": "standard_v2",
+      "tokenFilters": [
+        "lowercase",
+        "asciifolding",
+        "edgeNGramCmTokenFilter"
+      ],
+      "charFilters": []
+    },
+    {
+      "@odata.type": "#Microsoft.Azure.Search.CustomAnalyzer",
+      "name": "gfc_standard",
+      "tokenizer": "standard_v2",
+      "tokenFilters": [
+        "lowercase",
+        "asciifolding",
+        "phonetic"
+      ],
+      "charFilters": [
+        "remove-ampersand-filter"
+      ]
+    },
+    {
+      "@odata.type": "#Microsoft.Azure.Search.CustomAnalyzer",
+      "name": "gfc-text-filter",
+      "tokenizer": "standard_v2",
+      "tokenFilters": [
+        "uppercase"
+      ],
+      "charFilters": [
+        "ignore-apostrophe-filter",
+        "remove-whitespace-filter"
+      ]
+    },
+    {
+      "@odata.type": "#Microsoft.Azure.Search.CustomAnalyzer",
+      "name": "gfc_whitespace_analyzer",
+      "tokenizer": "my_standard_tokenizer",
+      "tokenFilters": [
+        "my_asciifolding",
+        "lowercase"
+      ],
+      "charFilters": [
+        "remove-whitespace-filter"
+      ]
+    },
+    {
+      "@odata.type": "#Microsoft.Azure.Search.CustomAnalyzer",
+      "name": "gfc_phrase_analyzer",
+      "tokenizer": "standard_v2",
+      "tokenFilters": [
+        "my_asciifolding",
+        "lowercase",
+        "english_stopwords",
+        "gfc_stopwords"
+      ],
+      "charFilters": [
+        "remove-whitespace-filter",
+        "ignore-apostrophe-filter"
+      ]
+    },
+    {
+      "@odata.type": "#Microsoft.Azure.Search.CustomAnalyzer",
+      "name": "gfc_person_analyzer",
+      "tokenizer": "standard_v2",
+      "tokenFilters": [
+        "my_asciifolding",
+        "lowercase",
+        "english_stopwords",
+        "gfc_person_stopwords"
+      ],
+      "charFilters": [
+        "remove-whitespace-filter",
+        "ignore-apostrophe-filter"
+      ]
+    },
+    {
+      "@odata.type": "#Microsoft.Azure.Search.CustomAnalyzer",
+      "name": "keywordAnalyzer",
+      "tokenizer": "keywordTokenizer",
+      "tokenFilters": [
+        "lowercase",
+        "classic"
+      ],
+      "charFilters": []
+    }
+  ],
+  "charFilters": [
+    {
+      "@odata.type": "#Microsoft.Azure.Search.MappingCharFilter",
+      "name": "map_space",
+      "mappings": [
+        "\\u0020=>_"
+      ]
+    },
+    {
+      "@odata.type": "#Microsoft.Azure.Search.MappingCharFilter",
+      "name": "map_dash",
+      "mappings": [
+        "-=>_"
+      ]
+    },
+    {
+      "@odata.type": "#Microsoft.Azure.Search.MappingCharFilter",
+      "name": "ignore-apostrophe-filter",
+      "mappings": [
+        "\\u0027=>"
+      ]
+    },
+    {
+      "@odata.type": "#Microsoft.Azure.Search.MappingCharFilter",
+      "name": "remove-whitespace-filter",
+      "mappings": [
+        "\\u0020=>"
+      ]
+    },
+    {
+      "@odata.type": "#Microsoft.Azure.Search.MappingCharFilter",
+      "name": "remove-ampersand-filter",
+      "mappings": [
+        "\\u0026=>"
+      ]
+    }
+  ],
+  "tokenFilters": [
+    {
+      "@odata.type": "#Microsoft.Azure.Search.EdgeNGramTokenFilterV2",
+      "name": "edgeNGramCmTokenFilter",
+      "minGram": 2,
+      "maxGram": 20,
+      "side": "front"
+    },
+    {
+      "@odata.type": "#Microsoft.Azure.Search.StopwordsTokenFilter",
+      "name": "english_stopwords",
+      "stopwords": [],
+      "stopwordsList": "english",
+      "ignoreCase": true,
+      "removeTrailing": true
+    },
+    {
+      "@odata.type": "#Microsoft.Azure.Search.StopwordsTokenFilter",
+      "name": "gfc_stopwords",
+      "stopwords": [
+        "hospital",
+        "the",
+        "and",
+        "&"
+      ],
+      "stopwordsList": null,
+      "ignoreCase": true,
+      "removeTrailing": true
+    },
+    {
+      "@odata.type": "#Microsoft.Azure.Search.StopwordsTokenFilter",
+      "name": "gfc_person_stopwords",
+      "stopwords": [
+        "dr",
+        "dr",
+        "doctor",
+        "mister",
+        "ms",
+        "mrs",
+        "miss"
+      ],
+      "stopwordsList": null,
+      "ignoreCase": true,
+      "removeTrailing": true
+    },
+    {
+      "@odata.type": "#Microsoft.Azure.Search.KeywordMarkerTokenFilter",
+      "name": "keyword_filter",
+      "keywords": [
+        "test"
+      ],
+      "ignoreCase": true
+    },
+    {
+      "@odata.type": "#Microsoft.Azure.Search.AsciiFoldingTokenFilter",
+      "name": "my_asciifolding",
+      "preserveOriginal": true
+    },
+    {
+      "@odata.type": "#Microsoft.Azure.Search.StopwordsTokenFilter",
+      "name": "stopwords_filter",
+      "stopwords": [],
+      "stopwordsList": "english",
+      "ignoreCase": false,
+      "removeTrailing": true
+    }
+  ],
+  "tokenizers": [
+    {
+      "@odata.type": "#Microsoft.Azure.Search.StandardTokenizerV2",
+      "name": "my_standard_tokenizer",
+      "maxTokenLength": 50
+    },
+    {
+      "@odata.type": "#Microsoft.Azure.Search.KeywordTokenizerV2",
+      "name": "keywordTokenizer",
+      "maxTokenLength": 256
+    }
+  ],
+  "@odata.etag": "\"0x8D7B48AE81B2AFF\""
+}

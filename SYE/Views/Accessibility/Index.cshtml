@@ -1,0 +1,82 @@
+﻿@using SYE.ViewModels
+@inject Microsoft.Extensions.Options.IOptions<ApplicationSettings> _config
+@{
+    var config = _config.Value;
+    ViewData["Title"] = "Accessibility statement" + _config.Value.SiteTextStrings.SiteTitleSuffix;
+    Layout = "_Layout";
+}
+
+<gds-row>
+
+    <gds-column desktop-size="TwoThirds" tablet-size="FullWidth">
+
+        <gds-heading text="Accessibility statement for 'Give feedback on care'" heading-type="H1"></gds-heading>
+
+        <gds-paragraph>
+            This website is run by the Care Quality Commission (CQC). We want as many people as possible to be able to use this website. For example, that means you should be able to:
+        </gds-paragraph>
+        <ul class="govuk-list govuk-list--bullet">
+            <li>change colours, contrast levels and fonts</li>
+            <li>zoom in up to 300% without the text spilling off the screen</li>
+            <li>navigate most of the website using just a keyboard</li>
+            <li>navigate most of the website using speech recognition software</li>
+            <li>listen to most of the website using a screen reader (including the most recent versions of JAWS, NVDA and VoiceOver)</li>
+        </ul>
+        <gds-paragraph>
+            We've also made the website text as simple as possible to understand.
+        </gds-paragraph>
+        <gds-paragraph>
+            <a class="govuk-link" href="https://mcmw.abilitynet.org.uk/" target="_blank">AbilityNet<span class="govuk-visually-hidden"> (opens in new window)</span></a> has advice on making your device easier to use if you have a disability.
+        </gds-paragraph>
+
+        <gds-heading text="How accessible this website is" heading-type="H2"></gds-heading>
+        <gds-paragraph>
+            'Give feedback on care' complies with the Web Content Accessibility Guidelines version 2.1 AA standard. It has links to other websites that are not fully accessible, including the main CQC website.
+        </gds-paragraph>
+
+        <gds-heading text="Reporting accessibility problems with this website" heading-type="H2"></gds-heading>
+        <gds-paragraph>
+            We're always looking to improve the accessibility of this website. If you find any accessibility problems or think we're not meeting accessibility requirements, contact <a class="govuk-link" href="mailto:GiveFeedbackOnCare@cqc.org.uk">GiveFeedbackOnCare@cqc.org.uk.<span class="govuk-visually-hidden"> (opens in new window)</span></a>
+        </gds-paragraph>
+
+        <gds-heading text="Enforcement procedure" heading-type="H2"></gds-heading>
+        <gds-paragraph>
+            The Equality and Human Rights Commission (EHRC) is responsible for enforcing the Public Sector Bodies (Websites and Mobile Applications) (No. 2) Accessibility Regulations 2018 (the ‘accessibility regulations’). If you’re not happy with how we respond to your complaint,<a class="govuk-link" href="https://www.equalityadvisoryservice.com/" target="_blank"> contact the Equality Advisory and Support Service (EASS)<span class="govuk-visually-hidden"> (opens in new window)</span></a>.
+        </gds-paragraph>
+
+        <gds-heading text="Technical information about this website's accessibility" heading-type="H2"></gds-heading>
+        <gds-paragraph>
+            CQC is committed to making its website accessible, in accordance with the Public Sector Bodies (Websites and Mobile Applications) (No. 2) Accessibility Regulations 2018.
+        </gds-paragraph>
+        <gds-paragraph>
+            This website is fully compliant with the <a class="govuk-link" href="https://www.w3.org/TR/WCAG21/" target="_blank"> Web Content Accessibility Guidelines version 2.1 AA standard<span class="govuk-visually-hidden"> (opens in new window)</span></a>.
+        </gds-paragraph>
+
+        <gds-heading text="How we tested this website" heading-type="H2"></gds-heading>
+        <gds-paragraph>
+            This website was last tested on 13 December 2019. The test was carried out by the Digital Accessibility Centre.
+        </gds-paragraph>
+        <gds-paragraph>
+            We tested:
+        </gds-paragraph>
+        <ul class="govuk-list govuk-list--bullet">
+            <li>our start page at <a href="@config.GFCUrls.StartPage" class="govuk-link">@config.GFCUrls.StartPage</a></li>
+            <li>our search page</li>
+            <li>our search results page</li>
+            <li>the question page 'What kind of experience do you want to tell us about?'</li>
+            <li>a selection of pages that make up the journey taken by users selecting ‘Good’, ‘Bad’ and ‘Both good and bad’ to describe their experiences of care</li>
+        </ul>
+
+        <gds-paragraph>
+            You can read the full accessibility test report: <a href="https://www.cqc.org.uk/sites/default/files/20190710-DAC-accesssibility-report-give-feedback-on-care.pdf" class="govuk-link" target="_blank">Accessibility report on 'Give feedback on care'<span class="govuk-visually-hidden"> (opens in new window)</span></a>
+        </gds-paragraph>
+
+        <gds-paragraph>
+            This statement was prepared on 8 October 2019.
+        </gds-paragraph>
+
+        <gds-button button-text="Close" button-id="closeButton" class="jsOnly" onclick="windowClose();"></gds-button>
+
+    </gds-column>
+
+</gds-row>

@@ -1,0 +1,68 @@
+﻿@using GDSHelpers
+@using Microsoft.AspNetCore.Http
+@model GDSHelpers.Models.FormSchema.PageVM
+
+@{
+    Layout = "_Layout";
+}
+
+<gds-row>
+
+    <gds-column desktop-size="TwoThirds" tablet-size="FullWidth">
+
+        <partial name="_SummaryErrors" for="@Model" />
+
+        <form asp-action="Index" asp-controller="Form" method="post">
+
+            @Html.HiddenFor(m => m.PageId)
+            @Html.AntiForgeryToken()
+
+            @if (!string.IsNullOrEmpty(Model.PageName))
+            {
+                <gds-heading heading-type="H1" text="@Model.PageName"></gds-heading>
+            }
+
+            @Html.RenderPreAmble(Model)
+
+            @if (Model.Questions != null)
+            {
+                foreach (var question in Model.Questions)
+                {
+                    @Html.GdsQuestion(question)
+                }
+            }
+
+            @Html.RenderPostAmble(Model)
+
+
+            @if (Model.Buttons != null)
+            {
+                foreach (var button in Model.Buttons)
+                {
+                    @Html.GdsButton(button.ButtonType, button.ButtonText)
+                }
+            }
+
+        </form>
+
+    </gds-column>
+    @if (Model.ShowRelatedContent)
+    {
+        <gds-column tablet-size="OneThird">
+
+            <aside class="app-related-items" role="complementary">
+
+                <h2 class="govuk-heading-m">Related content</h2>
+
+                <gds-paragraph>
+                    <gds-link class="govuk-link app-related-items-font-resize" link-id="related-content" link-text="How we handle information and privacy" href="@Url.Action("Index", "HowWeUseYourInformation")" target="_blank" add-hidden-text="true"></gds-link>
+                </gds-paragraph>
+
+            </aside>
+
+        </gds-column>
+    }
+
+</gds-row>
+
+<partial name="_Monitor" />

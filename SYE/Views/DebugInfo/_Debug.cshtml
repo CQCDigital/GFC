@@ -1,0 +1,52 @@
+﻿@model SYE.ViewModels.Debug.DebugInfoVm
+
+<h4 class="govuk-footer__heading govuk-heading-s">DEBUG INFO</h4>
+
+<gds-row>
+
+    <gds-column desktop-size="OneThird">
+
+        @if (!string.IsNullOrEmpty(Model.UserSession.LocationId))
+        {
+            <h4 class="govuk-heading-s">Page Info</h4>
+            <ul class="govuk-list govuk-!-font-size-14">
+                <li>Location Id: @Model.UserSession.LocationId</li>
+                <li>Location Name: @Model.UserSession.LocationName</li>
+                <li>Provider Id: @Model.UserSession.ProviderId</li>
+                <li>ChangedMode: @Model.ChangeMode</li>
+            </ul>
+        }
+
+    </gds-column>
+
+    <gds-column desktop-size="OneThird">
+
+        @if (Model.CurrentPage != null)
+        {
+            <h4 class="govuk-heading-s">Form Page</h4>
+            <ul class="govuk-list govuk-!-font-size-14">
+                <li>PageId: @Model.CurrentPage.PageId</li>
+                <li>NextPageId: @Model.CurrentPage.NextPageId</li>
+                <li>ChangeModeTriggerPageId: @Model.CurrentPage.ChangeModeTriggerPageId</li>
+                <li>PathChangeQuestion NextPageId: @Model.CurrentPage.PathChangeQuestion?.NextPageId</li>
+            </ul>
+        }
+
+    </gds-column>
+
+    <gds-column desktop-size="OneThird">
+
+        @if (Model.NavOrder != null)
+        {
+            <h4 class="govuk-heading-s">Nav Order</h4>
+            <ul class="govuk-list govuk-!-font-size-14">
+                @foreach (var item in Model.NavOrder)
+                {
+                    <li>@item</li>
+                }
+            </ul>
+        }
+
+    </gds-column>
+
+</gds-row>

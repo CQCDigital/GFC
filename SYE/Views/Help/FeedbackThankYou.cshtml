@@ -1,0 +1,21 @@
+﻿@model SYE.Models.RedirectVM
+@{
+    Layout = "_Layout";
+}
+<gds-row>
+    <gds-column desktop-size="TwoThirds" tablet-size="FullWidth">
+        <gds-heading heading-type="H1" text="You've sent your comments"></gds-heading>
+        <gds-paragraph>
+            We'll use your comments to improve our service.
+        </gds-paragraph>
+        <gds-paragraph>
+            If we need to reply to you, we'll be in touch within 2 working days.
+        </gds-paragraph>
+        <gds-paragraph>
+            <form asp-controller="Help" asp-action="Continue" method="post">
+                <input asp-for="@Model.Url" type="hidden" />
+                <gds-button button-type="Submit" button-text="Continue" button-id="btnContinue"></gds-button>
+            </form>
+        </gds-paragraph>
+    </gds-column>
+</gds-row>

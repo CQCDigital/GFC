@@ -1,0 +1,69 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Resources\submission-schema-contact-details-no-location.json" />
+    <None Remove="Resources\submission-schema-contact-details.json" />
+    <None Remove="Resources\submission-schema-no-contact-details-no-location.json" />
+    <None Remove="Resources\submission-schema-no-contact-new-date-format.json" />
+    <None Remove="Resources\submission-schema-no-contact.json" />
+    <None Remove="Resources\submission-schema-no-email.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Resources\submission-schema-no-contact-new-date-format.json">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="Resources\submission-schema-no-email.json">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="Resources\submission-schema-no-contact-details-no-location.json">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="Resources\submission-schema-contact-details-no-location.json">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="Resources\submission-schema-contact-details.json">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="Resources\submission-schema-no-contact.json">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentAssertions" Version="5.6.0" />
+    <PackageReference Include="gdshelpers" Version="2020.3.19.2" />
+    <PackageReference Include="Microsoft.Azure.Search.Data" Version="5.0.3" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.1.0" />
+    <PackageReference Include="Moq" Version="4.10.1" />
+    <PackageReference Include="NSubstitute" Version="4.2.1" />
+    <PackageReference Include="Open-XML-SDK" Version="2.9.0" />
+    <PackageReference Include="xunit" Version="2.4.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SYE.Repository\SYE.Repository.csproj" />
+    <ProjectReference Include="..\SYE.Services\SYE.Services.csproj" />
+    <ProjectReference Include="..\SYE\SYE.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="GDSHelpers">
+      <HintPath>..\..\..\..\Users\cex\.nuget\packages\gdshelpers\1.0.0\lib\netstandard2.0\GDSHelpers.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AspNetCore.Hosting">
+      <HintPath>..\..\..\..\..\Program Files\dotnet\sdk\NuGetFallbackFolder\microsoft.aspnetcore.hosting\2.2.0\lib\netstandard2.0\Microsoft.AspNetCore.Hosting.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AspNetCore.Session">
+      <HintPath>..\..\..\..\..\Program Files\dotnet\sdk\NuGetFallbackFolder\microsoft.aspnetcore.session\2.2.0\lib\netstandard2.0\Microsoft.AspNetCore.Session.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

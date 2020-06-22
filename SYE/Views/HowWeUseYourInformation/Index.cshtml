@@ -1,0 +1,234 @@
+﻿@using SYE.ViewModels
+@inject Microsoft.Extensions.Options.IOptions<ApplicationSettings> _config
+@{
+    ViewData["Title"] = "How we handle information" + _config.Value.SiteTextStrings.SiteTitleSuffix;
+}
+
+@{
+    Layout = "_Layout";
+}
+
+<gds-row>
+
+    <gds-column desktop-size="TwoThirds" tablet-size="FullWidth">
+
+        <gds-heading text="How we handle information" id="How-we-handle-information" heading-type="H1"></gds-heading>
+
+        <h2 class="gem-c-contents-list__title">Contents</h2>
+        <gds-ol list-id="Contents" class="gem-c-contents-list__list">
+            <gds-li class="gem-c-contents-list__list-item gem-c-contents-list__list-item--dashed">
+                <a href="#What-we-use-feedback-for" class="gem-c-contents-list__link govuk-link">What we use feedback for</a>
+            </gds-li>
+            <gds-li class="gem-c-contents-list__list-item gem-c-contents-list__list-item--dashed">
+                <a href="#How-we-store-feedback-and-contact-details" class="gem-c-contents-list__link govuk-link">How we store feedback and contact details</a>
+            </gds-li>
+            <gds-li class="gem-c-contents-list__list-item gem-c-contents-list__list-item--dashed">
+                <a href="#How-long-we-keep-them-for" class="gem-c-contents-list__link govuk-link">How long we keep them for</a>
+            </gds-li>
+            <gds-li class="gem-c-contents-list__list-item gem-c-contents-list__list-item--dashed">
+                <a href="#Data-protection-laws-and-standards" class="gem-c-contents-list__link govuk-link">Data protection laws and standards</a>
+            </gds-li>
+            <gds-li class="gem-c-contents-list__list-item gem-c-contents-list__list-item--dashed">
+                <a href="#Staying-anonymous-can-affect-how-we-use-feedback" class="gem-c-contents-list__link govuk-link">Staying anonymous can affect how we use feedback</a>
+            </gds-li>
+            <gds-li class="gem-c-contents-list__list-item gem-c-contents-list__list-item--dashed">
+                <a href="#When-we-can-and-can’t-keep-your-name-confidential" class="gem-c-contents-list__link govuk-link">When we can and can’t keep your name confidential</a>
+            </gds-li>
+            <gds-li class="gem-c-contents-list__list-item gem-c-contents-list__list-item--dashed">
+                <a href="#The-service-might-still-work-out-who-you-are" class="gem-c-contents-list__link govuk-link">The service might still work out who you are</a>
+            </gds-li>
+        </gds-ol>
+
+        <br />
+
+        <gds-heading text="What we use feedback for" id="What-we-use-feedback-for" heading-type="H2"></gds-heading>
+        <gds-heading text="We monitor services" heading-type="H3"></gds-heading>
+
+        <gds-paragraph>
+            Our job is to monitor and inspect health and social care services. One of the ways we monitor them is by using feedback from people like you. This might be about:
+        </gds-paragraph>
+        <ul class="govuk-list govuk-list--bullet">
+            <li>your own experiences of care</li>
+            <li>friends' or relatives' experiences</li>
+            <li>things you've found out or seen because of your job or volunteer work</li>
+        </ul>
+        <gds-paragraph>
+            We analyse what you tell us alongside other information. This might be information from the service itself or what we see when we carry out inspections. This helps us build up a picture of the quality of care the service gives.
+        </gds-paragraph>
+        <gds-paragraph>
+            We also use it to help us build up a picture of the quality of care more widely. For example, we sometimes look at the quality of care across groups of services. These might be GP practices in one area or care homes owned by one company. We look at care given to particular groups, for example older people or people with long-term conditions. And we also look at care across different areas of the country.
+        </gds-paragraph>
+
+        <gds-heading text="We publish information about quality" heading-type="H3"></gds-heading>
+        <gds-paragraph>
+            We analyse the information people give us to find trends and themes. We often publish our conclusions. In the future, we'd like to publish data about things like types of feedback or themes - for example, the number of concerns about care homes in an area of the country. This is to help other people with their research. We will not include details of individual feedback or people's names.
+        </gds-paragraph>
+        <gds-paragraph>
+            We sometimes use quotes from people's feedback in:
+        </gds-paragraph>
+        <ul class="govuk-list govuk-list--bullet">
+            <li>the reports we write when we inspect services</li>
+            <li>reports about the quality of care in an area, across groups of services or for certain groups of people</li>
+            <li>reports about topics - like particular themes or the wider health and care system</li>
+        </ul>
+        <gds-paragraph>
+            We either use people's actual words or a summary of what they said. We never give their names or quote them in a way that makes it obvious who they are - we only use anonymous quotes.
+        </gds-paragraph>
+
+        <gds-heading text="How we store feedback and contact details" id="How-we-store-feedback-and-contact-details" heading-type="H2"></gds-heading>
+        <gds-paragraph>
+            We store your feedback in a database. We own the database and it's hosted in the UK. If you give us your name and contact details, we store them in the same way.
+        </gds-paragraph>
+        <gds-paragraph>
+            We transfer this information to other systems so our staff can use it. We make sure the only members of our staff who can see it are people who need it for their jobs. Our systems are secure, owned by us and based in the UK.
+        </gds-paragraph>
+
+
+        <gds-heading text="How long we keep them for" id="How-long-we-keep-them-for" heading-type="H3"></gds-heading>
+        <gds-paragraph>
+            There are several things we do with the information we collect through this form. How long we keep the information depends on what we use it for. This table gives some examples.
+        </gds-paragraph>
+
+        <table class="govuk-table">
+            <thead class="govuk-table__head">
+                <tr class="govuk-table__row">
+                    <th class="govuk-table__header" scope="col">What we use the information for</th>
+                    <th class="govuk-table__header" scope="col">How long we keep it</th>
+                </tr>
+            </thead>
+            <tbody class="govuk-table__body">
+                <tr class="govuk-table__row">
+                    <th class="govuk-table__header" scope="row">Safeguarding (protecting people from things like abuse or neglect)</th>
+                    <td class="govuk-table__cell">3 years</td>
+                </tr>
+                <tr class="govuk-table__row">
+                    <th class="govuk-table__header" scope="row">Complaints about CQC</th>
+                    <td class="govuk-table__cell">5 years</td>
+                </tr>
+                <tr class="govuk-table__row">
+                    <th class="govuk-table__header" scope="row">Enforcement (taking action when people do not follow the regulations)</th>
+                    <td class="govuk-table__cell">7 years after the action has ended</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <gds-paragraph>
+            There are some types of information we keep for longer. We sometimes keep information permanently - but only once we've removed personal details that identify people.
+        </gds-paragraph>
+
+        <gds-paragraph>
+            You can find out more about how long we keep information by reading our <a href="https://www.cqc.org.uk/about-us/our-policies/privacy-statement" class="govuk-link" target="_blank">privacy statement<span class="govuk-visually-hidden"> (opens in new window)</span></a>.
+        </gds-paragraph>
+
+
+        <gds-heading text="Data protection laws and standards" id="Data-protection-laws-and-standards" heading-type="H3"></gds-heading>
+        <gds-paragraph>
+            To keep your information safe, we follow:
+        </gds-paragraph>
+        <ul class="govuk-list govuk-list--bullet">
+            <li>the General Data Protection Regulation (GDPR) and the Data Protection Act 2018</li>
+            <li>our own policies on handling information</li>
+            <li>our code of practice on confidential personal information</li>
+        </ul>
+        <gds-paragraph>
+            <a class="govuk-link" href="https://www.cqc.org.uk/about-us/our-policies/privacy-statement" target="_blank">Read our privacy statement<span class="govuk-visually-hidden"> (opens in new window)</span></a> to find
+            out more about how we handle personal information and about your rights.
+        </gds-paragraph>
+
+
+        <gds-heading text="Staying anonymous can affect how we use feedback" id="Staying-anonymous-can-affect-how-we-use-feedback" heading-type="H2"></gds-heading>
+        <gds-paragraph>
+            You do not have to give your name or contact details when you give us feedback about an experience of care. But if you do stay
+            anonymous, it can make it harder for us to take action.
+        </gds-paragraph>
+        <gds-paragraph>
+            This is because we sometimes need to get in touch with you to follow up. This might mean asking extra questions or getting more detail.
+        </gds-paragraph>
+
+
+        <gds-heading text="When we can and can’t keep your name confidential" id="When-we-can-and-can’t-keep-your-name-confidential" heading-type="H3"></gds-heading>
+        <gds-paragraph>
+            If you give us your name, we’ll keep it confidential unless you tell us:
+        </gds-paragraph>
+        <ul class="govuk-list govuk-list--bullet">
+            <li>someone is in danger of serious harm, like abuse or neglect (a safeguarding concern)</li>
+            <li>someone has committed a serious crime</li>
+        </ul>
+        <gds-paragraph>
+            If that’s the case, we may have to pass everything you’ve told us to the police, the council or another public body.
+        </gds-paragraph>
+
+        <gds-heading text="The service might still work out who you are" id="The-service-might-still-work-out-who-you-are" heading-type="H3"></gds-heading>
+
+        <gds-paragraph>
+            You can also ask us not to share your feedback with the service at all. This can help if it's important they do not find out who you are.
+        </gds-paragraph>
+        <gds-paragraph>
+            We may still have to act on your concern. For example, if you tell us a service has falsified their records, we may visit them and ask to see the records. This could lead them to guess someone has contacted us.
+        </gds-paragraph>
+
+        <gds-button button-text="Close" button-id="closeButton" class="jsOnly" onclick="windowClose();"></gds-button>
+
+        <div class="app-c-contents-list-with-body__link-container">
+            <a href="#How-we-handle-information" class="app-c-back-to-top dont-print" href="#contents">
+                <svg class="app-c-back-to-top__icon" xmlns="http://www.w3.org/2000/svg" width="13" height="17" viewBox="0 0 13 17">
+                    <path fill="currentColor" d="M6.5 0L0 6.5 1.4 8l4-4v12.7h2V4l4.3 4L13 6.4z"></path>
+                </svg>
+                Contents
+            </a>
+        </div>
+
+        <div id="contents-link-wrapper" class="app-c-contents-list-with-body__link-wrapper govuk-sticky-element--stuck-to-window
+                                               govuk-sticky-element--enabled app-back-to-top app-back-to-top--fixed app-back-to-top--hidden" role="navigation">
+            <div class="app-c-contents-list-with-body__link-container">
+                <a href="#How-we-handle-information" class="app-c-back-to-top dont-print" href="#contents">
+                    <svg class="app-c-back-to-top__icon" xmlns="http://www.w3.org/2000/svg" width="13" height="17" viewBox="0 0 13 17">
+                        <path fill="currentColor" d="M6.5 0L0 6.5 1.4 8l4-4v12.7h2V4l4.3 4L13 6.4z"></path>
+                    </svg>
+                    Contents
+                </a>
+            </div>
+        </div>
+
+    </gds-column>
+
+    <gds-column tablet-size="OneThird">
+
+        <aside class="app-related-items" role="complementary">
+
+            <h2 class="govuk-heading-m">Related content</h2>
+
+            <gds-paragraph>
+                <gds-link class="govuk-link" target="_blank" add-hidden-text="true" link-id="privacy-statement" link-text="Read our full privacy statement" href="https://www.cqc.org.uk/about-us/our-policies/privacy-statement"></gds-link>
+            </gds-paragraph>
+
+        </aside>
+
+    </gds-column>
+</gds-row>
+
+@section Scripts
+{
+    <script>
+
+        $(window).scroll(function (event) {
+            footer();
+        });
+
+        $(window).resize(function (event) {
+            footer();
+        });
+
+        //Function to enable back-to-top link
+        function footer() {
+            var scroll = $(window).scrollTop();
+            var bottomScrollLimit = document.body.offsetHeight - $(window).innerHeight();;
+            if (scroll > 50 && scroll < (bottomScrollLimit - 300)) {
+                $(".app-back-to-top").removeClass("app-back-to-top--hidden");
+            }
+            else {
+                $(".app-back-to-top").addClass("app-back-to-top--hidden");
+            }
+        }
+    </script>
+}

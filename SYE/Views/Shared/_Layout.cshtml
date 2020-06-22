@@ -1,0 +1,207 @@
+﻿@inject Microsoft.ApplicationInsights.AspNetCore.JavaScriptSnippet JavaScriptSnippet
+@using Microsoft.Extensions.Configuration
+@using GDSHelpers.Models
+@using Microsoft.AspNetCore.Routing
+@using SYE.Services;
+@using Microsoft.CodeAnalysis
+@inject IConfiguration Configuration
+@inject ISessionService SessionService
+@using SYE.ViewModels
+@inject Microsoft.Extensions.Options.IOptions<ApplicationSettings> _config
+@{
+    var config = _config.Value;
+}
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!--BuildNumber: @(Configuration.GetValue<string>("ApplicationSettings:BuildNumber"))-->
+
+    <title>@Html.Raw(ViewBag.Title)</title>
+
+    <meta name="theme-color" content="#5f2861" />
+
+    @if (Configuration.GetValue<bool>("AnalyticsConfiguration:GoogleAnalytics:SiteTag:Enabled") == true)
+    {
+        <!-- Google Tag Manager -->
+        <script>
+            (function(w, d, s, l, i) {
+                w[l] = w[l] || [];
+                w[l].push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
+                var f = d.getElementsByTagName(s)[0], j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : '';
+                j.async = true;
+                j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+                f.parentNode.insertBefore(j, f);
+            })(window, document, 'script', 'dataLayer', '@(Configuration.GetValue<string>("AnalyticsConfiguration:GoogleAnalytics:SiteTag:GA_MEASUREMENT_ID"))');
+        </script><!-- End Google Tag Manager -->
+    }
+    @if (Configuration.GetValue<bool>("AnalyticsConfiguration:Hotjar:Enabled") == true)
+    {
+        <!-- Hotjar Tracking Code -->
+        <script>
+            (function (h, o, t, j, a, r) {
+                h.hj = h.hj || function () { (h.hj.q = h.hj.q || []).push(arguments) };
+                h._hjSettings = { hjid: @(Configuration.GetValue<string>("AnalyticsConfiguration:Hotjar:Id")), hjsv: @(Configuration.GetValue<string>("AnalyticsConfiguration:Hotjar:SnippetVersion")) };
+                a = o.getElementsByTagName('head')[0];
+                r = o.createElement('script'); r.async = 1;
+                r.src = t + h._hjSettings.hjid + j + h._hjSettings.hjsv;
+                a.appendChild(r);
+            })(window, document, '//static.hotjar.com/c/hotjar-', '.js?sv=');
+        </script>
+    }
+
+    <link rel="shortcut icon" href="~/assets/favicon.ico" type="image/vnd.microsoft.icon" />
+    <link rel="stylesheet" href="~/css/govuk-frontend-2.13.0.min.css" asp-append-version="true" />
+    <!--[if lt IE 9]>
+        <link href="~/css/govuk-frontend-ie8-2.13.0.min.css" rel="stylesheet" />
+    <![endif]-->
+    <link rel="stylesheet" href="~/css/govuk-publishing-components-CQC-1.0.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    <partial name="_Favicons" />
+
+    @Html.Raw(JavaScriptSnippet.FullScript)
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+</head>
+<body class="govuk-template__body">
+    @if (Configuration.GetValue<bool>("AnalyticsConfiguration:GoogleAnalytics:SiteTag:Enabled") == true)
+    {
+        <!-- Google Tag Manager (noscript) -->
+        <noscript>
+            <iframe class="gfc-ga-iframe" src="https://www.googletagmanager.com/ns.html?id=@(Configuration.GetValue<string>("AnalyticsConfiguration:GoogleAnalytics:SiteTag:GA_MEASUREMENT_ID"))" height="0" width="0"></iframe>
+        </noscript>
+        <!-- End Google Tag Manager (noscript) -->
+    }
+    <script>
+        document.body.className = ((document.body.className) ? document.body.className + ' js-enabled' : 'js-enabled');
+
+    </script>
+
+    @RenderSection("CssModal", required: false)
+
+    <a href="#content" class="govuk-skip-link">Skip to main content</a>
+
+    @{
+        var cookieAccepted = SessionService.GetCookieFlagFromSession() ?? "false";
+
+        if (cookieAccepted != "true")
+        {
+            <partial name="_CookieConsentPartial" />
+            SessionService.SetCookieFlagOnSession("true");
+        }
+    }
+
+
+    <gds-header>
+
+        <gds-header-container>
+            @{
+                string svgPath = $"<path fill=\"#fff;\" fill-rule=\"nonzero\" ;=\"\" d=\"M86.75,37.3936c-3.8558,0-6.3445,2.8159-6.3445,6.9751,0,4.1848,2.4615,6.9206,6.1535,6.9206,3.8285,0,6.3188-2.7631,6.3188-6.9206C92.8781,40.1294,90.444,37.3936,86.75,37.3936Zm-.0547,11.9525c-2.267,0-3.9646-2.0234-3.9646-5.0593,0-2.98,1.5033-4.9772,3.883-4.9772,2.27,0,3.9409,2.0506,3.9409,5.0863C90.5549,47.4063,89.1589,49.3461,86.6956,49.3461Zm80.3032-16.5992A1.4234,1.4234,0,1,0,168.42,34.17,1.4125,1.4125,0,0,0,166.9988,32.7469ZM73.8723,49.1551c-4.0228,0-6.54-2.8994-6.54-7.3568,0-4.5683,3.01-7.2769,6.7313-7.2769a8.0962,8.0962,0,0,1,4.4047,1.2307l1.0653-1.6943c-.2182-.22-1.996-1.6944-5.6063-1.6944-5.0336,0-9.1109,3.554-9.1109,9.6531,0,5.8789,3.8573,9.3255,8.7546,9.3255A9.6689,9.6689,0,0,0,79.6968,49.43l-1.0654-1.6959A9.2226,9.2226,0,0,1,73.8723,49.1551ZM177.0114,37.3936c-3.8558,0-6.3443,2.8159-6.3443,6.9751,0,4.1848,2.4613,6.9206,6.1533,6.9206,3.8285,0,6.3172-2.7631,6.3172-6.9206C183.1376,40.1294,180.7069,37.3936,177.0114,37.3936Zm-.0545,11.9525c-2.27,0-3.9649-2.0234-3.9649-5.0593,0-2.98,1.5034-4.9772,3.883-4.9772,2.2706,0,3.941,2.0506,3.941,5.0863C180.816,47.4063,179.4182,49.3461,176.9569,49.3461Zm14.8263-11.9525a7.6384,7.6384,0,0,0-4.1319,1.3415V37.75h-2.0761V50.9875h2.3215V40.5129a7.169,7.169,0,0,1,3.4773-1.15,2.704,2.704,0,0,1,1.8581.6578c.6818.6836.7125,1.778.7125,3.4449v7.5223h2.3216V43.3034c0-2.1342-.0546-3.503-1.3126-4.761A4.2406,4.2406,0,0,0,191.7832,37.3936Zm-82.8795,0a8.4547,8.4547,0,0,0-4.5955,1.5325,3.78,3.78,0,0,0-3.2558-1.5325,7.8829,7.8829,0,0,0-4.0475,1.3415V37.75h-2.08V50.9875H97.25V40.4567a7.3572,7.3572,0,0,1,3.3921-1.0942,2.3681,2.3681,0,0,1,1.7225.6034c.6852.7107.6578,1.9141.6578,3.69v7.3313h2.298V43.5761a12.3806,12.3806,0,0,0-.2217-3.0922A7.42,7.42,0,0,1,108.6,39.3625a2.2731,2.2731,0,0,1,1.8068.6851c.6852.7381.658,2.38.658,3.1994v7.74h2.325V43.3034c0-2.1342-.0546-3.503-1.3159-4.761A4.2409,4.2409,0,0,0,108.9037,37.3936Zm28.4151,13.5939h2.325V37.75h-2.325Zm1.1489-18.2406a1.4234,1.4234,0,1,0,1.4215,1.4233A1.4153,1.4153,0,0,0,138.4677,32.7469Zm-8.5638,4.6467a8.4657,8.4657,0,0,0-4.5955,1.5325,3.7689,3.7689,0,0,0-3.2524-1.5325,7.8928,7.8928,0,0,0-4.05,1.3415V37.75h-2.08V50.9875h2.3252V40.4567a7.39,7.39,0,0,1,3.392-1.0942,2.37,2.37,0,0,1,1.725.6034c.6853.7107.6579,1.9141.6579,3.69v7.3313h2.2979V43.5761a12.386,12.386,0,0,0-.2216-3.0922,7.405,7.405,0,0,1,3.5012-1.1214,2.2822,2.2822,0,0,1,1.8068.6851c.6817.7381.6545,2.38.6545,3.1994v7.74h2.325V43.3034c0-2.1342-.0545-3.503-1.3124-4.761A4.2444,4.2444,0,0,0,129.9039,37.3936Zm15.1265,3.61c0-.9836.8216-1.7779,2.434-1.7779a6.5029,6.5029,0,0,1,3.1466.9034l.8727-1.56a7.1212,7.1212,0,0,0-4.183-1.1762c-2.7067,0-4.6227,1.5051-4.6227,3.7466,0,4.2138,6.5352,3.61,6.5352,6.3188,0,1.1779-1.1181,1.97-2.5431,1.97a6.783,6.783,0,0,1-3.5285-1.0124l-.8761,1.6143a8.1169,8.1169,0,0,0,4.5409,1.3106c2.6013,0,4.8444-1.4744,4.8444-4.0465C151.6508,43.0835,145.03,43.5488,145.03,41.0039Zm20.82,9.9836h2.325V37.75H165.85Zm-9.5457-9.9836c0-.9836.8183-1.7779,2.4343-1.7779a6.5181,6.5181,0,0,1,3.1465.9034l.8728-1.56a7.1216,7.1216,0,0,0-4.183-1.1762c-2.7069,0-4.6228,1.5051-4.6228,3.7466,0,4.2138,6.5353,3.61,6.5353,6.3188,0,1.1779-1.1182,1.97-2.5432,1.97a6.77,6.77,0,0,1-3.5285-1.0124l-.876,1.6143a8.1207,8.1207,0,0,0,4.5443,1.3106c2.5943,0,4.8376-1.4744,4.8376-4.0465C162.9215,43.0835,156.3042,43.5488,156.3042,41.0039Z\"></path><path class=\"cls-1\" d=\"M73.79,28.0849a10.0789,10.0789,0,0,0,6.6479-2.2415l-1.5938-2.5671a9.0841,9.0841,0,0,1-4.5955,1.4865c-3.4313,0-5.6184-2.458-5.6184-6.2148,0-3.8353,2.5381-6.1331,5.8093-6.1331a6.978,6.978,0,0,1,4.2955,1.3772l1.65-2.5107c-.191-.1892-2.0557-2.08-6.1074-2.08-5.378,0-9.486,3.5915-9.486,9.5916C64.792,24.5736,68.7108,28.0849,73.79,28.0849ZM81.4831,23.68a4.0338,4.0338,0,0,0,4.2955,4.27,6.4619,6.4619,0,0,0,3.7552-1.2444v.9476h3.1619V19.6831c0-1.73.0274-3.1073-1.0824-4.2153a6.1672,6.1672,0,0,0-4.3483-1.4847,8.5718,8.5718,0,0,0-5.0523,1.43l1.2137,2.325a7.9693,7.9693,0,0,1,3.54-.9733,2.6527,2.6527,0,0,1,1.89.54c.3784.38.4056.7569.4056,1.5666h-.3784C87.265,18.8718,81.4831,18.9536,81.4831,23.68Zm7.78.704a4.4568,4.4568,0,0,1-2.54.81c-.89,0-2.0523-.3784-2.0523-1.7558,0-1.6739,1.6739-2.08,4.0261-2.08h.5659Zm8.7991-5.4582a4.3539,4.3539,0,0,1,3.727-1.9175,6.0158,6.0158,0,0,1,.8114.0818l.8386-2.758a3.14,3.14,0,0,0-1.517-.3494A5.873,5.873,0,0,0,97.52,16.0354V14.36H94.414V27.6536h3.6478Zm11.476-4.9431c-3.7807,0-6.3752,3.0256-6.3752,7.1045,0,3.8644,2.2978,6.9429,6.6206,6.9429a9.1714,9.1714,0,0,0,5.049-1.4575L113.6458,24.25a7.9771,7.9771,0,0,1-3.5421.9443,3.0983,3.0983,0,0,1-3.4023-2.9984h8.7546c0-.1875.0545-.5676.0545-1.1335C115.5105,16.7376,113.4276,13.9831,109.5378,13.9831ZM106.674,19.574c.2693-1.6483,1.2955-2.8891,2.9455-2.8891,2.2433,0,2.5126,2.1614,2.5126,2.8891Zm35.612,8.4565a6.8812,6.8812,0,0,0,3.7534-1.3774v1.0005h3.1058V14.36h-3.6444v9.7281a4.7321,4.7321,0,0,1-2.4615.837,1.9,1.9,0,0,1-1.4283-.4858c-.4875-.4875-.5694-1.35-.5694-3.08V14.36h-3.6477v7.161c0,1.7284-.0546,3.7278,1.4318,5.2143A4.7389,4.7389,0,0,0,142.286,28.0305Zm16.357-1.3245v.9476h3.16V19.6831c0-1.73.0307-3.1073-1.0773-4.2153a6.1737,6.1737,0,0,0-4.35-1.4847,8.5728,8.5728,0,0,0-5.0525,1.43l1.2137,2.325a7.9586,7.9586,0,0,1,3.5387-.9733,2.6551,2.6551,0,0,1,1.8921.54c.3784.38.4057.7569.4057,1.5666h-.3784c-1.6193,0-7.4012.0818-7.4012,4.8086a4.0337,4.0337,0,0,0,4.2954,4.27A6.4493,6.4493,0,0,0,158.643,26.706Zm-4.8615-3.2677c0-1.6739,1.6739-2.08,4.0263-2.08h.5659v3.0257a4.457,4.457,0,0,1-2.54.81C154.944,25.1941,153.7815,24.8157,153.7815,23.4383ZM167.2374,8.0921H163.59V27.6536h3.6477Zm3.7227,4.6194a2.08,2.08,0,1,0-2.0828-2.08A2.064,2.064,0,0,0,170.96,12.7115Zm1.8377,1.6482H169.15V27.6536h3.6479Zm9.43,10.6178c-1.5956,0-1.6773-1.2152-1.6773-2.2688V17.3853h3.7841V14.36H180.55V10.6591h-3.6443V14.36H174.608v3.0256h2.2978v5.1888c0,1.8649,0,3.133,1.1352,4.2682a4.8453,4.8453,0,0,0,3.4295,1.1882,6.3515,6.3515,0,0,0,3.3479-.8642l-.9171-2.5109A4.8024,4.8024,0,0,1,182.2274,24.9775Zm5.7751,5.9985a5.1164,5.1164,0,0,1-2.0524-.4586L184.87,33.11a6.7646,6.7646,0,0,0,3.3239.8369,5.1916,5.1916,0,0,0,3.89-1.3771c.9443-.9445,1.5409-2.1615,2.5671-4.7814L199.9174,14.36h-3.5932L193,23.68l-3.566-9.3207h-3.8626l5.5672,13.2939a8.1814,8.1814,0,0,1-1.3262,2.6474A2.4078,2.4078,0,0,1,188.0025,30.976ZM135.7881,18.519c0-5.4188-3.4706-9.3257-8.8126-9.3257-5.2329,0-8.8093,3.7688-8.8093,9.3257,0,5.6575,3.4978,9.53,8.6594,9.6188V28.14s.2045.005.2215.005a6.6915,6.6915,0,0,1,5.3455,2.262c.3751-.2472,3.0956-2.5892,3.0956-2.5892a5.0384,5.0384,0,0,0-3.1228-1.42A9.6277,9.6277,0,0,0,135.7881,18.519Zm-8.7307,6.3989c-2.8467,0-5.015-2.3574-5.015-6.1517,0-3.7706,1.8956-6.4263,4.8-6.4263,3.0342,0,5.0694,2.5738,5.0694,6.1535C131.9119,21.3945,130.8005,24.9179,127.0574,24.9179Z\"></path><path class=\"cls-1\" d=\"M46.1049,53.0381a27.958,27.958,0,1,0-16.1406,5.1342H30.76c7.4372.1262,12.5491,2.596,15.8134,6.6087,1.0959-.7211,9.0223-7.5445,9.0223-7.5445S52.7578,53.8086,46.1049,53.0381ZM29.3473,51.0165A21.0964,21.0964,0,0,0,44.7752,37.84c-.0154-.01-.034-.005-.0527.01a16.6274,16.6274,0,1,1,.0016-15.278c.0188.0136.0375.0188.0511.005A21.1048,21.1048,0,0,0,29.3473,9.4029c.2318-.0085.4618-.0171.6954-.0171a20.8258,20.8258,0,0,1,0,41.65C29.8091,51.0353,29.5791,51.0233,29.3473,51.0165Z\"></path>";
+                string svgViewBox = $"0 0 200.9174 66.055";
+                string height = $"66.055";
+                string width = $"200.9174";
+            }
+
+            <gds-logo role="presentation" focusable="false" url="https://www.cqc.org.uk" url-title="Go to the CQC homepage"
+                      svg-path=@svgPath svg-viewbox=@svgViewBox
+                      svg-image-height=@height svg-image-width=@width
+                      image-url="/images/logocqc-transparent.png" alt-text="Care Quality Commission logo"></gds-logo>
+
+            <gds-header-content>
+                @if (ViewBag.HideSiteTitle != true)
+                {
+                    <a href="@config.GFCUrls.StartPage" class="govuk-header__link govuk-header__link--service-name">
+                        @config.AppName
+                    </a>
+                }
+            </gds-header-content>
+
+        </gds-header-container>
+
+    </gds-header>
+
+
+    <gds-container>
+        @if (ViewBag.HideHelpLink != true)
+        {
+            <gds-phase-banner phase="Beta" text="This is a new form. If you find something wrong with it, {0}" url-text="tell us and help us improve it." url="@Url.Action("Feedback", "Help")"></gds-phase-banner>
+        }
+
+        <partial name="_BackLink" />
+
+        <partial name="_HomeLink" model='new BreadCrumbs() { Crumbs = new List<Crumb>() {new Crumb() { Text= "Home" , Url="/"} } }' , view-data="ViewData" />
+
+        <gds-main-wrapper id="content" role="main">
+
+            @RenderBody()
+
+        </gds-main-wrapper>
+
+    </gds-container>
+
+    @RenderSection("Footer", required: false)
+
+    @{
+        await Html.RenderPartialAsync("_ContactInfo");
+    }
+    
+    <footer class="govuk-footer " role="contentinfo">
+
+        <div class="govuk-width-container ">
+
+            <environment names="Local">
+                <div id="debug-info" class="govuk-footer__section"></div>
+            </environment>
+
+            <div class="govuk-footer__meta">
+                <div class="govuk-footer__meta-item govuk-footer__meta-item--grow">
+                    <h2 class="govuk-visually-hidden">Support links</h2>
+                    <ul class="govuk-footer__inline-list">
+                        <li class="govuk-footer__inline-list-item">
+                            <a class="govuk-footer__link" href="@Url.Action("Index", "HowWeUseYourInformation")" target="_blank">
+                                How we handle information<span class="govuk-visually-hidden"> (opens in new window)</span>
+                            </a>
+                        </li>
+                        <li class="govuk-footer__inline-list-item">
+                            <a class="govuk-footer__link" href="@Url.Action("Index", "Accessibility")" target="_blank">
+                                Accessibility<span class="govuk-visually-hidden"> (opens in new window)</span>
+                            </a>
+                        </li>
+                        <li class="govuk-footer__inline-list-item">
+                            <a class="govuk-footer__link" href="https://www.cqc.org.uk/cookies" target="_blank">
+                                Cookies<span class="govuk-visually-hidden"> (opens in new window)</span>
+                            </a>
+                        </li>
+                        <li class="govuk-footer__inline-list-item">
+                            <a class="govuk-footer__link" href="https://www.cqc.org.uk/about-us/our-policies/terms-conditions" target="_blank">
+                                Terms and conditions<span class="govuk-visually-hidden"> (opens in new window)</span>
+                            </a>
+                        </li>
+                        <li class="govuk-footer__inline-list-item">
+                            © Care Quality Commission
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="~/js/govuk-frontend-2.13.0.min.js" asp-append-version="true"></script>
+    <script>window.GOVUKFrontend.initAll();</script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <environment names="Local">
+        <script>
+            $(document).ready(function() {
+                $("#debug-info").load("@Url.Action("Index", "DebugInfo", new {id = ViewContext.RouteData.Values["id"] })");
+            });
+        </script>
+    </environment>
+
+    @RenderSection("Scripts", required: false)
+
+</body>
+</html>

@@ -1,0 +1,21 @@
+{
+  "@odata.context": "https://provider-locations-prod-search.search.windows.net/$metadata#indexers/$entity",
+  "@odata.etag": "\"0x8D7B48AEC0B6A91\"",
+  "name": "gfc-search-indexer-v2",
+  "description": "GFC Search Indexer v2",
+  "dataSourceName": "gfc-search-connection",
+  "skillsetName": null,
+  "targetIndexName": "gfc-search-index-v2",
+  "disabled": null,
+  "schedule": null,
+  "parameters": {
+    "batchSize": null,
+    "maxFailedItems": 10,
+    "maxFailedItemsPerBatch": 5,
+    "base64EncodeKeys": false,
+    "configuration": {}
+  },
+  "fieldMappings": [],
+  "outputFieldMappings": [],
+  "cache": null
+}

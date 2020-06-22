@@ -1,0 +1,50 @@
+﻿
+@{
+    Layout = "_Layout";
+}
+
+<gds-row>
+
+    <gds-column desktop-size="TwoThirds" tablet-size="FullWidth">
+
+        <div class="govuk-panel govuk-panel--confirmation">
+            <h1 class="govuk-panel__title">
+                You've sent your feedback
+            </h1>
+            <div class="govuk-panel__body">
+                Your reference number
+                <br><strong>@ViewBag.Reference</strong>
+            </div>
+        </div>
+
+
+        <gds-heading heading-type="H3" text="What happens next"></gds-heading>
+        <gds-paragraph>
+            What people tell us about services helps us build a picture of the standard of care they give.
+        </gds-paragraph>
+        <gds-paragraph>
+            We'll look at the information you've given us. How we use it will depend on what you've said. For example, if you've told us about a serious concern we'll take action, like contacting or visiting the service.
+        </gds-paragraph>
+        <gds-paragraph>
+            If you've given us your email address, we'll email you to tell you when we've passed your feedback to the right person. This will be in the next 2 working days.
+        </gds-paragraph>
+
+        <gds-heading heading-type="H3" text="What you can do"></gds-heading>
+
+        <gds-paragraph>If your experience of care was bad, you can make a complaint to the service itself - if you haven't already.</gds-paragraph>
+
+        <gds-paragraph>
+            <a href="https://www.cqc.org.uk/contact-us/how-complain/complain-about-service-or-provider" class="govuk-link" target="_blank">How to complain to a health or care service<span class="govuk-visually-hidden"> (opens in new window)</span></a>
+        </gds-paragraph>
+
+        <gds-paragraph>
+            <a href="https://webdataforms.cqc.org.uk/Checkbox/SYEfeedback.aspx" class="govuk-link" target="_blank">What did you think of this form?<span class="govuk-visually-hidden"> (opens in new window)</span></a> (takes 30 seconds)
+        </gds-paragraph>
+
+        <gds-paragraph>
+            <a href="https://www.cqc.org.uk" class="govuk-link">Leave this form and go to the CQC homepage</a>
+        </gds-paragraph>
+
+    </gds-column>
+
+</gds-row>

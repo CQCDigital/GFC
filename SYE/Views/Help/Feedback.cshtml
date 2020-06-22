@@ -1,0 +1,45 @@
+﻿@using GDSHelpers
+@using Microsoft.AspNetCore.Http
+
+@model GDSHelpers.Models.FormSchema.PageVM
+
+@{
+    Layout = "_Layout";
+}
+
+<gds-row>
+
+    <gds-column desktop-size="TwoThirds" tablet-size="FullWidth">
+
+        <partial name="_SummaryErrors" for="@Model" />
+
+        <gds-heading heading-type="H1" text="Report a problem with this form"></gds-heading>
+
+        <p class="govuk-body">Use this form to tell us if:</p>
+        <ul class="govuk-list govuk-list--bullet">
+            <li>there was a technical problem</li>
+            <li>something didn't make sense, like you didn't understand one of our questions</li>
+        </ul>
+
+        <form asp-action="Feedback" asp-controller="Help" method="post">
+            @Html.AntiForgeryToken()
+            <input name="url-referer" id="url-referer" type="hidden" value="@(ViewBag.UrlReferer)" />
+            @if (Model.Questions != null)
+            {
+                foreach (var question in Model.Questions)
+                {
+                    @Html.GdsQuestion(question)
+                }
+            }
+            @if (Model.Buttons != null)
+            {
+                foreach (var button in Model.Buttons)
+                {
+                    @Html.GdsButton(button.ButtonType, button.ButtonText)
+                }
+            }
+        </form>
+
+    </gds-column>
+
+</gds-row>

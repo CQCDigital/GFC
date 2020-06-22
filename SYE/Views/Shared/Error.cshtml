@@ -1,0 +1,32 @@
+﻿@model ErrorViewModel
+@using SYE.ViewModels
+@inject Microsoft.Extensions.Options.IOptions<ApplicationSettings> _config
+@{
+    var config = _config.Value;
+    ViewData["Title"] = ViewBag.Title;
+}
+
+<gds-row>
+    <gds-column desktop-size="TwoThirds" tablet-size="FullWidth">
+
+        <gds-heading heading-type="H1" text="@(Model.ErrorTitle)"></gds-heading>
+
+        <gds-paragraph>
+            @(Model.ErrorMessage)
+            @if (Model.InsertLink)
+            {
+                @(Model.LinkPreMessage)
+                <gds-link class="govuk-link" link-text=@(Model.LinkMessage) href="@config.GFCUrls.StartPage"></gds-link>
+                @(Model.LinkPostMessage)
+            }
+
+        </gds-paragraph>
+
+        <gds-heading heading-type="H2" text="Get help with this form"></gds-heading>
+
+        <gds-paragraph>
+            You can get help on the phone if it's hard for you to do things online.
+        </gds-paragraph>
+
+    </gds-column>
+</gds-row>

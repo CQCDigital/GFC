@@ -1,0 +1,8 @@
+﻿@model GDSHelpers.Models.BreadCrumbs
+
+@if (ViewData["HomeLink"] != null && (bool)ViewData["HomeLink"])
+{
+    var homePageBreadCrumbLink = Model;
+
+    <gds-bread-crumbs bread-crumbs=homePageBreadCrumbLink></gds-bread-crumbs>
+}

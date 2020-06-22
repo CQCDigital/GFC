@@ -1,0 +1,20 @@
+{
+  "@odata.context": "https://provider-locations-prod-search.search.windows.net/$metadata#datasources/$entity",
+  "@odata.etag": "\"0x8D7B106663C1F5C\"",
+  "name": "gfc-provider-location-datasource",
+  "description": null,
+  "type": "cosmosdb",
+  "subtype": null,
+  "credentials": {
+    "connectionString": null
+  },
+  "container": {
+    "name": "ProviderLocations",
+    "query": null
+  },
+  "dataChangeDetectionPolicy": {
+    "@odata.type": "#Microsoft.Azure.Search.HighWaterMarkChangeDetectionPolicy",
+    "highWaterMarkColumnName": "_ts"
+  },
+  "dataDeletionDetectionPolicy": null
+}

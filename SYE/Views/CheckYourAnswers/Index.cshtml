@@ -1,0 +1,92 @@
+﻿@using Microsoft.AspNetCore.Http
+@using SYE.Helpers
+@model SYE.Models.CheckYourAnswersVm
+
+@{
+    Layout = "_Layout";
+}
+
+<gds-row>
+
+    <gds-column desktop-size="TwoThirds" tablet-size="FullWidth">
+
+        <gds-heading heading-type="H1" text="Check your answers before sending your feedback"></gds-heading>
+
+        <dl class="govuk-summary-list govuk-!-margin-bottom-9">
+
+            @{
+                var conditions = Model.FormVm.Pages
+                                    .SelectMany(m => m.Questions)
+                                    .Where(m => m.ShowWhen != null)
+                                    .Select(m => m.ShowWhen).ToList();
+            }
+
+            @foreach (var pageVm in Model.FormVm.Pages.Where(m => Model.PageHistory.Contains(m.PageId)).OrderBy(m => Model.PageHistory.IndexOf(m.PageId)))
+            {
+                foreach (var question in pageVm.Questions.Where(m => !string.IsNullOrEmpty(m.Answer)))
+                {
+                    if (conditions.Any(m => m.QuestionId == question.QuestionId && m.Answer == question.Answer && m.HideParentQuestionInCheckYourAnswers))
+                    {
+                        continue;
+                    }
+
+                    <div class="govuk-summary-list__row">
+                        <dt class="govuk-summary-list__key">
+
+                            @if (!string.IsNullOrEmpty(question.ShortQuestion))
+                            {
+                                <text>@question.ShortQuestion.StripHtml()</text>
+                            }
+                            else
+                            {
+                                if (!string.IsNullOrEmpty(question.Question))
+                                {
+                                    <text>@question.Question.StripHtml()</text>
+                                }
+                                else
+                                {
+                                    <text>@pageVm.PageName.StripHtml()</text>
+                                }
+                            }
+                        </dt>
+                        <dd id="CYA_@question.QuestionId" class="govuk-summary-list__value">
+                            <span class="gfc-multi-line-text">@question.Answer</span>
+                        </dd>
+                        <dd class="govuk-summary-list__actions">
+                            <a class="govuk-link" href="@Url.Action("Index", "Form", new { id = pageVm.PageId} )">
+                                Change
+                                <span class="govuk-visually-hidden"> @question.Question.StripHtml()</span>
+                            </a>
+                        </dd>
+                    </div>
+                }
+            }
+
+        </dl>
+
+    </gds-column>
+
+</gds-row>
+
+<gds-row>
+
+    <gds-column desktop-size="TwoThirds" tablet-size="FullWidth">
+
+        <form id="submit-your-answers" asp-action="Index" method="post">
+
+            <gds-heading heading-type="H2" text="Now send your feedback"></gds-heading>
+            @Html.HiddenFor(m => m.SendConfirmationEmail)
+
+            <p class="govuk-body">
+                You are about to send feedback about @Model.LocationName.
+            </p>
+
+            <gds-button data-prevent-double-click="true" button-id="btn-submit" button-text="Submit feedback" button-type="Submit"></gds-button>
+
+        </form>
+
+    </gds-column>
+
+</gds-row>
+
+<partial name="_Monitor" />

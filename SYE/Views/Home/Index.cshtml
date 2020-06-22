@@ -1,0 +1,59 @@
+﻿@using Microsoft.Extensions.Options
+@using SYE.ViewModels 
+@inject IOptions<ApplicationSettings> Configuration
+
+@{
+    Layout = "_Layout";
+}
+
+<gds-row>
+
+    <gds-column tablet-size="TwoThirds">
+
+        <gds-heading heading-type="H1" text="Give feedback on care" caption="TEST START PAGE"></gds-heading>
+        <gds-paragraph>Use this form to tell us about:</gds-paragraph>
+        <ul class="govuk-list govuk-list--bullet">
+            <li>an experience of care - it can be good or bad</li>
+            <li>a concern about a service you work for</li>
+        </ul>
+
+        <gds-paragraph>This is different from making a formal complaint. To <a href="https://www.cqc.org.uk/contact-us/how-complain/complain-about-service-or-provider" class="govuk-link" target="_blank">make a formal complaint<span class="govuk-visually-hidden"> (opens in new window)</span></a>, you must contact the service itself.</gds-paragraph>
+
+
+        <gds-warning-text message="Call 999 if there's an immediate risk of harm or abuse" warning-id=""></gds-warning-text>
+
+        <form asp-controller="Search" asp-action="Index" method="get">
+            <p class="govuk-body"><gds-button button-status="Enabled" button-text="Start now" button-type="Submit" start-now="true"></gds-button></p>
+        </form>
+       
+        <h2 class="govuk-heading-m">Your feedback helps make care better</h2>
+        <gds-paragraph>
+            We use what people tell us to understand the quality of care they get from services like care homes, care agencies, hospitals and GPs. It helps make care better for everybody.
+        </gds-paragraph>
+        <gds-paragraph>We look at it alongside other information. For example, information from the service itself or what we found when we last visited them.</gds-paragraph>
+
+        <h2 class="govuk-heading-m">We may want to contact you</h2>
+        <gds-paragraph>You do not have to give us your name or contact details. But it's more likely we can take action if you do.</gds-paragraph>
+        <gds-paragraph>Find out <a href="@Url.Action("Index", "HowWeUseYourInformation" )" target="_blank" class="govuk-link">how we handle personal information<span class="govuk-visually-hidden"> (opens in new window)</span></a> like contact details.</gds-paragraph>
+
+    </gds-column>
+
+    <gds-column tablet-size="OneThird">
+
+        <aside class="app-related-items" role="complementary">
+
+            <h2 class="govuk-heading-m">Related content</h2>
+
+            <gds-paragraph>
+                <gds-link class="govuk-link app-related-items-font-resize" target="_blank" add-hidden-text="true" link-id="related-content" link-text="How to make a formal complaint to a service or provider" href="https://www.cqc.org.uk/contact-us/how-complain/complain-about-service-or-provider"></gds-link>
+            </gds-paragraph>
+
+            <gds-paragraph>
+                <gds-link class="govuk-link app-related-items-font-resize" target="_blank" add-hidden-text="true" link-id="regulated-services" link-text="Find out which types of service we regulate" href="https://www.cqc.org.uk/what-we-do/services-we-regulate/services-we-regulate"></gds-link>
+            </gds-paragraph>
+
+        </aside>
+
+    </gds-column>
+
+</gds-row>

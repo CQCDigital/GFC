@@ -1,0 +1,20 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@using Microsoft.Extensions.Options
+@using SYE.ViewModels
+
+@inject IOptions<ApplicationSettings> Configuration
+
+@{
+    var telephone = Configuration.Value.GetHelp.ContactNumber;
+    var openingHours = Configuration.Value.GetHelp.ContactHours;
+    var excludingHours = Configuration.Value.GetHelp.ContactExcluding;
+}
+
+<div class="need-help-wrapper">
+    <div class="need-help">
+        <h2 class="need-help-question">Need help with this form?</h2>
+        <p class="need-help-info">Telephone: @($"{telephone} - {openingHours} - {excludingHours}")</p>
+    </div>
+</div>

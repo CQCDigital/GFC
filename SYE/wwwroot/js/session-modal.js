@@ -1,0 +1,283 @@
+﻿/**
+  * Settings
+  */
+var settings = {
+
+    // Timings
+    pingInterval: 5 * 1000,
+    checkSession: 1 * 1000,
+    sessionDuration: 60 * 60 * 1000,
+    modalCountDown: 5 * 60 * 1000,
+    gracePeriod: 5 * 1000,
+
+    // Urls
+    pingUrl: '@Url.Action("Ping", "Monitor")',
+    timeoutUrl: '@Url.Action("Index", "Session")',
+    logUrl: '@Url.Action("Log", "Monitor")',
+    pathname: window.location.pathname,
+
+    // Ids
+    modal: document.querySelector('dialog'),
+    modalId: '#js-modal-dialog',
+    timerId: '#gfc-modal-timer',
+
+    // Logging
+    outputLog: false,
+
+    // Common Vars
+    lastInput: null,
+    modalOpen: false,
+    sessionCheckFct: null,
+    timerFct: null,
+    lastFocusedEl: null
+
+};
+
+/**
+ * Save the last focused element
+ */
+function saveLastFocusedEl() {
+    settings.lastFocusedEl = document.activeElement;
+    if (!settings.lastFocusedEl || settings.lastFocusedEl === document.body) {
+        settings.lastFocusedEl = null;
+    } else if (document.querySelector) {
+        settings.lastFocusedEl = document.querySelector(':focus');
+    }
+}
+
+
+/**
+ * Restore the last focused element when the modal is hidden
+ */
+function setFocusOnLastFocusedEl() {
+    if (settings.lastFocusedEl) {
+        window.setTimeout(function () {
+            settings.lastFocusedEl.focus();
+        }, 0);
+    }
+}
+
+
+/**
+ * Gets the current Date
+ */
+function getDate() {
+    return new Date();
+}
+
+
+/**
+ * Keep Alive Function by Pinging Api
+ */
+$(document).on('touchstart click keydown mousemove scroll', function (event) {
+    settings.lastInput = getDate().getTime();
+});
+
+
+/**
+ * Start the ping timer
+ */
+function startPing() {
+    setInterval(function () {
+        var d = getDate();
+        var currentTicks = getDate().getTime();
+        if (currentTicks - settings.lastInput < settings.pingInterval) {
+            if (settings.outputLog) console.log("PINGING THE API");
+            $.get(settings.pingUrl, function () { });
+            settings.lastInput = currentTicks;
+        }
+    }, settings.pingInterval);
+}
+
+
+/**
+ * Check for inactivity
+ */
+function startSessionCheck() {
+    if (settings.sessionCheckFct !== null) return;
+    settings.lastInput = getDate().getTime();
+    settings.sessionCheckFct = setInterval(function () {
+
+        var d = getDate();
+        var currentTime = d.getTime();
+        var timeLeft = (settings.lastInput + settings.sessionDuration) - currentTime;
+
+        if (settings.outputLog) console.log("TIME LEFT TIL MODAL: " + Math.floor(timeLeft / 1000) + " secs");
+
+        if (currentTime > settings.lastInput + settings.sessionDuration) {
+            startTimer();
+            showModal();
+            stopSessionCheck();
+        }
+
+    },
+        settings.checkSession);
+    if (settings.outputLog) console.log("SESSION CHECK STARTED");
+}
+
+
+/**
+ * Starts the Timer Function
+ */
+function startTimer() {
+
+    if (settings.timerFct !== null) return;
+
+    var now = getDate().getTime();
+    var target = now + settings.modalCountDown + settings.gracePeriod;
+
+    $(".gfc-modal-final-warning-text").hide();
+
+    settings.timerFct = setInterval(function () {
+
+        var counter = target - getDate().getTime();
+        var fakeCounter = counter - settings.gracePeriod;
+
+        // Time calculations for days, hours, minutes and seconds
+        var days = Math.floor(fakeCounter / (1000 * 60 * 60 * 24));
+        var hours = Math.floor((fakeCounter % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        var minutes = Math.floor((fakeCounter % (1000 * 60 * 60)) / (1000 * 60));
+        var seconds = Math.floor((fakeCounter % (1000 * 60)) / 1000);
+
+        if (settings.outputLog) console.log("TIMER : " + Math.floor(counter / 1000) + " secs");
+
+        //If the fake counter is > 0
+        if (fakeCounter > 0) {
+            if (minutes === 0) {
+                $(settings.timerId).html(seconds + " seconds");
+            } else {
+                $(settings.timerId).html(minutes + " minutes " + seconds + " seconds");
+            }
+        }
+
+        if (fakeCounter < 1) {
+            $(".gfc-modal-countdown-text").hide();
+            $(".gfc-modal-final-warning-text").show();
+            if (settings.outputLog) console.log("TIMER HIT ZERO");
+        }
+
+        //Allow 5 extra seconds
+        if (counter < 1) {
+            stopTimer();
+            location.href = settings.timeoutUrl;
+        };
+
+    }, 1000);
+    if (settings.outputLog) console.log("TIMER STARTED");
+}
+
+
+/**
+ * Stops the Timer Function
+ */
+function stopTimer() {
+    clearInterval(settings.timerFct);
+    settings.timerFct = null;
+    if (settings.outputLog) console.log("TIMER STOPPED");
+}
+
+
+/**
+ * Stop the Session Check Timer
+ */
+function stopSessionCheck() {
+    clearInterval(settings.sessionCheckFct);
+    settings.sessionCheckFct = null;
+    if (settings.outputLog) console.log("SESSION CHECK STOPPED");
+}
+
+
+/**
+ * Show the modal
+ */
+function showModal() {
+    settings.modalOpen = true;
+    saveLastFocusedEl();
+
+    $("body").addClass("modal-open");
+
+    try {
+        settings.modal.showModal();
+        settings.modal.focus();
+    } catch (err) {  /**/ };
+
+    $("#session-modal").addClass("gfc-modal-open");
+    if (document.querySelector('#content')) {
+        document.querySelector('#content').inert = true;
+        document.querySelector('#content').setAttribute('aria-hidden', 'true');
+    }
+    $.get(settings.logUrl, { ticks: getDate().getTime(), url: settings.pathname, action: "ModalShown" }, function (data, status) { });
+    if (settings.outputLog) console.log("MODAL SHOWN");
+}
+
+
+
+function restrictTabbing() {
+    var tabbable = $("body").find('#js-modal-dialog, #js-modal-dialog button');
+    var firstTabbable = tabbable.first();
+    var lastTabbable = tabbable.last();
+
+    /*redirect last tab to first input*/
+    lastTabbable.on('keydown', function (e) {
+        if (settings.modalOpen && (e.which === 9 && !e.shiftKey)) {
+            e.preventDefault();
+            firstTabbable.focus();
+        }
+    });
+
+    /*redirect first shift+tab to last input*/
+    firstTabbable.on('keydown', function (e) {
+        if (settings.modalOpen && (e.which === 9 && e.shiftKey)) {
+            e.preventDefault();
+            lastTabbable.focus();
+        }
+    });
+}
+
+
+/**
+ * Close Modal when Esc key used
+ */
+$(document).on("keydown", function (evt) {
+    if (evt.keyCode === 27) {
+        hideModal();
+    }
+});
+
+
+/**
+ * Hide the modal
+ */
+function hideModal() {
+
+    $("body").removeClass("modal-open");
+    try { settings.modal.close(); } catch (err) {  /**/ };
+
+    $("#session-modal").removeClass("gfc-modal-open");
+    if (document.querySelector('#content')) {
+        document.querySelector('#content').inert = false;
+        document.querySelector('#content').setAttribute('aria-hidden', 'false');
+    }
+    $(".gfc-modal-countdown-text").show();
+    $(".gfc-modal-final-warning-text").hide();
+    setFocusOnLastFocusedEl();
+
+    settings.modalOpen = false;
+    startSessionCheck();
+    stopTimer();
+    $.get(settings.logUrl, { ticks: getDate().getTime(), url: settings.pathname, action: "ModalHidden" }, function (data, status) { });
+    if (settings.outputLog) console.log("MODAL HIDDEN");
+}
+
+
+/**
+ * Starts the sessionCheck once the page has loaded
+ */
+$(document).ready(function () {
+    dialogPolyfill.registerDialog(settings.modal);
+
+    settings.lastInput = getDate().getTime();
+    startPing();
+    startSessionCheck();
+    restrictTabbing();
+});
