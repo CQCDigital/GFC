@@ -117,7 +117,7 @@
                 @if (Model.Facets.Count > 0)
                 {
                     <div class="govuk-details__text">
-                        <form id="frm_facets" asp-action="SearchResults" method="post">
+                        <form id="frm_facets" asp-action="ApplyFilter" method="post">
                             <div class="govuk-form-group govuk-checkboxes--small gfc-filter-items">
                                 @for (var index = 0; index < Model.Facets.Count; index++)
                                 {
@@ -259,7 +259,7 @@
     @*<div class="gfc-modal-overlay"></div>*@
     @*<div id="modalContent" class="css-dialog" aria-modal="true" role="dialog" tabindex="-1">
 
-        <form id="frm_facets_modal" asp-action="SearchResults" method="post">
+        <form id="frm_facets_modal" asp-action="ApplyFilter" method="post">
 
             <div class="modal-header-container">
                 <h1 class="govuk-heading-xl modal-title">Filter</h1>
@@ -308,7 +308,7 @@
     <div class="gfc-modal-overlay"></div>
     <div id="modalContent" class="css-dialog" aria-modal="true" role="dialog" tabindex="-1">
 
-        <form id="frm_facets_modal" asp-action="SearchResults" method="post">
+        <form id="frm_facets_modal" asp-action="ApplyFilter" method="post">
 
             <div class="modal-header-container">
                 <h1 class="govuk-heading-xl modal-title">Filter</h1>

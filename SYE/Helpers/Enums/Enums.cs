@@ -33,6 +33,11 @@
 		CQCIntegrationPayLoadNotExist = 577,
 		CQCIntegrationPayLoadNullError = 578,
 
-        ConfirmationPageOutOfSequence = 580
+        ConfirmationPageOutOfSequence = 580,
+
+		//Exit survey errors
+		ExitSurveyOutOfSequence = 590,
+        ExitSurveyPageLoadJsonError = 591,
+        ExitSurveySubmissionJsonError = 592,
 	}
 }

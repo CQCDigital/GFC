@@ -111,10 +111,8 @@ namespace SYE.Controllers
 
         [HttpPost]
         [Route("search/results")]//applies the filter & does a search
-        public IActionResult SearchResults(string search, List<SelectItem> facets = null, List<SelectItem> facetsModal = null)
+        public IActionResult ApplyFilter(string search, List<SelectItem> facets = null, List<SelectItem> facetsModal = null)
         {
-            _sessionService.SetLastPage("search/results");
-
             var cleanSearch = _gdsValidate.CleanText(search, true, restrictedWords, allowedChars);
             if (string.IsNullOrEmpty(cleanSearch))
                 return RedirectToAction("Index", new { isError = "true"});
@@ -131,9 +129,7 @@ namespace SYE.Controllers
                     selectedFacets = string.Join(',', facetsModal.Where(x => x.Selected).Select(x => x.Text).ToList());
             }
 
-            ViewBag.Title = "Results for " + cleanSearch + _config.Value.SiteTextStrings.SiteTitleSuffix;;
-
-            return GetSearchResult(cleanSearch, 1, selectedFacets);
+            return RedirectToAction(nameof(SearchResults), new { search = search, pageno = 1, selectedFacets = selectedFacets });
         }
 
 
@@ -250,6 +246,10 @@ namespace SYE.Controllers
                 vm.Facets = new List<SelectItem>();
                 vm.FacetsModal = new List<SelectItem>();
                 vm.ErrorMessage = errorMessage;
+                if (!string.IsNullOrWhiteSpace(search) && search.Length > _maxSearchChars)
+                {
+                    vm.ShowExceededMaxLengthMessage = true;
+                }
                 return View(vm);
             }
 

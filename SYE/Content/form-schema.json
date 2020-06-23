@@ -1,6 +1,6 @@
 {
-  "id": "710400afc0-ce7a-478e-91ee-9f99c3bae03c",
-  "version": "7.1.0",
+  "id": "711400afc0-ce7a-478e-91ee-9f99c3bae03c",
+  "version": "7.1.1",
   "form_name": "give-feedback-on-care",
   "last_modified": "ISODate(\"2020-05-12T00:00:00.000Z\")",
   "pages": [
@@ -749,7 +749,7 @@
           "validation": {
             "required": {
               "is_required": true,
-              "error_message": "Select the name of the charity that told you about this form or select ‘another charity’"
+              "error_message": "Select the name of the charity that told you about this form or select 'another charity'"
             },
             "is_errored": false,
             "error_message": ""

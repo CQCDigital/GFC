@@ -10,7 +10,7 @@
             <ul class="govuk-list govuk-error-summary__list">
                 @foreach (var item in Model.Questions?.Where(x => x.Validation.IsErrored))
                 {
-                    var href = item.InputType == "optionlist" || item.InputType == "checkboxlist" ? item.QuestionId + "-0" : item.QuestionId;
+                    var href = item.InputType == "optionlist" || item.InputType == "optionlist_small" || item.InputType == "checkboxlist" ? item.QuestionId + "-0" : item.QuestionId;
 
                     <li>
                         <a href="#@(href)" tabindex="1">@Html.Raw(item.Validation.ErrorMessage)</a>

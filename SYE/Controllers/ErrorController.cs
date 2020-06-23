@@ -126,6 +126,21 @@ namespace SYE.Controllers
                                        $"Path = {statusCodeResult?.OriginalPath}, " +
                                        $"QueryString = {statusCodeResult?.OriginalQueryString}");
                     return View("PageNotFound");
+
+                case 590:
+                    _logger.LogWarning($"{statusCode} Post-completion survey hit out of sequence. " +
+                                       $"Message = {message}, " +
+                                       $"Path = {statusCodeResult?.OriginalPath}, " +
+                                       $"QueryString = {statusCodeResult?.OriginalQueryString}");
+                    return View("PageNotFound");
+                case 591:
+                case 592:
+                    _logger.LogCritical($"{statusCode} Form json Not Found Error Occured. " +
+                                        $"Message = {message}, " +
+                                        $"Path = {statusCodeResult?.OriginalPath}, " +
+                                        $"QueryString = {statusCodeResult?.OriginalQueryString}");
+                    return View("GenericException");
+
                 default:
                     _logger.LogError("Other Type of Error Occured. " +
                                      $"The path {exceptionDetails.Path} " +

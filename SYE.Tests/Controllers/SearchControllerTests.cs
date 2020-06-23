@@ -129,7 +129,7 @@ namespace SYE.Tests.Controllers
             var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object);
             sut.Url = mockUrlHelper.Object;
             sut.TempData = tempData;
-            var result = sut.SearchResults("search", null);
+            var result = sut.SearchResults("search");
 
             //assert
             var viewResult = result as ViewResult;
@@ -169,7 +169,7 @@ namespace SYE.Tests.Controllers
             sut.Url = mockUrlHelper.Object;
             sut.TempData = tempData;
 
-            var result = sut.SearchResults("search", null);
+            var result = sut.SearchResults("search");
 
             //assert
             var viewResult = result as ViewResult;
@@ -202,7 +202,7 @@ namespace SYE.Tests.Controllers
             sut.Url = mockUrlHelper.Object;
             sut.TempData = tempData;
 
-            var result = sut.SearchResults(search, null);
+            var result = sut.SearchResults(search);
 
             //assert
             var viewResult = result as ViewResult;
@@ -223,7 +223,7 @@ namespace SYE.Tests.Controllers
             mockValidation.Setup(x => x.CleanText(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<List<string>>(), It.IsAny<HashSet<char>>())).Returns("abc");
             //act
             var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object);
-            Action act = () => sut.SearchResults("search", null);
+            Action act = () => sut.SearchResults("search");
             //assert
             act.Should().Throw<Exception>().Where(ex => ex.Data.Contains("GFCError"));
             mockService.Verify();
@@ -431,7 +431,11 @@ namespace SYE.Tests.Controllers
             sut.Url = mockUrlHelper.Object;
             sut.TempData = tempData;
 
-            var result = sut.SearchResults(search, facets, facetsModal);
+            //var result = sut.ApplyFilter(search, facets, facetsModal);
+            var redirectResult = sut.ApplyFilter(search, facets, facetsModal) as RedirectToActionResult;
+            var mySearch = ((object[])redirectResult.RouteValues.Values)[0];
+            var myFilter = ((object[])redirectResult.RouteValues.Values)[2];
+            var result = sut.SearchResults(mySearch.ToString(), 1, myFilter.ToString());
 
             //assert
             var viewResult = result as ViewResult;
@@ -513,7 +517,11 @@ namespace SYE.Tests.Controllers
             sut.Url = mockUrlHelper.Object;
             sut.TempData = tempData;
 
-            var result = sut.SearchResults(search, facets, facetsModal);
+            //var result = sut.ApplyFilter(search, facets, facetsModal);
+            var redirectResult = sut.ApplyFilter(search, facets, facetsModal) as RedirectToActionResult;
+            var mySearch = ((object[])redirectResult.RouteValues.Values)[0];
+            var myFilter = ((object[])redirectResult.RouteValues.Values)[2];
+            var result = sut.SearchResults(mySearch.ToString(), 1, myFilter.ToString());
 
             //assert
             var viewResult = result as ViewResult;
@@ -602,9 +610,13 @@ namespace SYE.Tests.Controllers
             sut.Url = mockUrlHelper.Object;
             sut.TempData = tempData;
 
-            var result = sut.SearchResults(search, facets, facetsModal);
+            var redirectResult = sut.ApplyFilter(search, facets, facetsModal) as RedirectToActionResult;
+            var mySearch = ((object[])redirectResult.RouteValues.Values)[0];
+            var myFilter = ((object[])redirectResult.RouteValues.Values)[2];
+            var result = sut.SearchResults(mySearch.ToString(), 1, myFilter.ToString());
 
             //assert
+            //var redirectResult = result as RedirectToActionResult;
             var viewResult = result as ViewResult;
 
             var model = viewResult.Model as SearchResultsVM;
@@ -834,7 +846,7 @@ namespace SYE.Tests.Controllers
             //act
             var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object);
             sut.ControllerContext = controllerContext;
-            var response = sut.SearchResults("searchString", null);
+            var response = sut.SearchResults("searchString");
             //assert
             var result = response as StatusResult;
             result.StatusCode.Should().Be(550);

@@ -21,6 +21,7 @@ namespace SYE.Controllers
         public IActionResult Index(string id)
         {
             var lastPage = _sessionService.GetLastPage();
+            _sessionService.SetLastPage("form/you-have-sent-your-feedback");
             if (lastPage == null || !lastPage.Contains("check-your-answers"))
             {
                 return GetCustomErrorCode(EnumStatusCode.ConfirmationPageOutOfSequence, "Confirmation Page hit out of sequence");

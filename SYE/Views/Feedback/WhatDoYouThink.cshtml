@@ -1,0 +1,39 @@
+﻿@using GDSHelpers
+@using Microsoft.AspNetCore.Http
+
+@model GDSHelpers.Models.FormSchema.PageVM
+
+@{
+    Layout = "_Layout";
+}
+
+<gds-row>
+
+    <gds-column desktop-size="TwoThirds" tablet-size="FullWidth">
+
+        <partial name="_SummaryErrors" for="@Model" />
+
+        <gds-heading heading-type="H1" class="govuk-!-margin-bottom-4" text="Tell us what you think of this form"></gds-heading>
+
+        <form asp-action="SubmitWhatDoYouThink" asp-controller="Feedback" method="post">
+            @Html.AntiForgeryToken()
+            <input name="url-referer" id="url-referer" type="hidden" value="@(ViewBag.UrlReferer)" />
+            @if (Model.Questions != null)
+            {
+                foreach (var question in Model.Questions)
+                {
+                    @Html.GdsQuestion(question)
+                }
+            }
+            @if (Model.Buttons != null)
+            {
+                foreach (var button in Model.Buttons)
+                {
+                    @Html.GdsButton(button.ButtonType, button.ButtonText)
+                }
+            }
+        </form>
+
+    </gds-column>
+
+</gds-row>
