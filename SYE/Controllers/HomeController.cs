@@ -104,6 +104,8 @@ namespace SYE.Controllers
 
             switch (staticPage)
             {
+                case "search":
+                    return RedirectToAction("Index", "Search");
                 case "how-we-handle-information":
                     return RedirectToAction("Index", "HowWeUseYourInformation");
                 case "accessibility":

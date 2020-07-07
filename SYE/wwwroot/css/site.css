@@ -214,6 +214,16 @@ html {
     word-break: normal !important;
 }
 
+.govuk-filter-button-blue {
+    color: #004E8A !important;
+}
+.govuk-filter-button-hide {
+    display: none;
+}
+.govuk-filter-button-blue:hover {
+        color: #2b8cc4 !important;
+}
+
 .paging-wrapper a {
     display: block;
     margin: 0 -15px;

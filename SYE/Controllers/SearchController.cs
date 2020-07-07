@@ -91,6 +91,7 @@ namespace SYE.Controllers
 
         [HttpGet]
         [Route("search/results")]//searches
+        [TypeFilter(typeof(RedirectionFilter))]
         public IActionResult SearchResults(string search, int pageNo = 1, string selectedFacets = "")
         {
             _sessionService.SetLastPage("search/results");
@@ -111,6 +112,7 @@ namespace SYE.Controllers
 
         [HttpPost]
         [Route("search/results")]//applies the filter & does a search
+        [TypeFilter(typeof(RedirectionFilter))]
         public IActionResult ApplyFilter(string search, List<SelectItem> facets = null, List<SelectItem> facetsModal = null)
         {
             var cleanSearch = _gdsValidate.CleanText(search, true, restrictedWords, allowedChars);

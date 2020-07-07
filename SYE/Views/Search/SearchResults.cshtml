@@ -105,7 +105,7 @@
     <gds-row>
         <div class="govuk-grid-column-full govuk-grid-column-one-third-from-desktop sticky-element-top hide-tablet-or-below">
             <a id="results-skiplink" href="#search-results" class="govuk-skip-link">Skip to results</a>
-            
+
             <details id="gfc-search-details" class="govuk-details" open>
                 <summary class="govuk-details__summary govuk-details__summaryboarder">
                     <span class="govuk-visually-hidden">Filter by type of service</span>
@@ -123,7 +123,7 @@
                                 {
                                     <div class="govuk-checkboxes__item">
 
-                                        <input class="govuk-checkboxes__input" asp-for="@Model.Facets[index].Selected" type="checkbox">
+                                        <input class="govuk-checkboxes__input" asp-for="@Model.Facets[index].Selected" type="checkbox" onchange="doSubmitIfDesktop(this, 'frm_facets')">
                                         <label class="govuk-label govuk-checkboxes__label gfc-filter-item" asp-for="@Model.Facets[index].Selected">
                                             @Model.Facets[index].Text
                                         </label>
@@ -134,7 +134,10 @@
                                 }
                             </div>
                             <input type="hidden" asp-for="Search" />
-                            <button type="submit" id="btn--filter" class="govuk-button link-button gfc-filter-apply-button">
+                            <button type="button" id="btn--filter-clear" onclick="clearFiltersAndSubmit('frm_facets');" class="govuk-button link-button gfc-filter-apply-button govuk-filter-button-blue govuk-filter-button-hide">
+                                Clear filter
+                            </button>
+                            <button type="submit" id="btn--filter" class="govuk-button link-button gfc-filter-apply-button govuk-filter-button-blue">
                                 Apply filter
                             </button>
                         </form>
@@ -259,46 +262,46 @@
     @*<div class="gfc-modal-overlay"></div>*@
     @*<div id="modalContent" class="css-dialog" aria-modal="true" role="dialog" tabindex="-1">
 
-        <form id="frm_facets_modal" asp-action="ApplyFilter" method="post">
+            <form id="frm_facets_modal" asp-action="ApplyFilter" method="post">
 
-            <div class="modal-header-container">
-                <h1 class="govuk-heading-xl modal-title">Filter</h1>
-                <gds-paragraph class="category">
-                    <a id="modal-close-btn-header" class="govuk-link modal-close-link show-hide-modal-link tabbable" onclick="hideModal()" tabindex="0" href="#content">Return to results</a>
-                </gds-paragraph>
-            </div>
+                <div class="modal-header-container">
+                    <h1 class="govuk-heading-xl modal-title">Filter</h1>
+                    <gds-paragraph class="category">
+                        <a id="modal-close-btn-header" class="govuk-link modal-close-link show-hide-modal-link tabbable" onclick="hideModal()" tabindex="0" href="#content">Return to results</a>
+                    </gds-paragraph>
+                </div>
 
-            <div class="modal-body-container">
-                <div class="govuk-width-container">
-                    <div class="govuk-form-group govuk-checkboxes--small">
+                <div class="modal-body-container">
+                    <div class="govuk-width-container">
+                        <div class="govuk-form-group govuk-checkboxes--small">
 
-                        @for (var index = 0; index < Model.FacetsModal.Count; index++)
-                        {
-                            <div class="govuk-checkboxes__item">
+                            @for (var index = 0; index < Model.FacetsModal.Count; index++)
+                            {
+                                <div class="govuk-checkboxes__item">
 
-                                <input class="govuk-checkboxes__input" asp-for="@Model.FacetsModal[index].Selected" type="checkbox">
-                                <label class="govuk-label govuk-checkboxes__label gfc-filter-item" asp-for="@Model.FacetsModal[index].Selected">
-                                    @Model.FacetsModal[index].Text
-                                </label>
-                                <input asp-for="@Model.FacetsModal[index].Selected" value="false" type="hidden" />
-                                <input asp-for="@Model.FacetsModal[index].Text" type="hidden" />
+                                    <input class="govuk-checkboxes__input" asp-for="@Model.FacetsModal[index].Selected" type="checkbox">
+                                    <label class="govuk-label govuk-checkboxes__label gfc-filter-item" asp-for="@Model.FacetsModal[index].Selected">
+                                        @Model.FacetsModal[index].Text
+                                    </label>
+                                    <input asp-for="@Model.FacetsModal[index].Selected" value="false" type="hidden" />
+                                    <input asp-for="@Model.FacetsModal[index].Text" type="hidden" />
 
-                            </div>
-                        }
-                        <input type="hidden" asp-for="Search" />
+                                </div>
+                            }
+                            <input type="hidden" asp-for="Search" />
 
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="modal-footer-container">
-                <div class="govuk-width-container">
-                    <button type="submit" id="modal-close-btn-main" class="govuk-button modal-close-btn tabbable">Apply Filter</button>
+                <div class="modal-footer-container">
+                    <div class="govuk-width-container">
+                        <button type="submit" id="modal-close-btn-main" class="govuk-button modal-close-btn tabbable">Apply Filter</button>
+                    </div>
                 </div>
-            </div>
 
-        </form>
-    </div>*@
+            </form>
+        </div>*@
 }
 <script src="~/lib/dialog-polyfill/dialog-polyfill.js"></script>
 <link href="~/css/filter-modal.css" rel="stylesheet" />
@@ -320,7 +323,7 @@
             <div class="modal-body-container">
                 <div class="govuk-width-container">
                     <div class="govuk-form-group govuk-checkboxes--small">
-
+                        <input type="hidden" asp-for="FacetsModal.Count" />
                         @for (var index = 0; index < Model.FacetsModal.Count; index++)
                         {
                             <div class="govuk-checkboxes__item">
@@ -349,3 +352,9 @@
         </form>
     </div>
 }
+<script>
+    $(document).ready(function () {
+        setFilterButtons();
+    });
+</script>
+

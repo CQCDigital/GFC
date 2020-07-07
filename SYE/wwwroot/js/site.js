@@ -96,3 +96,54 @@ function windowClose() {
     window.open('', '_parent', '');
     window.close();
 }
+
+//filter functions
+function setFilterButtons() {
+    if (isFilterActive()) {
+        $("#btn--filter-clear").show();
+    } else {
+        $("#btn--filter-clear").hide();
+    }
+    $("#btn--filter").hide();
+}
+function doSubmitIfDesktop(checkboxElem, formName) {
+    if (checkboxElem.checked) {
+        $("#btn--filter-clear").show();//don't really need this
+    }
+    if (!isMobile()) {
+        //This is a tablet or desktop so apply the filter
+        $("form#" + formName).submit();
+    }
+}
+function isMobile() {
+    if (window.matchMedia("(max-width: 767px)").matches) {
+        // The viewport is less than 768 pixels wide
+        //This is a mobile device
+        return true;
+    } else {
+        // The viewport is at least 768 pixels wide
+        //This is a tablet or desktop
+        return false;
+    }
+}
+function clearFiltersAndSubmit(formName) {
+    var num = $("#FacetsModal_Count").val();
+    var index;
+    for (index = 0; index < num; index++) {
+        var elem = $("#Facets_" + index.toString() + "__Selected");
+        elem.prop("checked", false);
+    }
+    $("form#" + formName).submit();
+}
+function isFilterActive() {
+    var returnVal = false;
+    var num = $("#FacetsModal_Count").val();
+    var index;
+    for (index = 0; index < num; index++) {
+        var elem = $("#Facets_" + index.toString() + "__Selected");
+        if (elem.attr("checked")) {
+            returnVal = true;
+        }
+    }
+    return returnVal;
+}
