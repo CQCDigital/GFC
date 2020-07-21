@@ -147,3 +147,46 @@ function isFilterActive() {
     }
     return returnVal;
 }
+// functions for the form
+function checkForJs() {
+    //looks for a text area with a class of auto-expand
+    //and attaches a js function
+    $("textarea.auto-expand").each(function () {
+        var textBox = document.getElementById(this.name);
+
+        textBox.onkeyup = function () {
+            var existingHeight = $(this).height();
+            var fontsize = 15;
+            var defaultScrollHeight = 210;
+            var lineBuffer = 6;
+            var rows = parseInt(countRows(textBox)) ;
+            //console.log(rows);
+            if (rows > lineBuffer) {
+                $(this).height(defaultScrollHeight + ((rows - lineBuffer) * fontsize));//add one row
+            } else {
+                if (existingHeight > defaultScrollHeight) {
+                    $(this).height(defaultScrollHeight);//shrink back to default 
+                }
+            }
+        }
+    });
+}
+function countRows(textArea) {
+    var text = textArea.value
+    //determine what the fontsize will be
+    var fontsize = 15;
+    //get number of characters that can fit in a row
+    var charsperrow = textArea.clientWidth / fontsize;
+    //get any hard returns
+    var hardreturns = text.split(/\r|\r\n|\n/);
+    var rows = hardreturns.length;
+    //loop through returns and calculate soft returns
+    for (var i = 0, len = rows; i < len; i++) {
+        var line = hardreturns[i];
+        var softreturns = Math.round(line.length / charsperrow);
+        //if softreturns is greater than 0, minus by 1 (hard return already counted)
+        softreturns = Math.round(softreturns > 0 ? (softreturns - 1) : 0);
+        rows += softreturns;
+    }
+    return Math.round(rows)-1;
+}

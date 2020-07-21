@@ -76,12 +76,17 @@ namespace SYE.Repository
         public string ContainerName { get; set; }
     }
 
+    /// <summary>
+    /// Data source for a specified object type
+    /// </summary>
+    /// <typeparam name="T">Class this database collection is mapped to</typeparam>
     public interface IAppConfiguration<T> where T : class
     {
         string DatabaseId { get; set; }
         string CollectionId { get; set; }
         string ConfigRecordId { get; set; }
     }
+    /// <inheritdoc cref="IAppConfiguration{T}"/>
     public class AppConfiguration<T> : IAppConfiguration<T> where T : class
     {
         public string DatabaseId { get; set; }

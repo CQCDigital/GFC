@@ -16,6 +16,7 @@ namespace SYE.ViewModels
     {
         public string StartPage { get; set; }
         public string RedirectUrl { get; set; }
+        public string ConfirmationPage { get; set; }
     }
 
     public class SiteTextStrings

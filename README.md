@@ -134,6 +134,10 @@ The following json schema contains a copy of our local secrets file (redacted of
       "DatabaseId": "gfc_db",
       "CollectionId": "config",
       "ConfigRecordId": "CONFIR-DOCUMEN-ID"
+    },
+    "ActionsDb": {
+      "DatabaseId": "gfc_db",
+      "CollectionId": "actions"
     }
   }
 }

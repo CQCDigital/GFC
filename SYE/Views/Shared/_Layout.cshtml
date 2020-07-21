@@ -53,13 +53,13 @@
         </script>
     }
 
-    <link rel="shortcut icon" href="~/assets/favicon.ico" type="image/vnd.microsoft.icon" />
-    <link rel="stylesheet" href="~/css/govuk-frontend-2.13.0.min.css" asp-append-version="true" />
+
+    <!--GDS Version 3.7 -->
+    <link rel="stylesheet" href="~/gds/3.7/govuk-frontend-3.7.0.min.css" asp-append-version="true" />
     <!--[if lt IE 9]>
-        <link href="~/css/govuk-frontend-ie8-2.13.0.min.css" rel="stylesheet" />
+        <link href="~/gds/3.7/govuk-frontend-ie8-3.7.0.min.css" rel="stylesheet" />
     <![endif]-->
-    <link rel="stylesheet" href="~/css/govuk-publishing-components-CQC-1.0.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/gds/3.7/gfc-overide.css" asp-append-version="true" />
 
     <partial name="_Favicons" />
 
@@ -147,7 +147,7 @@
     @{
         await Html.RenderPartialAsync("_ContactInfo");
     }
-    
+
     <footer class="govuk-footer " role="contentinfo">
 
         <div class="govuk-width-container ">
@@ -189,8 +189,9 @@
         </div>
     </footer>
 
-    <script src="~/js/govuk-frontend-2.13.0.min.js" asp-append-version="true"></script>
-    <script>window.GOVUKFrontend.initAll();</script>
+    <script src="~/gds/3.7/govuk-frontend-3.7.0.min.js" asp-append-version="true"></script>
+    <script>window.GOVUKFrontend.initAll()</script>
+
     <script src="~/js/site.js" asp-append-version="true"></script>
 
     <environment names="Local">

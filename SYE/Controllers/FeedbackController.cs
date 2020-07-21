@@ -12,8 +12,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using SYE.Helpers;
 using SYE.Helpers.Enums;
+using SYE.Helpers.Extensions;
 using SYE.Models;
+using SYE.Models.SubmissionSchema;
 using SYE.Repository;
 using SYE.Services;
 using SYE.ViewModels;
@@ -33,6 +36,7 @@ namespace SYE.Controllers
         private readonly IConfiguration _configuration;
         private readonly INotificationService _notificationService;
         private readonly ISessionService _sessionService;
+        private readonly IPfSurveySubmissionService _submissionService;
         
         public FeedbackController(
             ILogger<FeedbackController> logger,
@@ -40,7 +44,8 @@ namespace SYE.Controllers
             IGdsValidation gdsValidate,
             IConfiguration configuration,
             INotificationService notificationService,
-            ISessionService sessionService)
+            ISessionService sessionService,
+            IPfSurveySubmissionService submissionService)
         {
             _logger = logger;
             _formService = formService;
@@ -48,8 +53,11 @@ namespace SYE.Controllers
             _configuration = configuration;
             _notificationService = notificationService;
             _sessionService = sessionService;
+            _submissionService = submissionService;
         }
 
+        //Action methods
+        
         [HttpGet("what-do-you-think-of-this-form")]
         public IActionResult WhatDoYouThink([FromHeader(Name = "referer")] string urlReferer)
         {
@@ -61,7 +69,7 @@ namespace SYE.Controllers
 
             try
             {
-                var pageViewModel = GetPage();
+                var pageViewModel = GetForm().Pages.FirstOrDefault() ?? null;
                 if (pageViewModel == null)
                 {
                     return GetCustomErrorCode(EnumStatusCode.ExitSurveyPageLoadJsonError, "Error loading post-completion feedback form. Json form not loaded");
@@ -86,16 +94,19 @@ namespace SYE.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult SubmitWhatDoYouThink([FromForm(Name = "url-referer")] string urlReferer)
         {
+            //Validate and populate request
             var lastPage = _sessionService.GetLastPage();
             if (lastPage == null || !lastPage.Contains("you-have-sent-your-feedback"))
             {
                 return GetCustomErrorCode(EnumStatusCode.ExitSurveyOutOfSequence, "Post-completion survey hit out of //sequence");
             }
 
+            FormVM formViewModel = null;
             PageVM pageViewModel = null;
             try
             {
-                pageViewModel = GetPage();
+                formViewModel = GetForm();
+                pageViewModel = formViewModel.Pages.FirstOrDefault() ?? null;
 
                 if (pageViewModel == null)
                 {
@@ -120,6 +131,10 @@ namespace SYE.Controllers
                     return View(nameof(WhatDoYouThink), pageViewModel);
                 }
                 
+                //Post to database, email user
+                var submission = GenerateSinglePageSubmission(formViewModel);
+                submission = _submissionService.CreateAsync(submission).Result;
+
                 Task.Run(async () =>
                 {
                     await SendEmailNotificationAsync(pageViewModel)
@@ -133,6 +148,7 @@ namespace SYE.Controllers
                             .ConfigureAwait(false);
                 });
 
+                //Send user to thank you page
                 _sessionService.SetLastPage("what-do-you-think-of-this-form");
 
                 return RedirectToAction(nameof(ThanksForYourFeedback), new { urlReferer });
@@ -171,7 +187,8 @@ namespace SYE.Controllers
             return Redirect(model.Url);
         }
 
-        private PageVM GetPage()
+        //Private methods
+        private FormVM GetForm()
         {
             var formName = _configuration?.GetSection("FormsConfiguration:PostCompletionFeedbackForm").GetValue<string>("Name");
             var version = _configuration?.GetSection("FormsConfiguration:PostCompletionFeedbackForm").GetValue<string>("Version");
@@ -182,7 +199,7 @@ namespace SYE.Controllers
                     _formService.GetLatestFormByName(formName).Result :
                     _formService.FindByNameAndVersion(formName, version).Result;
 
-                return form.Pages.FirstOrDefault() ?? null;
+                return form;
             }
             catch
             {
@@ -228,6 +245,39 @@ namespace SYE.Controllers
             await _notificationService.NotifyByEmailAsync(
                     emailTemplateId, emailAddress, personalisation, null, null
                 ).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Generate a PostFeedbackVM from the specified schema for only one page
+        /// </summary>
+        /// <param name="formVm">Generic GFC form schema object</param>
+        /// <returns></returns>
+        private PfSurveyVM GenerateSinglePageSubmission(FormVM formVm)
+        {
+            var postFeedbackVm = new PfSurveyVM
+            {
+                Version = formVm.Version,
+                Id = Guid.NewGuid().ToString(),
+                DateCreated = new DateTime().GetLocalDateTime(),
+                FormName = formVm.FormName
+            };
+            var answers = new List<AnswerVM>();
+
+            var page = formVm.Pages.FirstOrDefault() ?? null;
+
+            answers.AddRange(page.Questions.Where(m => !string.IsNullOrEmpty(m.Answer))
+                .Select(question => new AnswerVM
+                {
+                    PageId = page.PageId,
+                    QuestionId = question.QuestionId,
+                    Question = string.IsNullOrEmpty(question.Question) ? page.PageName.StripHtml() : question.Question.StripHtml(),
+                    Answer = question.Answer.StripHtml(),
+                    DocumentOrder = question.DocumentOrder
+                }));
+
+            postFeedbackVm.Answers = answers;
+
+            return postFeedbackVm;
         }
     }
 }

@@ -8,48 +8,59 @@ using GDSHelpers.Models.FormSchema;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
+using NSubstitute;
 using SYE.Controllers;
 using SYE.Helpers;
 using SYE.Models;
 using SYE.Models.Response;
+using SYE.Models.SubmissionSchema;
 using SYE.Services;
+using SYE.Tests.Helpers;
 using Xunit;
 
 namespace SYE.Tests.Controllers
 {
     public class CheckYourAnswersControllerTests
     {
+        private MemoryConfigurationSource configData;
+
+        public CheckYourAnswersControllerTests()
+        {
+            configData = new MemoryConfigurationSource
+            {
+                InitialData = new List<KeyValuePair<string, string>>() {
+                    new KeyValuePair<string, string>("SubmissionDocument:DatabaseSeed", "10000")
+                }
+            };
+        }
+
+
         [Fact]
         public void Index_Should_Return_570_Error()
         {
             //arrange
             //Controller needs a controller context
             var httpContext = new DefaultHttpContext();
-            var controllerContext = new ControllerContext()
-            {
-                HttpContext = httpContext,
-            };
-            var mockServiceProvider = new Mock<IServiceProvider>();
+            var controllerContext = new ControllerContext() { HttpContext = httpContext };
+
             var mockLogger = new Mock<ILogger<CheckYourAnswersController>>();
             var mockSession = new Mock<ISessionService>();
+            var mockCosmosService = new Mock<ICosmosService>();
             var mockSubmissionService = new Mock<ISubmissionService>();
-            var mockConfigurationService = new Mock<IConfiguration>();
             var mockNotificationService = new Mock<INotificationService>();
             var mockDocumentService = new Mock<IDocumentService>();
             var mockPageHelper = new Mock<IPageHelper>();
-            mockServiceProvider.Setup(x => x.GetService(typeof(IPageHelper))).Returns(mockPageHelper.Object);
-            mockServiceProvider.Setup(x => x.GetService(typeof(ILogger<CheckYourAnswersController>))).Returns(mockLogger.Object);
-            mockServiceProvider.Setup(x => x.GetService(typeof(ISessionService))).Returns(mockSession.Object);
-            mockServiceProvider.Setup(x => x.GetService(typeof(ISubmissionService))).Returns(mockSubmissionService.Object);
-            mockServiceProvider.Setup(x => x.GetService(typeof(IConfiguration))).Returns(mockConfigurationService.Object);
-            mockServiceProvider.Setup(x => x.GetService(typeof(INotificationService))).Returns(mockNotificationService.Object);
-            mockServiceProvider.Setup(x => x.GetService(typeof(IDocumentService))).Returns(mockDocumentService.Object);
+            var mockConfig = new Mock<IConfiguration>();
 
-            var sut = new CheckYourAnswersController(mockServiceProvider.Object);
+            var sut = new CheckYourAnswersController(mockLogger.Object, mockSubmissionService.Object, mockCosmosService.Object,
+                                                     mockNotificationService.Object, mockDocumentService.Object, mockSession.Object,
+                                                     mockPageHelper.Object, mockConfig.Object);
+
             sut.ControllerContext = controllerContext;
             //act
             var result = sut.Index();
@@ -63,14 +74,14 @@ namespace SYE.Tests.Controllers
         public void Index_Should_Return_571_Error()
         {
             //arrange
-            FormVM formVm =new FormVM();
+            FormVM formVm = new FormVM();
             //Controller needs a controller context
             var httpContext = new DefaultHttpContext();
             var controllerContext = new ControllerContext()
             {
                 HttpContext = httpContext,
             };
-            var mockServiceProvider = new Mock<IServiceProvider>();
+
             var mockLogger = new Mock<ILogger<CheckYourAnswersController>>();
             var mockSession = new Mock<ISessionService>();
             var mockSubmissionService = new Mock<ISubmissionService>();
@@ -78,18 +89,16 @@ namespace SYE.Tests.Controllers
             var mockNotificationService = new Mock<INotificationService>();
             var mockDocumentService = new Mock<IDocumentService>();
             var mockPageHelper = new Mock<IPageHelper>();
-            mockServiceProvider.Setup(x => x.GetService(typeof(IPageHelper))).Returns(mockPageHelper.Object);
+            var mockCosmosService = new Mock<ICosmosService>();
+            var mockConfig = new Mock<IConfiguration>();
 
             mockSession.Setup(x => x.GetFormVmFromSession()).Returns(formVm);
-            mockSession.Setup(x => x.GetUserSession()).Returns(new UserSessionVM {LocationName = null});
-            mockServiceProvider.Setup(x => x.GetService(typeof(ILogger<CheckYourAnswersController>))).Returns(mockLogger.Object);
-            mockServiceProvider.Setup(x => x.GetService(typeof(ISessionService))).Returns(mockSession.Object);
-            mockServiceProvider.Setup(x => x.GetService(typeof(ISubmissionService))).Returns(mockSubmissionService.Object);
-            mockServiceProvider.Setup(x => x.GetService(typeof(IConfiguration))).Returns(mockConfigurationService.Object);
-            mockServiceProvider.Setup(x => x.GetService(typeof(INotificationService))).Returns(mockNotificationService.Object);
-            mockServiceProvider.Setup(x => x.GetService(typeof(IDocumentService))).Returns(mockDocumentService.Object);
+            mockSession.Setup(x => x.GetUserSession()).Returns(new UserSessionVM { LocationName = null });
 
-            var sut = new CheckYourAnswersController(mockServiceProvider.Object);
+            var sut = new CheckYourAnswersController(mockLogger.Object, mockSubmissionService.Object, mockCosmosService.Object,
+                                                     mockNotificationService.Object, mockDocumentService.Object, mockSession.Object,
+                                                     mockPageHelper.Object, mockConfig.Object);
+
             sut.ControllerContext = controllerContext;
             //act
             var result = sut.Index();
@@ -125,27 +134,24 @@ namespace SYE.Tests.Controllers
             {
                 HttpContext = httpContext,
             };
-            var mockServiceProvider = new Mock<IServiceProvider>();
+
             var mockLogger = new Mock<ILogger<CheckYourAnswersController>>();
             var mockSession = new Mock<ISessionService>();
+            var mockCosmosService = new Mock<ICosmosService>();
             var mockSubmissionService = new Mock<ISubmissionService>();
-            var mockConfigurationService = new Mock<IConfiguration>();
             var mockNotificationService = new Mock<INotificationService>();
             var mockDocumentService = new Mock<IDocumentService>();
             var mockPageHelper = new Mock<IPageHelper>();
+            var mockConfig = new Mock<IConfiguration>();
 
-            mockServiceProvider.Setup(x => x.GetService(typeof(IPageHelper))).Returns(mockPageHelper.Object);
             mockSession.Setup(x => x.GetFormVmFromSession()).Returns(formVm);
             mockSession.Setup(x => x.GetUserSession()).Returns(new UserSessionVM { LocationName = "location" });
             mockSession.Setup(x => x.GetNavOrder()).Returns(new List<string>());
-            mockServiceProvider.Setup(x => x.GetService(typeof(ILogger<CheckYourAnswersController>))).Returns(mockLogger.Object);
-            mockServiceProvider.Setup(x => x.GetService(typeof(ISessionService))).Returns(mockSession.Object);
-            mockServiceProvider.Setup(x => x.GetService(typeof(ISubmissionService))).Returns(mockSubmissionService.Object);
-            mockServiceProvider.Setup(x => x.GetService(typeof(IConfiguration))).Returns(mockConfigurationService.Object);
-            mockServiceProvider.Setup(x => x.GetService(typeof(INotificationService))).Returns(mockNotificationService.Object);
-            mockServiceProvider.Setup(x => x.GetService(typeof(IDocumentService))).Returns(mockDocumentService.Object);
 
-            var sut = new CheckYourAnswersController(mockServiceProvider.Object);
+            var sut = new CheckYourAnswersController(mockLogger.Object, mockSubmissionService.Object, mockCosmosService.Object,
+                                                     mockNotificationService.Object, mockDocumentService.Object, mockSession.Object,
+                                                     mockPageHelper.Object, mockConfig.Object);
+
             sut.ControllerContext = controllerContext;
             //act
             var result = sut.Index();
@@ -160,31 +166,24 @@ namespace SYE.Tests.Controllers
         {
             //arrange
             FormVM formVm = null;
+
             //Controller needs a controller context
             var httpContext = new DefaultHttpContext();
-            var controllerContext = new ControllerContext()
-            {
-                HttpContext = httpContext,
-            };
-            var mockServiceProvider = new Mock<IServiceProvider>();
+            var controllerContext = new ControllerContext() { HttpContext = httpContext };
+
             var mockLogger = new Mock<ILogger<CheckYourAnswersController>>();
             var mockSession = new Mock<ISessionService>();
+            var mockCosmosService = new Mock<ICosmosService>();
             var mockSubmissionService = new Mock<ISubmissionService>();
-            var mockConfigurationService = new Mock<IConfiguration>();
             var mockNotificationService = new Mock<INotificationService>();
             var mockDocumentService = new Mock<IDocumentService>();
             var mockPageHelper = new Mock<IPageHelper>();
-            mockServiceProvider.Setup(x => x.GetService(typeof(IPageHelper))).Returns(mockPageHelper.Object);
+            var mockConfig = new Mock<IConfiguration>();
 
-            mockSession.Setup(x => x.GetFormVmFromSession()).Returns(formVm);
-            mockServiceProvider.Setup(x => x.GetService(typeof(ILogger<CheckYourAnswersController>))).Returns(mockLogger.Object);
-            mockServiceProvider.Setup(x => x.GetService(typeof(ISessionService))).Returns(mockSession.Object);
-            mockServiceProvider.Setup(x => x.GetService(typeof(ISubmissionService))).Returns(mockSubmissionService.Object);
-            mockServiceProvider.Setup(x => x.GetService(typeof(IConfiguration))).Returns(mockConfigurationService.Object);
-            mockServiceProvider.Setup(x => x.GetService(typeof(INotificationService))).Returns(mockNotificationService.Object);
-            mockServiceProvider.Setup(x => x.GetService(typeof(IDocumentService))).Returns(mockDocumentService.Object);
+            var sut = new CheckYourAnswersController(mockLogger.Object, mockSubmissionService.Object, mockCosmosService.Object,
+                                                     mockNotificationService.Object, mockDocumentService.Object, mockSession.Object,
+                                                     mockPageHelper.Object, mockConfig.Object);
 
-            var sut = new CheckYourAnswersController(mockServiceProvider.Object);
             sut.ControllerContext = controllerContext;
             //act
             var result = sut.Index(new CheckYourAnswersVm());
@@ -198,38 +197,77 @@ namespace SYE.Tests.Controllers
         public void Index_Should_Return_574_Error()
         {
             //arrange
-            FormVM formVm = new FormVM();
-            //Task<int> reference = 123;
-            int reference = 0;
-            //Controller needs a controller context
-            var httpContext = new DefaultHttpContext();
-            var controllerContext = new ControllerContext()
+            FormVM formVm = new FormVM
             {
-                HttpContext = httpContext,
+                Version = "123",
+                Pages = new List<PageVM>
+                {
+                    new PageVM
+                    {
+                        PageId = "CheckYourAnswers",
+                        PreviousPages = new List<PreviousPageVM>
+                        {
+                            new PreviousPageVM {PageId = "what-you-want-to-tell-us-about", QuestionId = "", Answer = ""},
+                            new PreviousPageVM {PageId = "did-you-hear-about-this-form-from-a-charity", QuestionId = "", Answer = ""},
+                            new PreviousPageVM {PageId = "give-your-feedback", QuestionId = "", Answer = ""}
+                        }
+                    }
+                }
             };
-            var mockServiceProvider = new Mock<IServiceProvider>();
+            CheckYourAnswersVm cyaVm = new CheckYourAnswersVm
+            {
+                FormVm = formVm,
+                LocationName = "Test Location"
+            };
+            SubmissionVM submission = new SubmissionVM
+            {
+                Id = "abc-123"
+            };
+
             var mockLogger = new Mock<ILogger<CheckYourAnswersController>>();
-            var mockSession = new Mock<ISessionService>();
+            var mockSessionService = new Mock<ISessionService>();
+            var mockCosmosService = new Mock<ICosmosService>();
             var mockSubmissionService = new Mock<ISubmissionService>();
-            var mockConfigurationService = new Mock<IConfiguration>();
             var mockNotificationService = new Mock<INotificationService>();
             var mockDocumentService = new Mock<IDocumentService>();
             var mockPageHelper = new Mock<IPageHelper>();
-            mockServiceProvider.Setup(x => x.GetService(typeof(IPageHelper))).Returns(mockPageHelper.Object);
 
-            mockSession.Setup(x => x.GetFormVmFromSession()).Returns(formVm);
-            //mockSubmissionService.Setup(x => x.GenerateSnowmakerUserRefAsync()).ReturnsAsync(reference);
-            mockServiceProvider.Setup(x => x.GetService(typeof(ILogger<CheckYourAnswersController>))).Returns(mockLogger.Object);
-            mockServiceProvider.Setup(x => x.GetService(typeof(ISessionService))).Returns(mockSession.Object);
-            mockServiceProvider.Setup(x => x.GetService(typeof(ISubmissionService))).Returns(mockSubmissionService.Object);
-            mockServiceProvider.Setup(x => x.GetService(typeof(IConfiguration))).Returns(mockConfigurationService.Object);
-            mockServiceProvider.Setup(x => x.GetService(typeof(INotificationService))).Returns(mockNotificationService.Object);
-            mockServiceProvider.Setup(x => x.GetService(typeof(IDocumentService))).Returns(mockDocumentService.Object);
+            var fakeConfiguration = new ConfigurationBuilder().Add(configData).Build();
 
-            var sut = new CheckYourAnswersController(mockServiceProvider.Object);
+            mockSessionService.Setup(x => x.GetFormVmFromSession()).Returns(formVm);
+            mockSessionService.Setup(x => x.GetNavOrder()).Returns(new List<string>());
+            mockCosmosService.Setup(x => x.GetDocumentId(It.IsAny<string>())).Returns(0);
+            mockSubmissionService.Setup(x => x.CreateAsync(It.IsAny<SubmissionVM>())).ReturnsAsync(new SubmissionVM { Id = "123-abc" });
+
+            
+            var mockSession = new Mock<ISession>();
+            var key = "userdata";
+            var value = new byte[0];
+            mockSession.Setup(x => x.Set(key, It.IsAny<byte[]>())).Callback<string, byte[]>((k, v) => value = v);
+            mockSession.Setup(x => x.TryGetValue(key, out value)).Returns(true);
+
+
+            var mockContext = new Mock<HttpContext>();
+            var mockResponse = new Mock<HttpResponse>();
+            var requestMock = new Mock<HttpRequest>();
+
+            var httpContext = new DefaultHttpContext();
+            mockResponse.Setup(x => x.HttpContext).Returns(httpContext);
+            mockContext.Setup(s => s.Session).Returns(mockSession.Object);
+            mockContext.Setup(s => s.Response).Returns(mockResponse.Object);
+            mockContext.SetupGet(x => x.Request).Returns(requestMock.Object);
+
+            var controllerContext = new ControllerContext() { HttpContext = mockContext.Object };
+
+
+            var sut = new CheckYourAnswersController(mockLogger.Object, mockSubmissionService.Object, mockCosmosService.Object,
+                                                     mockNotificationService.Object, mockDocumentService.Object, mockSessionService.Object,
+                                                     mockPageHelper.Object, fakeConfiguration);
+
             sut.ControllerContext = controllerContext;
+
             //act
-            var result = sut.Index(new CheckYourAnswersVm());
+            var result = sut.Index(cyaVm);
 
             //assert
             var statusResult = result as StatusResult;

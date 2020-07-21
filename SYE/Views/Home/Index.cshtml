@@ -1,5 +1,5 @@
 ﻿@using Microsoft.Extensions.Options
-@using SYE.ViewModels 
+@using SYE.ViewModels
 @inject IOptions<ApplicationSettings> Configuration
 
 @{
@@ -19,13 +19,18 @@
 
         <gds-paragraph>This is different from making a formal complaint. To <a href="https://www.cqc.org.uk/contact-us/how-complain/complain-about-service-or-provider" class="govuk-link" target="_blank">make a formal complaint<span class="govuk-visually-hidden"> (opens in new window)</span></a>, you must contact the service itself.</gds-paragraph>
 
-
         <gds-warning-text message="Call 999 if there's an immediate risk of harm or abuse" warning-id=""></gds-warning-text>
 
-        <form asp-controller="Search" asp-action="Index" method="get">
-            <p class="govuk-body"><gds-button button-status="Enabled" button-text="Start now" button-type="Submit" start-now="true"></gds-button></p>
-        </form>
-       
+        <gds-paragraph>
+            <a href="@Url.Action("Index", "Search")" role="button" draggable="false" class="govuk-button govuk-button--start" data-module="govuk-button">
+                Start now
+                <svg class="govuk-button__start-icon" xmlns="http://www.w3.org/2000/svg" width="17.5" height="19" viewBox="0 0 33 40" aria-hidden="true" focusable="false">
+                    <path fill="currentColor" d="M0 0h13l20 20-20 20H0l20-20z" />
+                </svg>
+            </a>
+
+        </gds-paragraph>
+
         <h2 class="govuk-heading-m">Your feedback helps make care better</h2>
         <gds-paragraph>
             We use what people tell us to understand the quality of care they get from services like care homes, care agencies, hospitals and GPs. It helps make care better for everybody.

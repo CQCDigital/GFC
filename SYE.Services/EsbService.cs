@@ -10,6 +10,7 @@ using ESBHelpers.Config;
 using Microsoft.Extensions.Logging;
 using SYE.Models;
 using SYE.Models.Enums;
+using SYE.Models.Enum;
 
 namespace SYE.Services
 {
@@ -59,7 +60,7 @@ namespace SYE.Services
 
             if (response.Success && !string.IsNullOrWhiteSpace(response.EnquiryId))
             {
-                submission.Status = "Sent";
+                submission.Status = SubmissionStatus.Sent.ToString();
                 var sub = await _repo.UpdateAsync(submission.Id, submission);
             }
 

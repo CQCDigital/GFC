@@ -30,7 +30,7 @@ namespace SYE.Tests.Services
             var mockedConfig = new Mock<IAppConfiguration<ConfigVM>>();
             //var mockedIdGenerator = new Mock<IUidGeneratorService>();
             var mockedAppSettings = new Mock<IConfiguration>();
-            var sut = new SubmissionService(mockedRepo.Object, mockedConfigRepo.Object, mockedConfig.Object, mockedAppSettings.Object);
+            var sut = new SubmissionService(mockedRepo.Object); //, mockedConfigRepo.Object, mockedConfig.Object, mockedAppSettings.Object);
 
             mockedRepo.Setup(x => x.CreateAsync(It.IsAny<SubmissionVM>())).ReturnsAsync(new SubmissionVM { Id = id });
             //act
@@ -48,7 +48,7 @@ namespace SYE.Tests.Services
             var mockedConfig = new Mock<IAppConfiguration<ConfigVM>>();
             var mockedAppSettings = new Mock<IConfiguration>();
             //var mockedIdGenerator = new Mock<IUidGeneratorService>();
-            var sut = new SubmissionService(mockedRepo.Object, mockedConfigRepo.Object, mockedConfig.Object, mockedAppSettings.Object);
+            var sut = new SubmissionService(mockedRepo.Object);     //, mockedConfigRepo.Object, mockedConfig.Object, mockedAppSettings.Object);
 
             mockedRepo.Setup(x => x.CreateAsync(It.IsAny<SubmissionVM>())).ReturnsAsync(new SubmissionVM { Id = id });
             //act
@@ -67,7 +67,7 @@ namespace SYE.Tests.Services
             var mockedConfig = new Mock<IAppConfiguration<ConfigVM>>();
             var mockedAppSettings = new Mock<IConfiguration>();
             //var mockedIdGenerator = new Mock<IUidGeneratorService>();
-            var sut = new SubmissionService(mockedRepo.Object, mockedConfigRepo.Object, mockedConfig.Object, mockedAppSettings.Object);
+            var sut = new SubmissionService(mockedRepo.Object);     //, mockedConfigRepo.Object, mockedConfig.Object, mockedAppSettings.Object);
 
             mockedRepo.Setup(x => x.DeleteAsync(It.IsAny<string>()));
             // Act
@@ -86,7 +86,7 @@ namespace SYE.Tests.Services
             var mockedConfig = new Mock<IAppConfiguration<ConfigVM>>();
             var mockedAppSettings = new Mock<IConfiguration>();
             //var mockedIdGenerator = new Mock<IUidGeneratorService>();
-            var sut = new SubmissionService(mockedRepo.Object, mockedConfigRepo.Object, mockedConfig.Object, mockedAppSettings.Object);
+            var sut = new SubmissionService(mockedRepo.Object);     //, mockedConfigRepo.Object, mockedConfig.Object, mockedAppSettings.Object);
 
             var submissionVm = new SubmissionVM { Id = id };
             var doc = new DocumentResponse<SubmissionVM>(submissionVm);
@@ -107,7 +107,7 @@ namespace SYE.Tests.Services
             var mockedConfig = new Mock<IAppConfiguration<ConfigVM>>();
             var mockedAppSettings = new Mock<IConfiguration>();
             //var mockedIdGenerator = new Mock<IUidGeneratorService>();
-            var sut = new SubmissionService(mockedRepo.Object, mockedConfigRepo.Object, mockedConfig.Object, mockedAppSettings.Object);
+            var sut = new SubmissionService(mockedRepo.Object);     //, mockedConfigRepo.Object, mockedConfig.Object, mockedAppSettings.Object);
 
             var submissionVm = new SubmissionVM { Id = id };
             var doc = new DocumentResponse<SubmissionVM>(submissionVm);
@@ -128,7 +128,7 @@ namespace SYE.Tests.Services
             var mockedConfig = new Mock<IAppConfiguration<ConfigVM>>();
             var mockedAppSettings = new Mock<IConfiguration>();
             //var mockedIdGenerator = new Mock<IUidGeneratorService>();
-            var sut = new SubmissionService(mockedRepo.Object, mockedConfigRepo.Object, mockedConfig.Object, mockedAppSettings.Object);
+            var sut = new SubmissionService(mockedRepo.Object);     //, mockedConfigRepo.Object, mockedConfig.Object, mockedAppSettings.Object);
 
             var submissionVm = new SubmissionVM {Id = id};
             var query = new List<SubmissionVM> { submissionVm }.AsQueryable();
@@ -150,7 +150,7 @@ namespace SYE.Tests.Services
             var mockedConfig = new Mock<IAppConfiguration<ConfigVM>>();
             var mockedAppSettings = new Mock<IConfiguration>();
             //var mockedIdGenerator = new Mock<IUidGeneratorService>();
-            var sut = new SubmissionService(mockedRepo.Object, mockedConfigRepo.Object, mockedConfig.Object, mockedAppSettings.Object);
+            var sut = new SubmissionService(mockedRepo.Object);     //, mockedConfigRepo.Object, mockedConfig.Object, mockedAppSettings.Object);
 
             var submissionVm = new SubmissionVM { Id = id };
             var query = new List<SubmissionVM> { submissionVm }.AsQueryable();
@@ -172,7 +172,7 @@ namespace SYE.Tests.Services
             var mockedConfig = new Mock<IAppConfiguration<ConfigVM>>();
             var mockedAppSettings = new Mock<IConfiguration>();
             //var mockedIdGenerator = new Mock<IUidGeneratorService>();
-            var sut = new SubmissionService(mockedRepo.Object, mockedConfigRepo.Object, mockedConfig.Object, mockedAppSettings.Object);
+            var sut = new SubmissionService(mockedRepo.Object);     //, mockedConfigRepo.Object, mockedConfig.Object, mockedAppSettings.Object);
 
             var submissionVm = new SubmissionVM { Id = id };
             var query = new List<SubmissionVM> { submissionVm }.AsQueryable();
@@ -193,7 +193,7 @@ namespace SYE.Tests.Services
             var mockedConfig = new Mock<IAppConfiguration<ConfigVM>>();
             var mockedAppSettings = new Mock<IConfiguration>();
             //var mockedIdGenerator = new Mock<IUidGeneratorService>();
-            var sut = new SubmissionService(mockedRepo.Object, mockedConfigRepo.Object, mockedConfig.Object, mockedAppSettings.Object);
+            var sut = new SubmissionService(mockedRepo.Object);     //, mockedConfigRepo.Object, mockedConfig.Object, mockedAppSettings.Object);
 
             var submissionVm = new SubmissionVM { Id = id };
             var doc = new SubmissionVM();

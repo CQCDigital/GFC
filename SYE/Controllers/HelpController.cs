@@ -5,12 +5,12 @@ using System.Threading.Tasks;
 using System.Web.WebPages;
 using GDSHelpers;
 using GDSHelpers.Models.FormSchema;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using SYE.Helpers.Enums;
+using SYE.Helpers.Extensions;
 using SYE.Models;
 using SYE.Repository;
 using SYE.Services;
@@ -25,19 +25,23 @@ namespace SYE.Controllers
         private readonly IGdsValidation _gdsValidate;
         private readonly IConfiguration _configuration;
         private readonly INotificationService _notificationService;
+        private readonly ISessionService _sessionService;
+        private readonly IActionService _actionService;
 
         private readonly HashSet<char> _allowedChars = new HashSet<char>(@"1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.,'()?!#&$£%^@*;:+=_-/ ");
         private readonly List<string> _restrictedWords = new List<string> { "javascript", "onblur", "onchange", "onfocus", "onfocusin", "onfocusout", "oninput", "onmouseenter", "onmouseleave",
             "onselect", "onclick", "ondblclick", "onkeydown", "onkeypress", "onkeyup", "onmousedown", "onmousemove", "onmouseout", "onmouseover", "onmouseup", "onscroll", "ontouchstart",
             "ontouchend", "ontouchmove", "ontouchcancel", "onwheel" };
 
-        public HelpController(IServiceProvider service)
+        public HelpController(ILogger<HelpController> logger, IFormService formService, IGdsValidation gdsValidation, IConfiguration configuration, INotificationService notificationService, ISessionService sessionService, IActionService actionService)
         {
-            this._logger = service?.GetService<ILogger<HelpController>>() as ILogger;
-            this._formService = service?.GetService<IFormService>();
-            this._gdsValidate = service?.GetService<IGdsValidation>();
-            this._configuration = service?.GetService<IConfiguration>();
-            this._notificationService = service?.GetService<INotificationService>();
+            this._logger = logger;
+            this._formService = formService;
+            this._gdsValidate = gdsValidation;
+            this._configuration = configuration;
+            this._notificationService = notificationService;
+            this._sessionService = sessionService;
+            this._actionService = actionService;
         }
 
         [HttpGet("report-a-problem")]
@@ -101,8 +105,13 @@ namespace SYE.Controllers
 
                 var emailAddress = pageViewModel?
                     .Questions?.FirstOrDefault(x => x.QuestionId.Equals("email-address"))?
-                    .Answer ?? string.Empty; 
-                
+                    .Answer ?? string.Empty;
+
+                //record this action
+                var sessionId = _sessionService.GetSessionId();
+                var action = GetUserAction(pageViewModel, sessionId);
+                _actionService.CreateAsync(action);
+
                 Task.Run(async () =>
                 {
                     await SendEmailNotificationAsync(pageViewModel, urlReferer, emailAddress)
@@ -128,7 +137,7 @@ namespace SYE.Controllers
         [Route("feedback-thank-you")]
         public IActionResult FeedbackThankYou(string urlReferer)
         {
-            if (urlReferer.IsEmpty())
+            if (urlReferer.IsEmpty() || urlReferer.Contains(_configuration.GetSection("ApplicationSettings:GFCUrls").GetValue<string>("ConfirmationPage")))
                 urlReferer = _configuration.GetSection("ApplicationSettings:GFCUrls").GetValue<string>("StartPage");
 
             ViewBag.Title = "You've sent your feedback" + _configuration.GetSection("ApplicationSettings:SiteTextStrings").GetValue<string>("SiteTitleSuffix");
@@ -145,6 +154,33 @@ namespace SYE.Controllers
             return Redirect(model.Url);
         }
 
+        /// <summary>
+        /// builds the user action from the pageVM
+        /// </summary>
+        /// <param name="pageVm"></param>
+        /// <param name="sessionId">session id of the user</param>
+        /// <returns>user action object</returns>
+        private UserActionVM GetUserAction(PageVM pageVm, string sessionId)
+        {
+            //get what we need from the pageVm and session
+            var emailAddress = pageVm?
+                .Questions?.FirstOrDefault(x => x.QuestionId.Equals("email-address"))?
+                .Answer ?? string.Empty;
+            var feedback = pageVm?
+                .Questions?.FirstOrDefault(x => x.QuestionId.Equals("message"))?
+                .Answer ?? string.Empty;
+            var userName = pageVm?
+                .Questions?.FirstOrDefault(x => x.QuestionId.Equals("full-name"))?
+                .Answer ?? string.Empty;
+
+            //build the action data
+            var reportProblemVm = new ReportProblemVM { EmailAddress = emailAddress, UserName = userName, Feedback = feedback };
+            var actionData = JsonConvert.SerializeObject(reportProblemVm);
+
+            var action = new UserActionVM { Session = sessionId, Action = "Report a Problem", ActionData = actionData, ActionDate = new DateTime().GetLocalDateTime() };
+
+            return action;
+        }
         private PageVM GetPage()
         {
             var formName = _configuration?.GetSection("FormsConfiguration:ServiceFeedbackForm").GetValue<string>("Name");

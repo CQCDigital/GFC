@@ -24,6 +24,7 @@ using SYE.Helpers.DIAutoReg;
 using System.Reflection;
 using System.Collections.Generic;
 using System.Runtime.Loader;
+using SYE.Helpers;
 
 namespace SYE.MiddlewareExtensions
 {
@@ -31,6 +32,8 @@ namespace SYE.MiddlewareExtensions
     {
         public static void AddCustomServices(this IServiceCollection services, IConfiguration Config)
         {
+            var helper = new ServiceConfigurationHelper(services, Config);
+
             List<Assembly> allAssemblies = new List<Assembly>();
             string path = Path.GetDirectoryName(AppDomain.CurrentDomain.BaseDirectory);
             var compAssemblyPaths = Directory.GetFiles(path, "*SYE*.dll").ToList();
@@ -60,53 +63,34 @@ namespace SYE.MiddlewareExtensions
             {
                 throw new ConfigurationErrorsException($"Failed to load {nameof(notificationApiKey)} from application configuration.");
             }
-            services.TryAddSingleton<IAsyncNotificationClient>(_ => new NotificationClient(notificationApiKey));            
+            services.TryAddSingleton<IAsyncNotificationClient>(_ => new NotificationClient(notificationApiKey));
 
 
-
+            //Search and location service configuration
             var searchConfiguration = Config.GetSection("ConnectionStrings:SearchDb").Get<SearchConfiguration>();
-            if (searchConfiguration == null)
-            {
-                throw new ConfigurationErrorsException($"Failed to load {nameof(searchConfiguration)} from application configuration.");
-            }
+            helper.ConfirmPresent(searchConfiguration);
             services.TryAddSingleton<ICustomSearchIndexClient>(new CustomSearchIndexClient(searchConfiguration.SearchServiceName, searchConfiguration.IndexName, searchConfiguration.SearchApiKey));
 
-            
-
-
             var locationDbConfig = Config.GetSection("ConnectionStrings:LocationSearchCosmosDB").Get<LocationConfiguration>();
-            if (locationDbConfig == null)
-            {
-                throw new ConfigurationErrorsException($"Failed to load {nameof(locationDbConfig)} from application configuration.");
-            }
+            helper.ConfirmPresent(locationDbConfig);
             var locationDbPolicy = Config.GetSection("CosmosDBConnectionPolicy").Get<ConnectionPolicy>() ?? ConnectionPolicy.Default;
-
             
             SecureString secKey = new SecureString();
             locationDbConfig.Key.ToCharArray().ToList().ForEach(secKey.AppendChar);
             secKey.MakeReadOnly();
 
             services.TryAddSingleton<IDocClient>(new DocClient { Endpoint = locationDbConfig.Endpoint, Key = secKey, Policy = locationDbConfig.Policy});
-            
-
-
-
 
             var locationDb = Config.GetSection("CosmosDBCollections:LocationSchemaDb").Get<LocationConfig<Location>>();
-            if (locationDb == null)
-            {
-                throw new ConfigurationErrorsException($"Failed to load {nameof(locationDb)} from application configuration.");
-            }
+            helper.ConfirmPresent(locationDb);
             services.TryAddSingleton<ILocationConfig<Location>>(locationDb);
                              
             
-
+            //Cosmos database connection configuration
             var cosmosDatabaseConnectionConfiguration = Config.GetSection("ConnectionStrings:DefaultCosmosDB").Get<CosmosConnection>();
-            if (cosmosDatabaseConnectionConfiguration == null)
-            {
-                throw new ConfigurationErrorsException($"Failed to load {nameof(cosmosDatabaseConnectionConfiguration)} from application configuration.");
-            }
+            helper.ConfirmPresent(cosmosDatabaseConnectionConfiguration);
             var cosmosDatabaseConnectionPolicy = Config.GetSection("CosmosDBConnectionPolicy").Get<ConnectionPolicy>() ?? ConnectionPolicy.Default;
+
             services.TryAddSingleton<IDocumentClient>(
                 new DocumentClient(
                     new Uri(cosmosDatabaseConnectionConfiguration.Endpoint),
@@ -114,52 +98,32 @@ namespace SYE.MiddlewareExtensions
                     cosmosDatabaseConnectionPolicy
                 )
             );
-            
 
-
-            var formSchemaDatabase = Config.GetSection("CosmosDBCollections:FormSchemaDb").Get<AppConfiguration<FormVM>>();
-            if (formSchemaDatabase == null)
-            {
-                throw new ConfigurationErrorsException($"Failed to load {nameof(formSchemaDatabase)} from application configuration.");
-            }
-            services.TryAddSingleton<IAppConfiguration<FormVM>>(formSchemaDatabase);
-
-            
-            var submissionsDatabase = Config.GetSection("CosmosDBCollections:SubmissionsDb").Get<AppConfiguration<SubmissionVM>>();
-            if (submissionsDatabase == null)
-            {
-                throw new ConfigurationErrorsException($"Failed to load {nameof(submissionsDatabase)} from application configuration.");
-            }
-            services.TryAddSingleton<IAppConfiguration<SubmissionVM>>(submissionsDatabase);
+            //Add IAppConfiguration services for each database object
+            helper.CreateDbObjectSingleton<FormVM>("FormSchemaDb");
+            helper.CreateDbObjectSingleton<SubmissionVM>("SubmissionsDb");
+            helper.CreateDbObjectSingleton<DocumentVm>("SubmissionsDb");
+            helper.CreateDbObjectSingleton<ConfigVM>("ConfigDb");
+            helper.CreateDbObjectSingleton<PfSurveyVM>("PostFeedbackDb");
+            helper.CreateDbObjectSingleton<UserActionVM>("ActionsDb");
 
             
-
-            var configDatabase = Config.GetSection("CosmosDBCollections:ConfigDb").Get<AppConfiguration<ConfigVM>>();
-            if (configDatabase == null)
-            {
-                throw new ConfigurationErrorsException($"Failed to load {nameof(configDatabase)} from application configuration.");
-            }
-            services.TryAddSingleton<IAppConfiguration<ConfigVM>>(configDatabase);
-
-
-            
+            //ESB service
             var esbConfig = Config.GetSection("ConnectionStrings:EsbConfig").Get<EsbConfiguration<EsbConfig>>();
-            if (esbConfig == null)
-            {
-                throw new ConfigurationErrorsException($"Failed to load {nameof(esbConfig)} from application configuration.");
-            }
+            helper.ConfirmPresent(esbConfig);
             services.AddSingleton<IEsbConfiguration<EsbConfig>>(esbConfig);
-            services.TryAddSingleton<IEsbWrapper>(new  EsbWrapper(esbConfig));
+            services.TryAddSingleton<IEsbWrapper>(new EsbWrapper(esbConfig));
 
+
+            //Other general services
             IFileProvider physicalProvider = new PhysicalFileProvider(Directory.GetCurrentDirectory());
             services.AddSingleton<IFileProvider>(physicalProvider);
 
-            
-
             services.TryAddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+
             services.TryAddScoped(typeof(ILocationRepository<>), typeof(LocationRepository<>));
+
             services.TryAddScoped<IEsbConfiguration<EsbConfig>, EsbConfiguration<EsbConfig>>();
-           
         }
     }
 }

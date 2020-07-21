@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using SYE.Helpers.Extensions;
+using SYE.Models.Enum;
 using SYE.Models.SubmissionSchema;
 using SYE.Services;
 using System;
@@ -114,7 +115,7 @@ namespace SYE.Controllers
                 {
                     return NotFound();
                 }
-                if (submission.Status != "Saved")
+                if (submission.Status != SubmissionStatus.Saved.ToString())
                 {
                     return NotFound();
                 }
@@ -138,7 +139,7 @@ namespace SYE.Controllers
             }
             try
             {
-                var allIds = _esbService.GetAllSubmisions("Saved").Result.Select(x => x.SubmissionId);
+                var allIds = _esbService.GetAllSubmisions(SubmissionStatus.Saved.ToString()).Result.Select(x => x.SubmissionId);
                 var result = await GeneratePostsToCrm(allIds);
                 return Ok(result);
             }

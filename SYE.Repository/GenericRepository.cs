@@ -10,6 +10,10 @@ using Newtonsoft.Json;
 
 namespace SYE.Repository
 {
+    /// <summary>
+    /// CRUD operations on a class that maps to database via IAppConfiguration&lt;T&gt;
+    /// </summary>
+    /// <typeparam name="T">Class this repository interface maps to</typeparam>
     public interface IGenericRepository<T> where T : class
     {
         Task<T> CreateAsync(T item);
@@ -18,8 +22,10 @@ namespace SYE.Repository
         Task<T> GetAsync<TKey>(Expression<Func<T, bool>> predicate, Expression<Func<T, TKey>> ascKeySelector, Expression<Func<T, TKey>> descKeySelector);
         Task<IEnumerable<T>> FindByAsync(Expression<Func<T, bool>> predicate);
         Task<T> UpdateAsync(string id, T item);
+        T GetDocumentId(string guid);
     }
 
+    /// <inheritdoc cref="IGenericRepository{T}"/>
     public class GenericRepository<T> : IGenericRepository<T> where T : class
     {
         private readonly string _databaseId;
@@ -63,11 +69,13 @@ namespace SYE.Repository
 
         public async Task<IEnumerable<T>> FindByAsync(Expression<Func<T, bool>> predicate)
         {
-            var query = _client.CreateDocumentQuery<T>(
-                UriFactory.CreateDocumentCollectionUri(_databaseId, _collectionId),
-                new FeedOptions { MaxItemCount = -1, EnableCrossPartitionQuery = true })
+            var collectionUri = UriFactory.CreateDocumentCollectionUri(_databaseId, _collectionId);
+            var options = new FeedOptions { MaxItemCount = -1, EnableCrossPartitionQuery = true }; // -1 here is a dynamic item count.
+
+            var query = _client.CreateDocumentQuery<T>(collectionUri, options)
                 .Where(predicate)
                 .AsDocumentQuery();
+
             var results = new List<T>();
             while (query.HasMoreResults)
             {
@@ -82,13 +90,28 @@ namespace SYE.Repository
 
         public async Task<T> CreateAsync(T item)
         {
-            var result = await _client.CreateDocumentAsync(UriFactory.CreateDocumentCollectionUri(_databaseId, _collectionId), item).ConfigureAwait(false);
+            var collectionUri = UriFactory.CreateDocumentCollectionUri(_databaseId, _collectionId);
+            var result = await _client.CreateDocumentAsync(collectionUri, item).ConfigureAwait(false);
             return JsonConvert.DeserializeObject<T>(result.Resource.ToString());
+        }
+
+        public T GetDocumentId(string guid)
+        {
+            var query = new SqlQuerySpec($"SELECT DocumentId(c) as DocumentId FROM c WHERE c.id = @id");
+            query.Parameters = new SqlParameterCollection();
+            query.Parameters.Add(new SqlParameter("@id", guid));
+
+            var options = new FeedOptions { MaxItemCount = 1, EnableCrossPartitionQuery = true };
+            var collectionUri = UriFactory.CreateDocumentCollectionUri(_databaseId, _collectionId);
+            var results = _client.CreateDocumentQuery<Document>(collectionUri, query, options).AsEnumerable().ToList();
+
+            return JsonConvert.DeserializeObject<T>(results.FirstOrDefault().ToString());
         }
 
         public async Task<T> UpdateAsync(string id, T item)
         {
-            var result = await _client.ReplaceDocumentAsync(UriFactory.CreateDocumentUri(_databaseId, _collectionId, id), item).ConfigureAwait(false);
+            var documentUri = UriFactory.CreateDocumentUri(_databaseId, _collectionId, id);
+            var result = await _client.ReplaceDocumentAsync(documentUri, item).ConfigureAwait(false);
             return JsonConvert.DeserializeObject<T>(result.Resource.ToString());
         }
 

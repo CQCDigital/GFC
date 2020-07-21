@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
 using SYE.Helpers;
 using SYE.Models;
+using SYE.Models.Enum;
 using SYE.Models.SubmissionSchema;
 using SYE.Repository;
 using SYE.Services;
@@ -21,24 +22,30 @@ namespace SYE.Controllers
     public class CheckYourAnswersController : BaseController
     {
         private const string _pageId = "CheckYourAnswers";
-        private readonly ILogger _logger;
+        private readonly ILogger<CheckYourAnswersController> _logger;
         private readonly ISubmissionService _submissionService;
+        private readonly ICosmosService _cosmosService;
         private readonly IConfiguration _configuration;
         private readonly INotificationService _notificationService;
         private readonly IDocumentService _documentService;
         private readonly ISessionService _sessionService;
         private readonly IPageHelper _pageHelper;
 
-        public CheckYourAnswersController(IServiceProvider service)
+        public CheckYourAnswersController(ILogger<CheckYourAnswersController> logger, ISubmissionService submissionService,
+                                          ICosmosService cosmosService, INotificationService notificationService,
+                                          IDocumentService documentService, ISessionService sessionService,
+                                          IPageHelper pageHelper, IConfiguration configuration)
         {
-            _logger = service?.GetRequiredService<ILogger<CheckYourAnswersController>>() as ILogger;
-            _sessionService = service?.GetRequiredService<ISessionService>() ?? null;
-            _submissionService = service.GetRequiredService<ISubmissionService>();
-            _configuration = service?.GetRequiredService<IConfiguration>();
-            _notificationService = service.GetRequiredService<INotificationService>();
-            _documentService = service.GetRequiredService<IDocumentService>();
-            _pageHelper = service.GetRequiredService<IPageHelper>();
+            _logger = logger;
+            _submissionService = submissionService;
+            _cosmosService = cosmosService;
+            _notificationService = notificationService;
+            _documentService = documentService;
+            _sessionService = sessionService;
+            _pageHelper = pageHelper;
+            _configuration = configuration;
         }
+
 
         [HttpGet, Route("form/check-your-answers")]
         public IActionResult Index()
@@ -99,21 +106,37 @@ namespace SYE.Controllers
                     return GetCustomErrorCode(EnumStatusCode.CYASubmissionFormNullError, "Error submitting service feedback. Null or empty formVm.");
                 }
 
-                var reference = _submissionService.GenerateUniqueUserRefAsync().Result.ToString();
-                //var reference = _submissionService.GenerateSnowmakerUserRefAsync().Result.ToString();
 
-                if (string.IsNullOrWhiteSpace(reference))
-                {
-                    return GetCustomErrorCode(EnumStatusCode.CYASubmissionReferenceNullError, "Error submitting feedback!  Null or empty submission Id");
-                }
-                if (int.Parse(reference) == 0)
-                {
-                    return GetCustomErrorCode(EnumStatusCode.CYASubmissionReferenceNullError, "Error submitting feedback!  zero submission Id");
-                }
-
-                var submission = GenerateSubmission(formVm, reference);
-                submission.SubmissionId = reference;
+                // Create first instance of the record, with no gfc_id or word doc
+                var submission = GenerateSubmission(formVm, "", "");
                 submission = _submissionService.CreateAsync(submission).Result;
+
+                // Get the new Id
+                var documentId = _cosmosService.GetDocumentId(submission.Id);
+                var seed = _configuration.GetSection("SubmissionDocument").GetValue<int>("DatabaseSeed");
+
+                if (documentId == 0)
+                {
+                    return GetCustomErrorCode(EnumStatusCode.CYASubmissionReferenceNullError, "Error submitting feedback! Null or empty DocumentId");
+                }
+
+                var reference = (seed + documentId).ToString();
+
+                // Update GFC Id, this line is needed for the Word Doc             
+                submission.SubmissionId = reference;
+
+                // Create the Word Doc
+                var base64Doc = _documentService.CreateSubmissionDocument(submission);
+
+                // Update our model with the new id and word doc
+                submission.SubmissionId = reference;
+                submission.Base64Attachment = base64Doc;
+                submission.Status = SubmissionStatus.Saved.ToString();
+
+                // Update cosmos with our updated record
+                submission = _submissionService.UpdateAsync(submission.Id, submission).Result;
+
+
 
                 if (vm?.SendConfirmationEmail == true && !string.IsNullOrWhiteSpace(reference))
                 {
@@ -170,7 +193,7 @@ namespace SYE.Controllers
             }
         }
 
-        private SubmissionVM GenerateSubmission(FormVM formVm, string gfcReference)
+        private SubmissionVM GenerateSubmission(FormVM formVm, string gfcReference, string base64Doc)
         {
             var submissionVm = new SubmissionVM
             {
@@ -181,7 +204,8 @@ namespace SYE.Controllers
                 ProviderId = HttpContext.Session.GetString("ProviderId"),
                 LocationId = HttpContext.Session.GetString("LocationId"),
                 LocationName = HttpContext.Session.GetString("LocationName"),
-                SubmissionId = gfcReference
+                SubmissionId = gfcReference,
+                Status = SubmissionStatus.Created.ToString()
             };
             var answers = new List<AnswerVM>();
 
@@ -201,8 +225,7 @@ namespace SYE.Controllers
 
             submissionVm.Answers = answers;
 
-            submissionVm.Base64Attachment = _documentService.CreateSubmissionDocument(submissionVm);
-            submissionVm.Status = "Saved";
+            submissionVm.Base64Attachment = base64Doc;
 
             return submissionVm;
         }

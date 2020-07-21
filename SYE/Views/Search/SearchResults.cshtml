@@ -121,16 +121,16 @@
                             <div class="govuk-form-group govuk-checkboxes--small gfc-filter-items">
                                 @for (var index = 0; index < Model.Facets.Count; index++)
                                 {
-                                    <div class="govuk-checkboxes__item">
+                                <div class="govuk-checkboxes__item">
 
-                                        <input class="govuk-checkboxes__input" asp-for="@Model.Facets[index].Selected" type="checkbox" onchange="doSubmitIfDesktop(this, 'frm_facets')">
-                                        <label class="govuk-label govuk-checkboxes__label gfc-filter-item" asp-for="@Model.Facets[index].Selected">
-                                            @Model.Facets[index].Text
-                                        </label>
-                                        <input asp-for="@Model.Facets[index].Selected" value="false" type="hidden" />
-                                        <input asp-for="@Model.Facets[index].Text" type="hidden" />
+                                    <input class="govuk-checkboxes__input" asp-for="@Model.Facets[index].Selected" type="checkbox" onchange="doSubmitIfDesktop(this, 'frm_facets')">
+                                    <label class="govuk-label govuk-checkboxes__label gfc-filter-item" asp-for="@Model.Facets[index].Selected">
+                                        @Model.Facets[index].Text
+                                    </label>
+                                    <input asp-for="@Model.Facets[index].Selected" value="false" type="hidden" />
+                                    <input asp-for="@Model.Facets[index].Text" type="hidden" />
 
-                                    </div>
+                                </div>
                                 }
                             </div>
                             <input type="hidden" asp-for="Search" />

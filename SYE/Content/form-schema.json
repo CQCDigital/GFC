@@ -1,6 +1,6 @@
 {
-  "id": "711400afc0-ce7a-478e-91ee-9f99c3bae03c",
-  "version": "7.1.1",
+  "id": "723400afc0-ce7a-478e-91ee-9f99c3bae03c",
+  "version": "7.2.3",
   "form_name": "give-feedback-on-care",
   "last_modified": "ISODate(\"2020-05-12T00:00:00.000Z\")",
   "pages": [
@@ -282,6 +282,7 @@
           "html_content": "<p class=\"govuk-body-l\">The more detail you give us, the better.</p><p class=\"govuk-body\">It helps if you can tell us:</p><ul class=\"govuk-list govuk-list--bullet\"><li>examples of what they did well or could have done better</li><li>the people involved or their jobs</li></ul><label class=\"govuk-label\" for=\"give-your-feedback-01\">Enter your feedback about !!location_name!!</label><span id=\"give-your-feedback-01-hint gds-hint\" class=\"govuk-hint\">If you do not want the service to know who you are, avoid including things that can identify you</span><noscript><span id=\"session-warning\" class=\"govuk-hint\">If you stay on this page without clicking the continue button for more than one hour, we have to reset your form. This means you will lose the answers you've entered. We do this to make sure the information you enter is secure, for example if you're using a shared computer.</span></noscript>",
           "data_type": "string",
           "input_type": "textarea",
+          "input_css": "auto-expand",
           "input_height": "9",
           "validation": {
             "required": {
@@ -342,7 +343,7 @@
           "question_id": "can-we-contact-you-01",
           "document_order": 2,
           "question": "<h1 class=\"govuk-heading-xl\">Can we contact you for more information?</h1>",
-          "html_content": "<p class=\"govuk-body\">We may need to ask you for more information about what you've told us.</p><details class=\"govuk-details\" data-module=\"govuk-details\" role=\"group\"><summary class=\"govuk-details__summary\" role=\"button\" aria-controls=\"details-content-0\" aria-expanded=\"false\"><span class=\"govuk-details__summary-text\">How we treat your contact details</span></summary><div class=\"govuk-details__text\" id=\"details-content-0\" aria-hidden=\"true\"><p class=\"govuk-body\">We keep contact details confidential. The only exception is if we think someone's at risk of abuse or neglect or there's been a serious crime.</p><p class=\"govuk-body\">If that's the case, we may have to pass everything we know about it to the police, the council or another authority.</p><p class=\"govuk-body\">In rare cases, we may need to contact the service straight away to protect someone. We only do this if we think the person is in immediate danger. This might mean we need to give them your name and the name of the person who is at risk.</p><p class=\"govuk-body\">We'll only contact you about your feedback.</p><p class=\"govuk-body\">If you give us your email address, we can let you know when we've passed your feedback to the right person.</p></div></details><p class=\"govuk-body\">You do not need to give your contact details but it's more likely we can use your feedback if we can ask questions or check details with you.</p>",
+          "html_content": "<p class=\"govuk-body\">We may need to ask you for more information about what you've told us.</p><p class=\"govuk-body\">You do not have to give your details. But it's more likely we can use your feedback if we can ask questions or check things with you.</p><p class=\"govuk-body\">We keep contact details confidential. The only exception is if we think someone's at risk of abuse or neglect, or there's been a serious crime.</p><details class=\"govuk-details\" data-module=\"govuk-details\" role=\"group\"><summary class=\"govuk-details__summary\" role=\"button\" aria-controls=\"details-content-0\" aria-expanded=\"false\"><span class=\"govuk-details__summary-text\">When we can and can't keep contact details confidential</span></summary><div class=\"govuk-details__text\" id=\"details-content-0\" aria-hidden=\"true\"><p class=\"govuk-body\">If we think someone's at risk of abuse or neglect or there's been a serious crime, we may have to pass everything we know about it to the police, the council or another authority.</p><p class=\"govuk-body\">In rare cases, we may need to contact the service straight away to protect someone. We only do this if we think the person is in immediate danger. This might mean we need to give them your name and the name of the person who is at risk.</p><p class=\"govuk-body\">Even if these reasons apply, we'll only pass on your details if it's necessary.</p></div></details><p class=\"govuk-body\">We'll only contact you about your feedback.</p>",
           "short_question": "Can we contact you?",
           "data_type": "string",
           "input_type": "optionlist",
@@ -370,6 +371,29 @@
               "next_page_id": "contact-information"
             }
           ],
+          "answer": ""
+        },
+        {
+          "question_id": "can-we-contact-you-02",
+          "document_order": 15,
+          "question": "<div class=\"govuk-details__text\" id=\"details-content-0\"><p class=\"govuk-body\">It's more likely we can use what you've told us if we can contact you</p></div>",
+          "short_question": "Name of charity",
+          "data_type": "text",
+          "input_type": "conditionaltext",
+          "input_css": "govuk-!-width-two-thirds",
+          "show_when": {
+            "question_id": "can-we-contact-you-01",
+            "answer": "No",
+            "hide_parent_question_in_check_your_answers": false
+          },
+          "validation": {
+            "required": {
+              "is_required": false,
+              "error_message": ""
+            },
+            "is_errored": false,
+            "error_message": ""
+          },
           "answer": ""
         }
       ],
@@ -483,8 +507,8 @@
             },
             "min_length": {
               "type": "string",
-              "min": 11,
-              "error_message": "Telephone number must be between 11 and 100 characters"
+              "min": 10,
+              "error_message": "Telephone number must be between 10 and 100 characters"
             },
             "max_length": {
               "type": "string",
@@ -550,7 +574,7 @@
           "validation": {
             "required": {
               "is_required": true,
-              "error_message": "Select if you have already informed the service about your experience"
+              "error_message": "Select if you’ve already told the service about what happened"
             },
             "is_errored": false,
             "error_message": ""
