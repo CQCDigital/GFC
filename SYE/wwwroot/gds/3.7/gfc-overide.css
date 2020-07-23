@@ -93,6 +93,14 @@ form h1.govuk-heading-xl {
     margin-bottom: 15px;
 }
 
+html {
+    background-color: #dee0e2;
+}
+
+.govuk-main-wrapper {
+    min-height: calc(100vh - 431px);
+}
+
 
 /*
     CQC Header Styles

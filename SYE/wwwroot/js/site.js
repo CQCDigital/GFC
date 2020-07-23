@@ -157,11 +157,21 @@ function checkForJs() {
         textBox.onkeyup = function () {
             var existingHeight = $(this).height();
             var fontsize = 15;
+            var charsBuffer = 75
             var defaultScrollHeight = 210;
-            var lineBuffer = 6;
-            var rows = parseInt(countRows(textBox)) ;
+            var lineBuffer = 0;//we don't need this now but set it to zero in case we need it later
+
+            if (isMobile()) {
+                if (existingHeight > defaultScrollHeight) {
+                    $(this).height(defaultScrollHeight);//shrink back to default 
+                }
+                return;
+            }
+
+            var rows = parseInt(countRows(textBox));
+            var chars = textBox.value.length;
             //console.log(rows);
-            if (rows > lineBuffer) {
+            if (chars>=charsBuffer) {
                 $(this).height(defaultScrollHeight + ((rows - lineBuffer) * fontsize));//add one row
             } else {
                 if (existingHeight > defaultScrollHeight) {
@@ -172,7 +182,7 @@ function checkForJs() {
     });
 }
 function countRows(textArea) {
-    var text = textArea.value
+    var text = textArea.value;
     //determine what the fontsize will be
     var fontsize = 15;
     //get number of characters that can fit in a row
