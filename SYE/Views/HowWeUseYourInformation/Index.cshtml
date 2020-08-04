@@ -2,9 +2,7 @@
 @inject Microsoft.Extensions.Options.IOptions<ApplicationSettings> _config
 @{
     ViewData["Title"] = "How we handle information" + _config.Value.SiteTextStrings.SiteTitleSuffix;
-}
-
-@{
+    var config = _config.Value;
     Layout = "_Layout";
 }
 
@@ -104,7 +102,7 @@
         </gds-paragraph>
 
         <gds-paragraph>
-            You can find out more about how long we keep information by reading our <a href="https://www.cqc.org.uk/about-us/our-policies/privacy-statement" class="govuk-link" target="_blank">privacy statement<span class="govuk-visually-hidden"> (opens in new window)</span></a>.
+            You can find out more about how long we keep information by reading our <a href="@config.GFCUrls.CQCHomepage/about-us/our-policies/privacy-statement" class="govuk-link" target="_blank">privacy statement<span class="govuk-visually-hidden"> (opens in new window)</span></a>.
         </gds-paragraph>
 
 
@@ -118,7 +116,7 @@
             <li>our code of practice on confidential personal information</li>
         </ul>
         <gds-paragraph>
-            <a class="govuk-link" href="https://www.cqc.org.uk/about-us/our-policies/privacy-statement" target="_blank">Read our privacy statement<span class="govuk-visually-hidden"> (opens in new window)</span></a> to find
+            <a class="govuk-link" href="@config.GFCUrls.CQCHomepage/about-us/our-policies/privacy-statement" target="_blank">Read our privacy statement<span class="govuk-visually-hidden"> (opens in new window)</span></a> to find
             out more about how we handle personal information and about your rights.
         </gds-paragraph>
 
@@ -187,7 +185,7 @@
             <h2 class="govuk-heading-m">Related content</h2>
 
             <gds-paragraph>
-                <gds-link class="govuk-link" target="_blank" add-hidden-text="true" link-id="privacy-statement" link-text="Read our full privacy statement" href="https://www.cqc.org.uk/about-us/our-policies/privacy-statement"></gds-link>
+                <gds-link class="govuk-link" target="_blank" add-hidden-text="true" link-id="privacy-statement" link-text="Read our full privacy statement" href="@config.GFCUrls.CQCHomepage/about-us/our-policies/privacy-statement"></gds-link>
             </gds-paragraph>
 
         </aside>

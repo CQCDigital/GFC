@@ -1,7 +1,9 @@
 ﻿@using Microsoft.Extensions.Options
 @using SYE.ViewModels
 @inject IOptions<ApplicationSettings> Configuration
-
+@{
+    var config = Configuration.Value;
+}
 @{
     Layout = "_Layout";
 }
@@ -17,7 +19,7 @@
             <li>a concern about a service you work for</li>
         </ul>
 
-        <gds-paragraph>This is different from making a formal complaint. To <a href="https://www.cqc.org.uk/contact-us/how-complain/complain-about-service-or-provider" class="govuk-link" target="_blank">make a formal complaint<span class="govuk-visually-hidden"> (opens in new window)</span></a>, you must contact the service itself.</gds-paragraph>
+        <gds-paragraph>This is different from making a formal complaint. To <a href="@config.GFCUrls.CQCHomepage/contact-us/how-complain/complain-about-service-or-provider" class="govuk-link" target="_blank">make a formal complaint<span class="govuk-visually-hidden"> (opens in new window)</span></a>, you must contact the service itself.</gds-paragraph>
 
         <gds-warning-text message="Call 999 if there's an immediate risk of harm or abuse" warning-id=""></gds-warning-text>
 
@@ -50,11 +52,11 @@
             <h2 class="govuk-heading-m">Related content</h2>
 
             <gds-paragraph>
-                <gds-link class="govuk-link app-related-items-font-resize" target="_blank" add-hidden-text="true" link-id="related-content" link-text="How to make a formal complaint to a service or provider" href="https://www.cqc.org.uk/contact-us/how-complain/complain-about-service-or-provider"></gds-link>
+                <gds-link class="govuk-link app-related-items-font-resize" target="_blank" add-hidden-text="true" link-id="related-content" link-text="How to make a formal complaint to a service or provider" href="@config.GFCUrls.CQCHomepage/contact-us/how-complain/complain-about-service-or-provider"></gds-link>
             </gds-paragraph>
 
             <gds-paragraph>
-                <gds-link class="govuk-link app-related-items-font-resize" target="_blank" add-hidden-text="true" link-id="regulated-services" link-text="Find out which types of service we regulate" href="https://www.cqc.org.uk/what-we-do/services-we-regulate/services-we-regulate"></gds-link>
+                <gds-link class="govuk-link app-related-items-font-resize" target="_blank" add-hidden-text="true" link-id="regulated-services" link-text="Find out which types of service we regulate" href="@config.GFCUrls.CQCHomepage/what-we-do/services-we-regulate/services-we-regulate"></gds-link>
             </gds-paragraph>
 
         </aside>

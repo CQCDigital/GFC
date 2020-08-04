@@ -1,4 +1,8 @@
-﻿
+﻿@using SYE.ViewModels
+@inject Microsoft.Extensions.Options.IOptions<ApplicationSettings> _config
+@{
+    var config = _config.Value;
+}
 @{
     Layout = "_Layout";
 }
@@ -34,7 +38,7 @@
         <gds-paragraph>If your experience of care was bad, you can make a complaint to the service itself - if you haven't already.</gds-paragraph>
 
         <gds-paragraph>
-            <a href="https://www.cqc.org.uk/contact-us/how-complain/complain-about-service-or-provider" class="govuk-link" target="_blank">How to complain to a health or care service<span class="govuk-visually-hidden"> (opens in new window)</span></a>
+            <a href="@config.GFCUrls.CQCHomepage/contact-us/how-complain/complain-about-service-or-provider" class="govuk-link" target="_blank">How to complain to a health or care service<span class="govuk-visually-hidden"> (opens in new window)</span></a>
         </gds-paragraph>
 
         <gds-paragraph>
@@ -42,7 +46,7 @@
         </gds-paragraph>
 
         <gds-paragraph>
-            <a href="https://www.cqc.org.uk" class="govuk-link">Leave this form and go to the CQC homepage</a>
+            <a href="@config.GFCUrls.CQCHomepage" class="govuk-link">Leave this form and go to the CQC homepage</a>
         </gds-paragraph>
 
     </gds-column>

@@ -15,6 +15,7 @@ namespace SYE.ViewModels
     public class GFCUrls
     {
         public string StartPage { get; set; }
+        public string CQCHomepage { get; set; }
         public string RedirectUrl { get; set; }
         public string ConfirmationPage { get; set; }
     }

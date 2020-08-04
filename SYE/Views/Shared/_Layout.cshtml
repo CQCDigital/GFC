@@ -105,7 +105,7 @@
                 string width = $"200.9174";
             }
 
-            <gds-logo role="presentation" focusable="false" url="https://www.cqc.org.uk" url-title="Go to the CQC homepage"
+            <gds-logo role="presentation" focusable="false" url="@config.GFCUrls.CQCHomepage" url-title="Go to the CQC homepage"
                       svg-path=@svgPath svg-viewbox=@svgViewBox
                       svg-image-height=@height svg-image-width=@width
                       image-url="/images/logocqc-transparent.png" alt-text="Care Quality Commission logo"></gds-logo>
@@ -171,12 +171,12 @@
                             </a>
                         </li>
                         <li class="govuk-footer__inline-list-item">
-                            <a class="govuk-footer__link" href="https://www.cqc.org.uk/cookies" target="_blank">
+                            <a class="govuk-footer__link" href="@config.GFCUrls.CQCHomepage/cookies" target="_blank">
                                 Cookies<span class="govuk-visually-hidden"> (opens in new window)</span>
                             </a>
                         </li>
                         <li class="govuk-footer__inline-list-item">
-                            <a class="govuk-footer__link" href="https://www.cqc.org.uk/about-us/our-policies/terms-conditions" target="_blank">
+                            <a class="govuk-footer__link" href="@config.GFCUrls.CQCHomepage/about-us/our-policies/terms-conditions" target="_blank">
                                 Terms and conditions<span class="govuk-visually-hidden"> (opens in new window)</span>
                             </a>
                         </li>

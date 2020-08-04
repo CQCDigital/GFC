@@ -1,9 +1,14 @@
-﻿@using Microsoft.AspNetCore.Http.Features
+﻿@using SYE.ViewModels
+@inject Microsoft.Extensions.Options.IOptions<ApplicationSettings> _config
+@{
+    var config = _config.Value;
+}
+@using Microsoft.AspNetCore.Http.Features
 
 <div id="global-cookie-message" class="gfc-cookie-banner" data-module="cookie-banner">
     <div class="govuk-width-container">
         <p class="govuk-body-s">
-            We use cookies to improve this site and make it easier to use. <a class="govuk-link gfc-cookie-consent-url" href="https://www.cqc.org.uk/cookies" target="_blank" data-module="track-click" data-track-category="cookieBanner" data-track-action="Cookie banner clicked">Find out more about cookies<span class="govuk-visually-hidden"> (opens in new window)</span></a>
+            We use cookies to improve this site and make it easier to use. <a class="govuk-link gfc-cookie-consent-url" href="@config.GFCUrls.CQCHomepage/cookies" target="_blank" data-module="track-click" data-track-category="cookieBanner" data-track-action="Cookie banner clicked">Find out more about cookies<span class="govuk-visually-hidden"> (opens in new window)</span></a>
         </p>
     </div>
 </div>

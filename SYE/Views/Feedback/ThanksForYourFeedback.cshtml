@@ -1,4 +1,9 @@
-﻿@{
+﻿@using SYE.ViewModels
+@inject Microsoft.Extensions.Options.IOptions<ApplicationSettings> _config
+@{
+    var config = _config.Value;
+}
+@{
     Layout = "_Layout";
 }
 <gds-row>
@@ -8,7 +13,7 @@
             Thank you. We'll use your feedback to help improve the form.
         </gds-paragraph>
         <gds-paragraph>
-            <a href="https://www.cqc.org.uk" class="govuk-link">Back to the CQC homepage</a>
+            <a href="@config.GFCUrls.CQCHomepage" class="govuk-link">Back to the CQC homepage</a>
         </gds-paragraph>
     </gds-column>
 </gds-row>
