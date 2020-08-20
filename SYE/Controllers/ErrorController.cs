@@ -64,13 +64,19 @@ namespace SYE.Controllers
                                      $"Path = {statusCodeResult?.OriginalPath}, " +
                                      $"QueryString = {statusCodeResult?.OriginalQueryString}");
                     return View("GenericException");
+                case 568:
+                    _logger.LogError($"{statusCode} Check Your Answers Page Load Session Error Occured. " +
+                                     $"Message = {message}, " +
+                                     $"Path = {statusCodeResult?.OriginalPath}, " +
+                                     $"QueryString = {statusCodeResult?.OriginalQueryString}");
+                    return View("AlreadySubmittedFeedback");
                 case 560:
                 case 561:
                     _logger.LogWarning($"{statusCode} Form Page Load Session Error Occured. " +
                                      $"Message = {message}, " +
                                      $"Path = {statusCodeResult?.OriginalPath}, " +
                                      $"QueryString = {statusCodeResult?.OriginalQueryString}");
-                    return View("SessionNotFound");
+                    return View("PageNoLongerExists");
                 case 562:
                     _logger.LogError($"{statusCode} Form Page Load Session Error Occured. " +
                                        $"Message = {message}, " +
@@ -90,14 +96,14 @@ namespace SYE.Controllers
                                        $"Message = {message}, " +
                                        $"Path = {statusCodeResult?.OriginalPath}, " +
                                        $"QueryString = {statusCodeResult?.OriginalQueryString}");
-                    return View("PageNotFound");
+                    return View("LastActionCausedError");
                 case 570:
                 case 571:
                     _logger.LogWarning($"{statusCode} Check Your Answers Page Load Session Error Occured. " +
                                      $"Message = {message}, " +
                                      $"Path = {statusCodeResult?.OriginalPath}, " +
                                      $"QueryString = {statusCodeResult?.OriginalQueryString}");
-                    return View("SessionNotFound");
+                    return View("PageNoLongerExists");
                 case 572:
                 case 573:
                 case 574:
@@ -111,7 +117,7 @@ namespace SYE.Controllers
                                        $"Message = {message}, " +
                                        $"Path = {statusCodeResult?.OriginalPath}, " +
                                        $"QueryString = {statusCodeResult?.OriginalQueryString}");
-                    return View("PageNotFound");
+                    return View("LastActionCausedError");
 
                 case 576:
                     _logger.LogError($"{statusCode} Error with CORS Validation. " +

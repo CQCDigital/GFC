@@ -35,6 +35,11 @@ namespace SYE.Controllers
         public IActionResult Index(string id = "", string searchReferrer = "")
         {
             var lastPage = _sessionService.GetLastPage();
+            if (lastPage != null && lastPage.Contains("you-have-sent-your-feedback"))
+            {
+                return GetCustomErrorCode(EnumStatusCode.FormPageAlreadySubmittedError, "Error with user action. Feedback already submitted");
+            }
+
             _sessionService.SetLastPage($"form/{id}");
 
             try
@@ -47,7 +52,16 @@ namespace SYE.Controllers
 
                 if (userSession.LocationName == null)
                 {
-                    return GetCustomErrorCode(EnumStatusCode.FormPageLoadLocationNullError, "Error with user session. Location is null: Id='" + id + "'");
+                    if (string.IsNullOrWhiteSpace(lastPage))
+                    {
+                        //probably an old link
+                        return GetCustomErrorCode(EnumStatusCode.FormPageLoadLocationNullError, "Error with user session. Location is null: Id='" + id + "'");
+                    }
+                    else
+                    {
+                        //example if user jumps from find a service straight into a question
+                        return GetCustomErrorCode(EnumStatusCode.FormPageLoadHistoryError, "Error with user session. Location is null: Id='" + id + "'");
+                    }
                 }
 
                 var serviceNotFound = userSession.LocationName.Equals(_config.Value.SiteTextStrings.DefaultServiceName);
@@ -67,9 +81,10 @@ namespace SYE.Controllers
                 {
                     return GetCustomErrorCode(EnumStatusCode.FormPageLoadNullError, "Error with user session. pageVm is null: Id='" + id + "'");
                 }
-                //check if the user answered the required questions to show this page
-                if (!_pageHelper.CheckPageHistory(pageVm, lastPage ?? searchReferrer, false, _sessionService, _config.Value.ExternalStartPage))
+
+                if (!_pageHelper.CheckPageHistory(pageVm, lastPage ?? searchReferrer, false, _sessionService, _config.Value.ExternalStartPage, _config.Value.ServiceNotFoundPage, _config.Value.FormStartPage, serviceNotFound))
                 {
+                    //user jumps between pages
                     return GetCustomErrorCode(EnumStatusCode.FormPageLoadHistoryError, "Error with page load. Page history not found: Id='" + id + "'");
                 }
 
@@ -126,6 +141,7 @@ namespace SYE.Controllers
                 }
                 catch
                 {
+                    //user session has timed out
                     return GetCustomErrorCode(EnumStatusCode.FormPageContinueSessionNullError, "Error with user session. Session is null: Id='" + vm.PageId + "'");
                 }
 

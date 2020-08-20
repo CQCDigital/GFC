@@ -20,7 +20,9 @@
 		FormContinueLocationNullError = 565,
 		FormPageLoadJsonError = 566,
 		FormPageLoadHistoryError = 567,
-		
+        FormPageAlreadySubmittedError = 568,
+        LastActionCausedError = 569,
+
 		//Check your answers errors
 		CYAFormNullError = 570,
 		CYALocationNullError = 571,

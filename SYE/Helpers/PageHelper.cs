@@ -5,6 +5,7 @@ using SYE.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using DocumentFormat.OpenXml.Math;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
@@ -17,8 +18,7 @@ namespace SYE.Helpers
         string GetPreviousPage(PageVM currentPage, ISessionService sessionService, IOptions<ApplicationSettings> config,
             IUrlHelper url, bool serviceNotFound);
 
-        bool CheckPageHistory(PageVM pageVm, string urlReferer, bool checkAnswers, ISessionService sessionService,
-            string externalStartPage);
+        bool CheckPageHistory(PageVM pageVm, string urlReferer, bool checkAnswers, ISessionService sessionService, string externalStartPage, string serviceNoteFoundPage, string formStartPage, bool serviceNotFound);
         bool HasNextQuestionBeenAnswered(HttpRequest request, FormVM formVm, PageVM pageVm);
         bool HasAnswerChanged(HttpRequest request, IEnumerable<QuestionVM> questions);
         bool HasPathChanged(HttpRequest request, IEnumerable<QuestionVM> questions);
@@ -64,7 +64,7 @@ namespace SYE.Helpers
             return targetPage;
         }
 
-        public bool CheckPageHistory(PageVM pageVm, string urlReferer, bool checkAnswers, ISessionService sessionService, string externalStartPage)
+        public bool CheckPageHistory(PageVM pageVm, string urlReferer, bool checkAnswers, ISessionService sessionService, string externalStartPage, string serviceNoteFoundPage, string formStartPage, bool serviceNotFound)
         {            
             if (string.IsNullOrEmpty(urlReferer))
             {
@@ -73,7 +73,7 @@ namespace SYE.Helpers
             }
 
             var pageOk = false;
-
+            var formVm = sessionService.GetFormVmFromSession();
             if (checkAnswers)// from check your answers only
             {
                 //check history
@@ -81,19 +81,6 @@ namespace SYE.Helpers
                 var pageIdsToCheck = pageVm.PreviousPages.Select(m => m.PageId).ToList();
 
                 pageOk = (pageIdsToCheck.All(x => pageHistory.Contains(x)));
-
-                if (pageOk)
-                {
-                    //the required pages have been visited
-                    //check if the visited pages have actually been answered?
-                    var formVm = sessionService.GetFormVmFromSession();
-                    //get all answered questions
-                    var answeredPageIds = formVm.Pages
-                        .Where(pg => pg.Questions.Any(q => !string.IsNullOrWhiteSpace(q.Answer)))
-                        .Select(p => p.PageId);
-
-                    pageOk = pageIdsToCheck.All(x => answeredPageIds.Contains(x));
-                }
             }
             else
             {
@@ -123,13 +110,210 @@ namespace SYE.Helpers
                     previousPages.AddRange(from np in q.AnswerLogic ?? Enumerable.Empty<AnswerLogicVM>() select np.NextPageId);
                 }
 
-                if (previousPages.Any(item => urlReferer.Contains(item)))
+                if (previousPages.Any(urlReferer.Contains))
                 {
                     pageOk = true;
                 }
-
             }
+            if (pageOk)
+            {
+                pageOk = CheckPathToStart(pageVm.PageId, formVm, serviceNoteFoundPage, formStartPage, serviceNotFound);
+            }
+
             return pageOk;
+        }
+
+        /// <summary>
+        /// this is a recursive method to track back down the question path ensuring each question is valid
+        /// The method looks for previous page of the passed page id and looks for a valid answer.
+        /// It then recursively calls itself with the previous page id
+        /// </summary>
+        /// <param name="pageId"></param>
+        /// <param name="formVm"></param>
+        /// <param name="formStartPage"></param>
+        /// <param name="serviceNotFound"></param>
+        /// <param name="serviceNoteFoundPage"></param>
+        /// <returns></returns>
+        private bool CheckPathToStart(string pageId, FormVM formVm, string serviceNoteFoundPage, string formStartPage, bool serviceNotFound)
+        {
+            var startPageId = serviceNotFound ? serviceNoteFoundPage : formStartPage;
+
+            var returnBool = false;
+
+            if (pageId == startPageId)
+            {
+                //there's no previous page
+                return true;
+            }
+
+            //look for previous pages pointing to this page
+            var previousPathchangePages = new List<PageVM>();
+            var previousLogicPages = new List<PageVM>();
+            
+            var previousPages = formVm.Pages.Where(p => p.NextPageId == pageId).ToList();
+
+            //see if this page has a changePath object that may be the calling page
+            var thisPage = formVm.Pages.FirstOrDefault(p => p.PageId == pageId);
+            if (thisPage?.PathChangeQuestion != null)
+            {
+                var question = formVm.Pages.SelectMany(p => p.Questions.Where(q => q.QuestionId == thisPage.PathChangeQuestion.QuestionId)).FirstOrDefault();
+                if (!string.IsNullOrWhiteSpace(question?.Answer))
+                {
+                    if (question.Answer == thisPage.PathChangeQuestion.Answer)
+                    {
+                        var changePathPage = formVm.Pages.FirstOrDefault(p => p.Questions.Any(q => q.QuestionId == thisPage.PathChangeQuestion.QuestionId));
+
+                        return changePathPage != null && CheckPathToStart(changePathPage.PageId, formVm, serviceNoteFoundPage, formStartPage, serviceNotFound);
+                    }
+                    else
+                    {
+                        //if the answer in any of the previous pages answer logic is the same as this answer then
+                        //remove it as it doesn't apply to this path
+                        foreach (var page in from page in previousPages from qstn in page.Questions where qstn.AnswerLogic.Any(al => al.Value == question.Answer) select page)
+                        {
+                            previousPages.Remove(page);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            SetupPreviousPagesLists(pageId, formVm, ref previousPages, ref previousLogicPages, ref previousPathchangePages);
+
+            //go through all potential previous pages and check for answers
+            foreach (var page in previousPathchangePages.OrderByDescending(p=>p.DisplayOrder))
+            {
+                var pathChangeQuestion = page.PathChangeQuestion;
+                //get the relevant question
+                var question = formVm.Pages.SelectMany(p => p.Questions.Where(q => q.QuestionId == pathChangeQuestion.QuestionId)).FirstOrDefault();
+
+                if (question != null && question.Answer == pathChangeQuestion.Answer && (page.Questions.Any(q => !string.IsNullOrWhiteSpace(q.Answer))))
+                {
+                    //ok we're valid with this question
+                    return CheckPathToStart(page.PageId, formVm, serviceNoteFoundPage, formStartPage, serviceNotFound);
+                }
+            }
+
+            foreach (var page in previousLogicPages.OrderByDescending(p => p.DisplayOrder))
+            {
+                var questions = page.Questions.Where(q => q.AnswerLogic != null).Where(a => a.AnswerLogic.Any(x => x.NextPageId == pageId)).ToList();
+                foreach (var question in questions)
+                {
+                    foreach (var answerLogic in question.AnswerLogic)
+                    {
+                        var validAnswer= false;
+                        if (answerLogic.Value == question.Answer)
+                        {
+                            //this is valid
+                            validAnswer = true;
+                        }
+                        else
+                        {
+                            ////does the page we're checking exist in the answer logic
+
+                            ////there's a bug with editing answers that's fixed by this next line
+                            ////however this still allows users to jump between some pages in some scenarios
+                            //if (answerLogic.NextPageId == pageId)
+                            //{
+                            //    validAnswer = true;
+                            //}
+                        }
+
+                        if (validAnswer)
+                        {
+                            //ok we're valid with this question
+                            return CheckPathToStart(page.PageId, formVm, serviceNoteFoundPage, formStartPage, serviceNotFound);
+                        }
+                    }
+                }
+            }
+            //no valid answer logic questions take us here
+            foreach (var page in previousPages.OrderByDescending(p => p.DisplayOrder))
+            {
+                var answerValid = false;
+                if (page.PageId == serviceNoteFoundPage && (serviceNotFound == false))
+                {
+                    //location was found so ignore this
+                    answerValid = true;
+                }
+                else
+                {
+                    if (page.Questions.Any())
+                    {
+                        //this is a question page that needs answering
+                        if (page.Questions.Any(q => !string.IsNullOrWhiteSpace(q.Answer)))
+                        {
+                            answerValid = true;
+                        }
+                    }
+                    else
+                    {
+                        //this is an information page so doesn't need answering
+                        answerValid = true;
+                    }
+                }
+
+                if (answerValid)
+                {
+                    returnBool = CheckPathToStart(page.PageId, formVm, serviceNoteFoundPage, formStartPage, serviceNotFound);
+                    break;
+                }
+            }
+
+            return returnBool;
+        }
+
+        private void SetupPreviousPagesLists(string pageId, FormVM formVm, ref List<PageVM> previousPages, ref List<PageVM> previousLogicPages, ref List<PageVM> previousPathchangePages)
+        {
+            var invalidPreviousPages = new List<PageVM>();
+
+            if (previousPages.Count > 1)
+            {
+                //there is more then one entry to this page
+                foreach (var page in previousPages)
+                {
+                    foreach (var page2 in previousPages.Where(p => p.PageId != page.PageId))
+                    {
+                        foreach (var question in page2.Questions.Where(q => q.AnswerLogic != null))
+                        {
+                            foreach (var al in question.AnswerLogic)
+                            {
+                                if (al.NextPageId == page.PageId)
+                                {
+                                    invalidPreviousPages.Add(al.Value == question.Answer ? page2 : page);
+                                }
+                            }
+                            //if (question.AnswerLogic.Any(al => al.NextPageId == page.PageId && al.Value == question.Answer))
+                            //{
+                            //    invalidPreviousPages.Add(page2);
+                            //}
+                        }
+                    }
+                }
+            }
+            //remove invalid previous pages
+            foreach (var page in invalidPreviousPages)
+            {
+                previousPages.Remove(page);
+            }
+            //see if there are any previous pages with logic answers pointing to this page
+            foreach (var pge in formVm.Pages)
+            {
+                var questions = pge.Questions.Where(q => q.AnswerLogic != null).Where(a => a.AnswerLogic.Any(x => x.NextPageId == pageId)).ToList();
+                if (questions.Count > 0)
+                {
+                    previousLogicPages.Add(pge);
+                }
+
+                if (pge.PathChangeQuestion != null)
+                {
+                    if (pge.PathChangeQuestion.NextPageId == pageId)
+                    {
+                        previousPathchangePages.Add(pge);
+                    }
+                }
+            }
+
         }
         public bool HasAnswerChanged(HttpRequest request, IEnumerable<QuestionVM> questions)
         {

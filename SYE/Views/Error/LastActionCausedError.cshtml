@@ -1,0 +1,29 @@
+﻿@using SYE.ViewModels
+@inject Microsoft.Extensions.Options.IOptions<ApplicationSettings> _config
+@{
+    var config = _config.Value;
+    ViewData["Title"] = "Last action caused error" + _config.Value.SiteTextStrings.SiteTitleSuffix;
+}
+
+<gds-row>
+    <gds-column desktop-size="TwoThirds" tablet-size="FullWidth">
+
+        <gds-heading heading-type="H1" text="Your last action caused an error"></gds-heading>
+
+        <gds-paragraph>
+            We cannot load the page you're trying to visit. This sometimes happens if you try to visit pages out of order.
+        </gds-paragraph>
+        <gds-paragraph>
+            You may be able to go back to where you were and continue with the form by clicking your back button. 
+            Otherwise you'll need to <gds-link class="govuk-link" link-text="go back to the start" href="@config.GFCUrls.StartPage"></gds-link>
+            to enter your feedback.
+        </gds-paragraph>
+
+        <gds-heading heading-type="H2" text="Get help with this form"></gds-heading>
+
+        <gds-paragraph>
+            You can get help on the phone if it's hard for you to do things online.
+        </gds-paragraph>
+
+    </gds-column>
+</gds-row>

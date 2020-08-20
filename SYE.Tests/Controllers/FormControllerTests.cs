@@ -168,7 +168,7 @@ namespace SYE.Tests.Controllers
             var mockSession = new Mock<ISessionService>();
             var mockLogger = new Mock<ILogger<FormController>>();
             var mockPageHelper = new Mock<IPageHelper>();
-            mockPageHelper.Setup(x => x.CheckPageHistory(It.IsAny<PageVM>(), It.IsAny<string>(), false, mockSession.Object, It.IsAny<string>())).Returns(true);
+            mockPageHelper.Setup(x => x.CheckPageHistory(It.IsAny<PageVM>(), It.IsAny<string>(), false, mockSession.Object, It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>())).Returns(true);
 
             mockSession.Setup(x => x.GetPageById(id, false)).Throws(new Exception());
 
@@ -200,7 +200,7 @@ namespace SYE.Tests.Controllers
             var mockSession = new Mock<ISessionService>();
             var mockLogger = new Mock<ILogger<FormController>>();
             var mockPageHelper = new Mock<IPageHelper>();
-            mockPageHelper.Setup(x => x.CheckPageHistory(returnPage, It.IsAny<string>(), false, mockSession.Object, It.IsAny<string>())).Returns(true);
+            mockPageHelper.Setup(x => x.CheckPageHistory(returnPage, It.IsAny<string>(), false, mockSession.Object, It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>())).Returns(true);
 
             mockSession.Setup(x => x.GetPageById(It.IsAny<string>(), It.IsAny<bool>())).Returns(returnPage).Verifiable();
             mockSession.Setup(x => x.GetUserSession()).Returns(new UserSessionVM { LocationName = "" }).Verifiable();
@@ -233,7 +233,7 @@ namespace SYE.Tests.Controllers
             var mockSession = new Mock<ISessionService>();
             var mockLogger = new Mock<ILogger<FormController>>();
             var mockPageHelper = new Mock<IPageHelper>();
-            mockPageHelper.Setup(x => x.CheckPageHistory(returnPage, It.IsAny<string>(), false, mockSession.Object, It.IsAny<string>())).Returns(true);
+            mockPageHelper.Setup(x => x.CheckPageHistory(returnPage, It.IsAny<string>(), false, mockSession.Object, It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>())).Returns(true);
 
             mockSession.Setup(x => x.GetPageById(id, false)).Throws(new Exception());
             mockSession.Setup(x => x.GetUserSession()).Returns(new UserSessionVM { LocationName = "" }).Verifiable();
@@ -289,7 +289,7 @@ namespace SYE.Tests.Controllers
             var mockSession = new Mock<ISessionService>();
             var mockLogger = new Mock<ILogger<FormController>>();
             var mockPageHelper = new Mock<IPageHelper>();
-            mockPageHelper.Setup(x => x.CheckPageHistory(returnPage, It.IsAny<string>(), false, mockSession.Object, It.IsAny<string>())).Returns(true);
+            mockPageHelper.Setup(x => x.CheckPageHistory(returnPage, It.IsAny<string>(), false, mockSession.Object, It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>())).Returns(true);
 
             mockSession.Setup(x => x.GetPageById(id, false)).Returns(returnPage).Verifiable();
             var mockSettings = new Mock<IOptions<ApplicationSettings>>();
@@ -320,7 +320,7 @@ namespace SYE.Tests.Controllers
             var mockSession = new Mock<ISessionService>();
             var mockLogger = new Mock<ILogger<FormController>>();
             var mockPageHelper = new Mock<IPageHelper>();
-            mockPageHelper.Setup(x => x.CheckPageHistory(returnPage, It.IsAny<string>(), false, mockSession.Object, It.IsAny<string>())).Returns(true);
+            mockPageHelper.Setup(x => x.CheckPageHistory(returnPage, It.IsAny<string>(), false, mockSession.Object, It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>())).Returns(true);
 
             mockSession.Setup(x => x.GetPageById(id, false)).Returns(returnPage).Verifiable();
             mockSession.Setup(x => x.GetUserSession()).Returns(new UserSessionVM { LocationName = "the service" }).Verifiable();
@@ -361,7 +361,7 @@ namespace SYE.Tests.Controllers
             var mockSession = new Mock<ISessionService>();
             var mockLogger = new Mock<ILogger<FormController>>();
             var mockPageHelper = new Mock<IPageHelper>();
-            mockPageHelper.Setup(x => x.CheckPageHistory(returnPage, It.IsAny<string>(), false, mockSession.Object, It.IsAny<string>())).Returns(true);
+            mockPageHelper.Setup(x => x.CheckPageHistory(returnPage, It.IsAny<string>(), false, mockSession.Object, It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>())).Returns(true);
 
             mockSession.Setup(x => x.GetPageById(id, false)).Returns(returnPage).Verifiable();
             mockSession.Setup(x => x.GetUserSession()).Returns(new UserSessionVM { LocationName = "test service name" }).Verifiable();
@@ -388,6 +388,6 @@ namespace SYE.Tests.Controllers
             redirectesult.ActionName.Should().Be("Index");
             mockSession.Verify();
         }
-
     }
+
 }

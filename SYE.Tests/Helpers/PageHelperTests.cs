@@ -181,7 +181,7 @@ namespace SYE.Tests.Helpers
             var candidatePages = new List<PreviousPageVM>();
             var pageVM = new PageVM { PreviousPages = candidatePages };
             //act
-            var result = pageHelper.CheckPageHistory(pageVM, "", flag, mockSessionService.Object, null);
+            var result = pageHelper.CheckPageHistory(pageVM, "", flag, mockSessionService.Object, null, It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>());
             //assert
             result.Should().BeFalse();
         }
@@ -231,7 +231,7 @@ namespace SYE.Tests.Helpers
             var pageVM = new PageVM { PreviousPages = candidatePages, Questions = questions };
             //act
 
-            var result = pageHelper.CheckPageHistory(pageVM, "check-your-answers", flag, mockSessionService.Object, null);
+            var result = pageHelper.CheckPageHistory(pageVM, "check-your-answers", flag, mockSessionService.Object, null, It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>());
 
             //assert
             result.Should().BeTrue();
@@ -297,10 +297,10 @@ namespace SYE.Tests.Helpers
             mockSessionService.Setup(x => x.GetFormVmFromSession()).Returns(formVm);
             mockSessionService.Setup(x => x.GetNavOrder()).Returns(navOrderList);
 
-            var pageVM = new PageVM { PreviousPages = candidatePages, Questions = questions };
+            var pageVM = new PageVM { PageId = "pageId", PreviousPages = candidatePages, Questions = questions };
             //act
 
-            var result = pageHelper.CheckPageHistory(pageVM, "check-your-answers", true, mockSessionService.Object, null);
+            var result = pageHelper.CheckPageHistory(pageVM, "check-your-answers", true, mockSessionService.Object, null, It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>());
 
             //assert
             result.Should().BeFalse();
@@ -362,10 +362,10 @@ namespace SYE.Tests.Helpers
             mockSessionService.Setup(x => x.GetFormVmFromSession()).Returns(formVm);
             mockSessionService.Setup(x => x.GetNavOrder()).Returns(navOrderList);
 
-            var pageVM = new PageVM { PreviousPages = candidatePages, Questions = questions };
+            var pageVM = new PageVM {PageId = "pageId", PreviousPages = candidatePages, Questions = questions };
 
             //act
-            var result = pageHelper.CheckPageHistory(pageVM, "check-your-answers", true, mockSessionService.Object, null);
+            var result = pageHelper.CheckPageHistory(pageVM, "check-your-answers", true, mockSessionService.Object, null, It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>());
 
             //assert
             result.Should().BeFalse();
@@ -430,7 +430,7 @@ namespace SYE.Tests.Helpers
             var pageVM = new PageVM { PreviousPages = candidatePages, Questions = questions };
 
             //act
-            var result = pageHelper.CheckPageHistory(pageVM, "check-your-answers", false, mockSessionService.Object, null);
+            var result = pageHelper.CheckPageHistory(pageVM, "check-your-answers", false, mockSessionService.Object, null, It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>());
 
             //assert
             result.Should().BeTrue();
@@ -505,7 +505,7 @@ namespace SYE.Tests.Helpers
             var pageVM = new PageVM { PageId = "this-is-a-page-id", PreviousPages = candidatePages, Questions = questions, NextPageId = "previous-page-id" };
 
             //act
-            var result = pageHelper.CheckPageHistory(pageVM, referer, flag, mockSessionService.Object, null);
+            var result = pageHelper.CheckPageHistory(pageVM, referer, flag, mockSessionService.Object, null, It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>());
 
             //assert
             result.Should().BeFalse();
@@ -571,7 +571,7 @@ namespace SYE.Tests.Helpers
             var pageVM = new PageVM { PageId = "this-is-a-page-id", PreviousPages = candidatePages, Questions = questions, NextPageId = "next-page" };
 
             //act
-            var result = pageHelper.CheckPageHistory(pageVM, externalStartPage, false, mockSessionService.Object, externalStartPage);
+            var result = pageHelper.CheckPageHistory(pageVM, externalStartPage, false, mockSessionService.Object, externalStartPage, It.IsAny<string>(), pageVM.PageId, It.IsAny<bool>());
 
             //assert
             result.Should().BeTrue();
@@ -637,7 +637,7 @@ namespace SYE.Tests.Helpers
             var pageVM = new PageVM {PageId = "this-is-a-page-id", PreviousPages = candidatePages, Questions = questions, NextPageId = "next-page" };
 
             //act
-            var result = pageHelper.CheckPageHistory(pageVM, "my-invalid-referer", false, mockSessionService.Object, externalStartPage);
+            var result = pageHelper.CheckPageHistory(pageVM, "my-invalid-referer", false, mockSessionService.Object, externalStartPage, It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>());
 
             //assert
             result.Should().BeFalse();
@@ -702,7 +702,7 @@ namespace SYE.Tests.Helpers
             var pageVM = new PageVM { PreviousPages = candidatePages, Questions = questions, NextPageId = "next-page" };
 
             //act
-            var result = pageHelper.CheckPageHistory(pageVM, "what-you-want-to-tell-us-about", false, mockSessionService.Object, null);
+            var result = pageHelper.CheckPageHistory(pageVM, "what-you-want-to-tell-us-about", false, mockSessionService.Object, null, It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>());
 
             //assert
             result.Should().BeTrue();
@@ -768,7 +768,7 @@ namespace SYE.Tests.Helpers
             var pageVM = new PageVM { PageId = "this-is-a-page-id", PreviousPages = candidatePages, Questions = questions, NextPageId = "next-page" };
 
             //act
-            var result = pageHelper.CheckPageHistory(pageVM, "my-invalid-referer", false, mockSessionService.Object, null);
+            var result = pageHelper.CheckPageHistory(pageVM, "my-invalid-referer", false, mockSessionService.Object, null, It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>());
 
             //assert
             result.Should().BeFalse();

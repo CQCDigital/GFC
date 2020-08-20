@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Web.Mvc;
 using GDSHelpers.Models.FormSchema;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -47,10 +48,16 @@ namespace SYE.Controllers
         }
 
 
-        [HttpGet, Route("form/check-your-answers")]
+        [Microsoft.AspNetCore.Mvc.HttpGet, Microsoft.AspNetCore.Mvc.Route("form/check-your-answers")]
         public IActionResult Index()
         {
             var lastPage = _sessionService.GetLastPage();
+
+            if (lastPage != null && lastPage.Contains("you-have-sent-your-feedback"))
+            {
+                return GetCustomErrorCode(EnumStatusCode.FormPageAlreadySubmittedError, "Error with user action. Feedback already submitted");
+            }
+
             _sessionService.SetLastPage("form/check-your-answers");
 
             try
@@ -59,6 +66,7 @@ namespace SYE.Controllers
                 var formVm = _sessionService.GetFormVmFromSession();
                 if (formVm == null)
                 {
+                    //clicking on old link or back button from submit does this
                     return GetCustomErrorCode(EnumStatusCode.CYAFormNullError, "Error with user session. formVm is null.");
                 }
                 if ((_sessionService.GetUserSession().LocationName) == null)
@@ -66,9 +74,16 @@ namespace SYE.Controllers
                     return GetCustomErrorCode(EnumStatusCode.CYALocationNullError, "Error with user session. Location is null.");
                 }
                 //check if the user answered the required questions to show this page
-                var pageVm = formVm.Pages.Where(p => p.PageId == _pageId).FirstOrDefault();
-                if (!_pageHelper.CheckPageHistory(pageVm, lastPage, true, _sessionService, null))
+                var locationName = _sessionService.GetUserSession().LocationName;
+                var defaultLocation = _configuration.GetSection("ApplicationSettings:SiteTextStrings").GetValue<string>("DefaultServiceName");
+                var serviceNotFoundPage = _configuration.GetSection("ApplicationSettings").GetValue<string>("ServiceNotFoundPage");
+                var formStartPage = _configuration.GetSection("ApplicationSettings").GetValue<string>("FormStartPage");
+                var serviceNotFound = locationName.Equals(defaultLocation);
+                var pageVm = formVm.Pages.FirstOrDefault(p => p.PageId == _pageId);
+
+                if (!_pageHelper.CheckPageHistory(pageVm, lastPage, true, _sessionService, null, serviceNotFoundPage, formStartPage, serviceNotFound))
                 {
+                    //user jumps between pages
                     return GetCustomErrorCode(EnumStatusCode.CYASubmissionHistoryError, "Error with user submission. Page history not found: Id='" + _pageId + "'");
                 }
 
@@ -93,9 +108,9 @@ namespace SYE.Controllers
         }
 
 
-        [HttpPost, Route("form/check-your-answers")]
+        [Microsoft.AspNetCore.Mvc.HttpPost, Microsoft.AspNetCore.Mvc.Route("form/check-your-answers")]
         [PreventDuplicateRequest]
-        [ValidateAntiForgeryToken]
+        [Microsoft.AspNetCore.Mvc.ValidateAntiForgeryToken]
         public IActionResult Index(CheckYourAnswersVm vm)
         {
             try
@@ -103,6 +118,7 @@ namespace SYE.Controllers
                 var formVm = _sessionService.GetFormVmFromSession();
                 if (formVm == null)
                 {
+                    //session timeout does this
                     return GetCustomErrorCode(EnumStatusCode.CYASubmissionFormNullError, "Error submitting service feedback. Null or empty formVm.");
                 }
 

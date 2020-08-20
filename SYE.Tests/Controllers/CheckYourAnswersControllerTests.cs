@@ -34,12 +34,20 @@ namespace SYE.Tests.Controllers
             configData = new MemoryConfigurationSource
             {
                 InitialData = new List<KeyValuePair<string, string>>() {
-                    new KeyValuePair<string, string>("SubmissionDocument:DatabaseSeed", "10000")
+                    new KeyValuePair<string, string>("SubmissionDocument:DatabaseSeed", "10000"),
+                    new KeyValuePair<string, string>("ApplicationSettings:SiteTextStrings:DefaultServiceName", "defaultdervicename"),
+                    new KeyValuePair<string, string>("ApplicationSettings:ServiceNotFoundPage", "servicenotfoundpage"),
+                    new KeyValuePair<string, string>("ApplicationSettings:FormStartPage", "formstartpage")
                 }
             };
         }
 
+        /*
+                         var defaultLocation = _configuration.GetSection("ApplicationSettings:SiteTextStrings").GetValue<string>("DefaultServiceName");
+                        var serviceNotFoundPage = _configuration.GetSection("ApplicationSettings").GetValue<string>("ServiceNotFoundPage");
+                        var formStartPage = _configuration.GetSection("ApplicationSettings").GetValue<string>("FormStartPage");
 
+         */
         [Fact]
         public void Index_Should_Return_570_Error()
         {
@@ -142,7 +150,7 @@ namespace SYE.Tests.Controllers
             var mockNotificationService = new Mock<INotificationService>();
             var mockDocumentService = new Mock<IDocumentService>();
             var mockPageHelper = new Mock<IPageHelper>();
-            var mockConfig = new Mock<IConfiguration>();
+            var fakeConfiguration = new ConfigurationBuilder().Add(configData).Build();
 
             mockSession.Setup(x => x.GetFormVmFromSession()).Returns(formVm);
             mockSession.Setup(x => x.GetUserSession()).Returns(new UserSessionVM { LocationName = "location" });
@@ -150,7 +158,7 @@ namespace SYE.Tests.Controllers
 
             var sut = new CheckYourAnswersController(mockLogger.Object, mockSubmissionService.Object, mockCosmosService.Object,
                                                      mockNotificationService.Object, mockDocumentService.Object, mockSession.Object,
-                                                     mockPageHelper.Object, mockConfig.Object);
+                                                     mockPageHelper.Object, fakeConfiguration);
 
             sut.ControllerContext = controllerContext;
             //act
