@@ -199,6 +199,7 @@ html {
     bottom: 0;*/
 }
 
+#search-results h3,
 #search-results h4 {
     font-size: 19px;
     text-decoration: none;
@@ -657,4 +658,9 @@ a.app-c-back-to-top {
 
 .app-c-contents-list-with-body__link-wrapper.govuk-sticky-element--stuck-to-window .app-c-back-to-top:active {
     color: #2b8cc4
+}
+
+
+.govuk-button::before {
+    background: transparent !important;
 }

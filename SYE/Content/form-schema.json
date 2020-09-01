@@ -1,6 +1,6 @@
 {
-  "id": "724400afc0-ce7a-478e-91ee-9f99c3bae03c",
-  "version": "7.2.4",
+  "id": "732400afc0-ce7a-478e-91ee-9f99c3bae03c",
+  "version": "7.3.2",
   "form_name": "give-feedback-on-care",
   "last_modified": "ISODate(\"2020-05-12T00:00:00.000Z\")",
   "pages": [
@@ -230,7 +230,7 @@
         {
           "question_id": "when-and-where-01",
           "document_order": 10,
-          "question": "<label class=\"govuk-label govuk-label--m\" for=\"when-and-where-01\">Can you be more precise about where it happened in !!location_name!!? (optional)</label><span id=\"when-and-where-01-hint\" class=\"govuk-hint\">For example, if you're telling us about a hospital, which ward or department?</span>",
+          "question": "<label class=\"govuk-label govuk-label--m\" for=\"when-and-where-01\">Which part of the service are you telling us about?</label><span id=\"when-and-where-01-hint\" class=\"govuk-hint\">For example, if you're telling us about a hospital, which ward or department?</span>",
           "short_question": "Exact location",
           "data_type": "text",
           "input_type": "textbox",
@@ -285,7 +285,49 @@
           "document_order": 8,
           "question": "",
           "short_question": "Your feedback",
-          "html_content": "<p class=\"govuk-body-l\">The more detail you give us, the better.</p><p class=\"govuk-body\">It helps if you can tell us:</p><ul class=\"govuk-list govuk-list--bullet\"><li>examples of what they did well or could have done better</li><li>the people involved or their jobs</li></ul><label class=\"govuk-label\" for=\"give-your-feedback-01\">Enter your feedback about !!location_name!!</label><span id=\"give-your-feedback-01-hint gds-hint\" class=\"govuk-hint\">If you do not want the service to know who you are, avoid including things that can identify you</span><noscript><span id=\"session-warning\" class=\"govuk-hint\">If you stay on this page without clicking the continue button for more than one hour, we have to reset your form. This means you will lose the answers you've entered. We do this to make sure the information you enter is secure, for example if you're using a shared computer.</span></noscript>",
+          "dynamic_content": {
+            "conditions": [
+              {
+                "dev_notes": "If 'good' feedback, don't show most of the extra text",
+                "priority": 1,
+                "logic": {
+                  "variable_source": "answer",
+                  "variable_name": "what-you-want-to-tell-us-about-01",
+                  "operator": "equal",
+                  "variable_answer": "Good experience"
+                },
+                "if_true": {
+                  "override_question": {
+                    "additional_text": "Try to give clear examples of what they did well",
+                    "html_content": "<label class=\"govuk-label govuk-visually-hidden\" for=\"give-your-feedback-01\">Enter your feedback about !!location_name!!</label>"
+                  }
+                }
+              },
+              {
+                "dev_notes": "If 'bad' feedback, don't show most of the extra text",
+                "priority": 1,
+                "logic": {
+                  "variable_source": "answer",
+                  "variable_name": "what-you-want-to-tell-us-about-01",
+                  "operator": "equal",
+                  "variable_answer": "Bad experience"
+                },
+                "if_true": {
+                  "override_question": {
+                    "html_content": "<p class=\"govuk-body-l\">The more detail you give, the better.</p><p class=\"govuk-body\">It helps if you can tell us:</p><ul class=\"govuk-list govuk-list--bullet\"><li>examples of what was bad</li><li>the people involved or their jobs</li></ul><details class=\"govuk-details\" data-module=\"govuk-details\" role=\"group\"><summary class=\"govuk-details__summary\" role=\"button\" aria-controls=\"details-content-0\" aria-expanded=\"false\"><span class=\"govuk-details__summary-text\">Steps we can take</span></summary><div class=\"govuk-details__text\" id=\"details-content-0\" aria-hidden=\"true\"><p class=\"govuk-body\">When people tell us about bad care we can:</p><ul class=\"govuk-list govuk-list--bullet\"><li>send our inspectors to visit the service</li><li>talk to the people that run the service</li><li>share what we've been told with other agencies</li></ul><p class=\"govuk-body\">In the most serious cases, for example if someone is at risk of harm or abuse, we tell the police or local council.</p></div></details><label class=\"govuk-label govuk-visually-hidden\" for=\"give-your-feedback-01\">Enter your feedback about !!location_name!!</label>"
+                  }
+                }
+              }
+            ]
+          },
+          "additional_text": "If you do not want the service to know who you are, avoid including things that can identify you",
+          "html_content": "<p class=\"govuk-body-l\">The more detail you give, the better.</p><p class=\"govuk-body\">It helps if you can tell us:</p><ul class=\"govuk-list govuk-list--bullet\"><li>examples of what was good or bad</li><li>the people involved or their jobs</li></ul><details class=\"govuk-details\" data-module=\"govuk-details\" role=\"group\"><summary class=\"govuk-details__summary\" role=\"button\" aria-controls=\"details-content-0\" aria-expanded=\"false\"><span class=\"govuk-details__summary-text\">Steps we can take</span></summary><div class=\"govuk-details__text\" id=\"details-content-0\" aria-hidden=\"true\"><p class=\"govuk-body\">When people tell us about bad care we can:</p><ul class=\"govuk-list govuk-list--bullet\"><li>send our inspectors to visit the service</li><li>talk to the people that run the service</li><li>share what we've been told with other agencies</li></ul><p class=\"govuk-body\">In the most serious cases, for example if someone is at risk of harm or abuse, we tell the police or local council.</p></div></details><label class=\"govuk-label govuk-visually-hidden\" for=\"give-your-feedback-01\">Enter your feedback about !!location_name!!</label>",
+          "noscript": "<span id=\"session-warning\" class=\"govuk-hint\">If you stay on this page without clicking the continue button for more than one hour, we have to reset your form. This means you will lose the answers you've entered. We do this to make sure the information you enter is secure, for example if you're using a shared computer.</span>",
+          "content_order": [
+            "noscript",
+            "html_content",
+            "additional_text"
+          ],
           "data_type": "string",
           "input_type": "textarea",
           "input_css": "auto-expand",
@@ -349,7 +391,7 @@
         {
           "question_id": "can-we-contact-you-01",
           "document_order": 2,
-          "question": "<h1 class=\"govuk-heading-xl\">Can we contact you for more information?</h1>",
+          "question": "<h1 class=\"govuk-heading-xl\">Can our inspectors contact you to find out more?</h1>",
           "html_content": "<p class=\"govuk-body\">We may need to ask you for more information about what you've told us.</p><p class=\"govuk-body\">You do not have to give your details. But it's more likely we can use your feedback if we can ask questions or check things with you.</p><p class=\"govuk-body\">We keep contact details confidential. The only exception is if we think someone's at risk of abuse or neglect, or there's been a serious crime.</p><details class=\"govuk-details\" data-module=\"govuk-details\" role=\"group\"><summary class=\"govuk-details__summary\" role=\"button\" aria-controls=\"details-content-0\" aria-expanded=\"false\"><span class=\"govuk-details__summary-text\">When we can and can't keep contact details confidential</span></summary><div class=\"govuk-details__text\" id=\"details-content-0\" aria-hidden=\"true\"><p class=\"govuk-body\">If we think someone's at risk of abuse or neglect or there's been a serious crime, we may have to pass everything we know about it to the police, the council or another authority.</p><p class=\"govuk-body\">In rare cases, we may need to contact the service straight away to protect someone. We only do this if we think the person is in immediate danger. This might mean we need to give them your name and the name of the person who is at risk.</p><p class=\"govuk-body\">Even if these reasons apply, we'll only pass on your details if it's necessary.</p></div></details><p class=\"govuk-body\">We'll only contact you about your feedback.</p>",
           "short_question": "Can we contact you?",
           "data_type": "string",
@@ -865,9 +907,9 @@
       "change_mode_trigger_page_id": ""
     }
   ],
-  "_rid": "sL9qAIqOhIYmAAAAAAAAAA==",
-  "_self": "dbs/sL9qAA==/colls/sL9qAIqOhIY=/docs/sL9qAIqOhIYmAAAAAAAAAA==/",
-  "_etag": "\"1900de09-0000-1100-0000-5ebab8690000\"",
+  "_rid": "fmkiAOjYKwYNAAAAAAAAAA==",
+  "_self": "dbs/fmkiAA==/colls/fmkiAOjYKwY=/docs/fmkiAOjYKwYNAAAAAAAAAA==/",
+  "_etag": "\"00000000-0000-0000-7adf-71e2d44301d6\"",
   "_attachments": "attachments/",
-  "_ts": 1589295209
+  "_ts": 1598360316
 }

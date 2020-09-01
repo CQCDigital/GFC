@@ -180,7 +180,7 @@
                             <gds-row>
                                 <gds-column desktop-size="FullWidth" tablet-size="FullWidth">
                                     <button type="submit" id="btn-@result.Id" class="govuk-button link-button">
-                                        <gds-heading heading-type="H4" text="@result.Name"></gds-heading>
+                                        <gds-heading heading-type="H3" class="govuk-heading-s" text="@result.Name"></gds-heading>
                                     </button>
                                     @if (!string.IsNullOrWhiteSpace(result.AlsoKnownAs) && result.AlsoKnownAs != result.Name)
                                     {
@@ -314,7 +314,7 @@
         <form id="frm_facets_modal" asp-action="ApplyFilter" method="post">
 
             <div class="modal-header-container">
-                <h1 class="govuk-heading-xl modal-title">Filter</h1>
+                <h2 class="govuk-heading-xl modal-title">Filter</h2>
                 <gds-paragraph class="category">
                     <a id="modal-close-btn-header" class="govuk-link modal-close-link show-hide-modal-link tabbable" onclick="hideModal()" tabindex="0" href="#content">Return to results</a>
                 </gds-paragraph>

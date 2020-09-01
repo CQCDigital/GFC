@@ -44,6 +44,7 @@ namespace SYE.Controllers
 
             try
             {
+                //Check for null session or null location errors
                 var userSession = _sessionService.GetUserSession();
                 if (userSession == null)
                 {
@@ -64,8 +65,12 @@ namespace SYE.Controllers
                     }
                 }
 
+                //Set flag to true if locationName is the default service name
                 var serviceNotFound = userSession.LocationName.Equals(_config.Value.SiteTextStrings.DefaultServiceName);
+
                 PageVM pageVm = null;
+
+                //Populate the pageVM from the session
                 try
                 {
                     //if we've got this far then the session is ok
@@ -76,7 +81,6 @@ namespace SYE.Controllers
                 {
                     return GetCustomErrorCode(EnumStatusCode.FormPageLoadJsonError, "Error with json file: Id='" + id + "'");
                 }
-                
                 if (pageVm == null)
                 {
                     return GetCustomErrorCode(EnumStatusCode.FormPageLoadNullError, "Error with user session. pageVm is null: Id='" + id + "'");
@@ -88,9 +92,18 @@ namespace SYE.Controllers
                     return GetCustomErrorCode(EnumStatusCode.FormPageLoadHistoryError, "Error with page load. Page history not found: Id='" + id + "'");
                 }
 
+                //Set flag to true if the user came from check your answers
                 var refererIsCheckYourAnswers = (lastPage ?? "").Contains(_config.Value.SiteTextStrings.ReviewPage);
 
-                ViewBag.BackLink = new BackLinkVM { Show = true, Url =  refererIsCheckYourAnswers ? _config.Value.SiteTextStrings.ReviewPage : _pageHelper.GetPreviousPage(pageVm, _sessionService, _config, Url, serviceNotFound), Text = _config.Value.SiteTextStrings.BackLinkText };
+                //Create a backLink
+                ViewBag.BackLink = new BackLinkVM
+                {
+                    Show = true, 
+                    Url =  refererIsCheckYourAnswers ? 
+                        _config.Value.SiteTextStrings.ReviewPage : 
+                        _pageHelper.GetPreviousPage(pageVm, _sessionService, _config, Url, serviceNotFound), 
+                    Text = _config.Value.SiteTextStrings.BackLinkText
+                };
 
                 //Update the users journey                
                 if (!string.IsNullOrWhiteSpace(_sessionService.GetChangeModeRedirectId()) && pageVm.NextPageId != _config.Value.SiteTextStrings.ReviewPageId)
@@ -110,6 +123,10 @@ namespace SYE.Controllers
                     }
                     _sessionService.UpdateNavOrder(pageVm.PageId);
                 }                
+
+                //Look for dynamic content, and update the page with dynamic content if it exists:
+                var formContext = _sessionService.GetFormVmFromSession();
+                pageVm.HandleDynamicContent(formContext);
 
                 ViewBag.Title = pageVm.PageTitle + _config.Value.SiteTextStrings.SiteTitleSuffix;
                 return View(pageVm);
