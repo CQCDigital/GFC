@@ -53,15 +53,32 @@
                             <span class="gfc-multi-line-text">@question.Answer</span>
                         </dd>
                         <dd class="govuk-summary-list__actions">
-                            <a class="govuk-link" href="@Url.Action("Index", "Form", new { id = pageVm.PageId} )">
+                            @{
+                                var hiddenText = question.Question.StripHtml();
+                                if (string.IsNullOrEmpty(hiddenText))
+                                {
+                                    hiddenText = question.ShortQuestion.StripHtml();
+                                }
+                            }
+
+                            @if (pageVm.PageId == "search")
+                            {
+                            <a class="govuk-link" href="@Url.Action("SearchResults", "Search", new { search = @Model.LocationName} )">
                                 Change
-                                <span class="govuk-visually-hidden"> @question.Question.StripHtml()</span>
+                                <span class="govuk-visually-hidden"> selected location</span>
                             </a>
+                            }
+                            else
+                            {
+                                <a class="govuk-link" href="@Url.Action("Index", "Form", new {id = pageVm.PageId})">
+                                    Change
+                                    <span class="govuk-visually-hidden"> @hiddenText</span>
+                                </a>
+                            }
                         </dd>
                     </div>
                 }
             }
-
         </dl>
 
     </gds-column>

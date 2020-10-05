@@ -201,12 +201,12 @@ namespace SYE.Tests.Controllers
             var mockLogger = new Mock<ILogger<FormController>>();
             var mockPageHelper = new Mock<IPageHelper>();
             mockPageHelper.Setup(x => x.CheckPageHistory(returnPage, It.IsAny<string>(), false, mockSession.Object, It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>())).Returns(true);
-
             mockSession.Setup(x => x.GetPageById(It.IsAny<string>(), It.IsAny<bool>())).Returns(returnPage).Verifiable();
             mockSession.Setup(x => x.GetUserSession()).Returns(new UserSessionVM { LocationName = "" }).Verifiable();
 
-            var mockSettings = new Mock<IOptions<ApplicationSettings>>();
-            var sut = new FormController(mockValidation.Object, mockSession.Object, mockSettings.Object, mockLogger.Object, mockPageHelper.Object) { ControllerContext = controllerContext };
+            ApplicationSettings appSettings = new ApplicationSettings() { ServiceNotFoundPage = "test"};
+            IOptions<ApplicationSettings> mockSettings = Options.Create(appSettings);
+            var sut = new FormController(mockValidation.Object, mockSession.Object, mockSettings, mockLogger.Object, mockPageHelper.Object) { ControllerContext = controllerContext };
 
             //act
             var result = sut.Index(new CurrentPageVM { PageId = id });

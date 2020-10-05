@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using GDSHelpers.Models.FormSchema;
 using Microsoft.AspNetCore.Http;
@@ -13,8 +14,9 @@ namespace SYE.Services
     {
         string GetSessionId();
         void ClearNavOrder();
-        void UpdateNavOrder(string currentPage);
-        void UpdateNavOrder(string currentPage, string redirectTriggerPage);
+        void UpdateNavOrder(string currentPage, string serviceNotFoundPageId = "");
+        void RemoveFromNavOrder(string pageToRemove);
+        void UpdateNavOrderAtRedirectTrigger(string currentPage, string redirectTriggerPage);
         void RemoveNavOrderSectionFrom(string fromPage, string toPage);
         void RemoveNavOrderFrom(string fromPage);
         List<string> GetNavOrder();
@@ -23,6 +25,8 @@ namespace SYE.Services
         void SetUserSessionVars(UserSessionVM vm);
         UserSessionVM GetUserSession();
         void SaveFormVmToSession(FormVM vm);
+        void SaveFormVmToSession(FormVM vm, Dictionary<string, string> replacements);
+        void UpdateFormData(DataItemVM dataItem);
         FormVM GetFormVmFromSession();
         void UpdatePageVmInFormVm(PageVM vm);
         void SaveUserSearch(string search);
@@ -35,6 +39,7 @@ namespace SYE.Services
         string GetRedirectionCookie();
         void ClearSession();
         string PageForEdit { get; set; }
+        bool ChangedLocationMode { get; set; }
         void SaveChangeModeRedirectId(string redirectPageId);
         string GetChangeModeRedirectId();
         void ClearChangeModeRedirectId();
@@ -43,6 +48,7 @@ namespace SYE.Services
         void ClearChangeMode();
         void SetLastPage(string lastPage);
         string GetLastPage();
+        string PageOrder { get; set; }
     }
 
     [LifeTime(LifeTime.Scoped)]
@@ -68,7 +74,7 @@ namespace SYE.Services
             return context.Session.Id;
         }
 
-        public void UpdateNavOrder(string currentPage)
+        public void UpdateNavOrder(string currentPage, string serviceNotFoundPageId)
         {
             var userSession = GetUserSession();
 
@@ -82,7 +88,23 @@ namespace SYE.Services
                 //If we've not been here before add the page
                 if (!userSession.NavOrder.Contains(currentPage))
                 {
-                    userSession.NavOrder.Add(currentPage);
+                    // If the current page is the service not found page
+                    // make sure we add it straight after the search entry
+                    if (currentPage.Equals(serviceNotFoundPageId, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (userSession.NavOrder.Contains("Search", StringComparer.OrdinalIgnoreCase))
+                        {
+                            var searchPos = userSession.NavOrder.FindIndex(m => m.Equals("Search", StringComparison.OrdinalIgnoreCase));
+                            userSession.NavOrder.Insert(searchPos + 1, currentPage);
+                        }
+                        else
+                        {
+                            userSession.NavOrder.Add(currentPage);
+                        }
+                    }
+                    else {
+                        userSession.NavOrder.Add(currentPage);
+                    }                    
                 }
                 else
                 {
@@ -92,13 +114,32 @@ namespace SYE.Services
             }
 
             SetUserSessionVars(userSession);
+            EnsureNavOrder();
         }
+
+        public void RemoveFromNavOrder(string pageToRemove)
+        {
+            var userSession = GetUserSession();
+
+            if (userSession.NavOrder != null)
+            {
+                //If we've not been here before add the page
+                if (userSession.NavOrder.Contains(pageToRemove))
+                {
+                    userSession.NavOrder.Remove(pageToRemove);
+                }
+            }
+
+            SetUserSessionVars(userSession);
+
+        }
+
         /// <summary>
         /// Insert current page into the nav order before the redirectTrigger page
         /// </summary>
         /// <param name="currentPage"></param>
         /// <param name="redirectTriggerPage"></param>
-        public void UpdateNavOrder(string currentPage, string redirectTriggerPage)
+        public void UpdateNavOrderAtRedirectTrigger(string currentPage, string redirectTriggerPage)
         {
             if (currentPage != redirectTriggerPage)
             {
@@ -109,10 +150,23 @@ namespace SYE.Services
                     var index = userSession.NavOrder.IndexOf(redirectTriggerPage);
                     userSession.NavOrder.Insert(index, currentPage);
                     SetUserSessionVars(userSession);
+                    EnsureNavOrder();
                 }
             }
         }
 
+        private void EnsureNavOrder()
+        {
+            var newNavOrder = new List<string>();
+            var userSession = GetUserSession();
+
+            if (userSession.NavOrder != null)
+            {
+                newNavOrder.AddRange(this.PageOrder.Split(",").Where(pageId => userSession.NavOrder.Contains(pageId)));
+                userSession.NavOrder = newNavOrder;
+                SetUserSessionVars(userSession);
+            }
+        }
         public List<string> GetNavOrder()
         {
             var userSession = GetUserSession();
@@ -208,6 +262,44 @@ namespace SYE.Services
             context.Session.SetString(schemaKey, JsonConvert.SerializeObject(vm));
         }
 
+        public void SaveFormVmToSession(FormVM vm, Dictionary<string, string> replacements)
+        {
+            var context = _httpContextAccessor.HttpContext;
+            var json = JsonConvert.SerializeObject(vm);
+
+            if (replacements?.Count > 0)
+            {
+                foreach (var item in replacements)
+                {
+                    json = json.Replace(item.Key, item.Value);
+                }
+            }
+            context.Session.SetString(schemaKey, json);
+        }
+
+        public void UpdateFormData(DataItemVM dataItem)
+        {
+            var formVm = GetFormVmFromSession();
+
+            //Create new local object from the dataItems in the form
+            var dataItems = formVm.SubmissionData != null ? formVm.SubmissionData.ToList() : new List<DataItemVM>();
+
+            //Update this local dataItems list
+            var index = dataItems.FindIndex(x => x.Id == dataItem.Id);
+            if (index != -1) //i.e. the data item already exists
+            {
+                dataItems[index] = dataItem;
+            }
+            else
+            {
+                dataItems.Add(dataItem);
+            }
+
+            //Assign the new dataItems back to the formVm
+            formVm.SubmissionData = dataItems;
+            SaveFormVmToSession(formVm);
+        }
+
         public FormVM GetFormVmFromSession()
         {
             var context = _httpContextAccessor.HttpContext;
@@ -285,6 +377,7 @@ namespace SYE.Services
             context.Session.Remove("PageForEdit");
             context.Session.Remove("ChangeMode");
             context.Session.Remove("LastPage");
+            context.Session.Remove("PageOrder");
 
             //context.Session.Clear();
         }
@@ -302,6 +395,7 @@ namespace SYE.Services
             //Update the users navigation history
             userSession.NavOrder = newNav;
             SetUserSessionVars(userSession);
+            EnsureNavOrder();
         }
         public void RemoveNavOrderSectionFrom(string fromPage, string toPage)
         {
@@ -318,6 +412,7 @@ namespace SYE.Services
             //Update the users navigation history
             userSession.NavOrder = newNav;
             SetUserSessionVars(userSession);
+            EnsureNavOrder();
         }
 
         public void SaveChangeModeRedirectId(string redirectPageId)
@@ -367,6 +462,20 @@ namespace SYE.Services
                 context.Session.SetString("PageForEdit", value);
             }
         }
+        public bool ChangedLocationMode
+        {
+            get
+            {
+                var context = _httpContextAccessor.HttpContext;
+                var val = context.Session.GetString("ChangedLocationMode");
+                return !string.IsNullOrWhiteSpace(val) && bool.Parse(val);
+            }
+            set
+            {
+                var context = _httpContextAccessor.HttpContext;
+                context.Session.SetString("ChangedLocationMode", value.ToString());
+            }
+        }
 
         public void SetLastPage(string lastPage)
         {
@@ -380,7 +489,19 @@ namespace SYE.Services
             return context.Session.GetString("LastPage");
         }
 
-
+        public string PageOrder
+        {
+            get
+            {
+                var context = _httpContextAccessor.HttpContext;
+                return context.Session.GetString("PageOrder");
+            }
+            set
+            {
+                var context = _httpContextAccessor.HttpContext;
+                context.Session.SetString("PageOrder", value);
+            }
+        }
     }
 
 }

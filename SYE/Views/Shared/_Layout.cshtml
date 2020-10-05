@@ -127,7 +127,18 @@
     <gds-container>
         @if (ViewBag.HideHelpLink != true)
         {
-            <gds-phase-banner phase="Beta" text="This is a new form. If you find something wrong with it, {0}" url-text="tell us and help us improve it." url="@Url.Action("Feedback", "Help")"></gds-phase-banner>
+            <div class="govuk-phase-banner">
+                <p class="govuk-phase-banner__content">
+                    <strong class="govuk-tag govuk-phase-banner__content__tag">Beta</strong>
+                    <span class="govuk-phase-banner__text">This is a new form. If you find something wrong with it, 
+                        <a class="govuk-link" href="/report-a-problem">
+                            <span class="govuk-visually-hidden">
+                                If you find something wrong with this form,
+                            </span>
+                            tell us and help us improve it.
+                        </a></span>
+                </p>
+            </div>
         }
 
         <partial name="_BackLink" />

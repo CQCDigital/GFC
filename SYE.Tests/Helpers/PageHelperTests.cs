@@ -61,7 +61,7 @@ namespace SYE.Tests.Helpers
                 }
             };
             mockSessionService.Setup(x => x.GetFormVmFromSession()).Returns(formVm);
-            ApplicationSettings appSettings = new ApplicationSettings() { FormStartPage = "123", ServiceNotFoundPage = "456", DefaultBackLink = previousPage };
+            ApplicationSettings appSettings = new ApplicationSettings() { FormStartPage = "123", ServiceNotFoundPage = "456", DefaultBackLink = previousPage , GFCUrls = new GFCUrls{StartPage = "start"}};
             IOptions<ApplicationSettings> options = Options.Create(appSettings);
 
             //act
@@ -111,7 +111,7 @@ namespace SYE.Tests.Helpers
                 $"{uac.Controller}/{uac.Action}#{uac.Fragment}?" + string.Join("&",
                     new RouteValueDictionary(uac.Values).Select(p => p.Key + "=" + p.Value)));
 
-            ApplicationSettings appSettings = new ApplicationSettings() { FormStartPage = "123", ServiceNotFoundPage = "456", DefaultBackLink = "789" };
+            ApplicationSettings appSettings = new ApplicationSettings() { FormStartPage = "123", ServiceNotFoundPage = "456", DefaultBackLink = "789" , GFCUrls = new GFCUrls{StartPage = "start"}};
             IOptions<ApplicationSettings> options = Options.Create(appSettings);
 
             //act
@@ -163,7 +163,7 @@ namespace SYE.Tests.Helpers
                 $"{uac.Controller}/{uac.Action}#{uac.Fragment}?" + string.Join("&",
                     new RouteValueDictionary(uac.Values).Select(p => p.Key + "=" + p.Value)));
 
-            ApplicationSettings appSettings = new ApplicationSettings() { FormStartPage = "123", ServiceNotFoundPage = "456", DefaultBackLink = "789" };
+            ApplicationSettings appSettings = new ApplicationSettings() { FormStartPage = "123", ServiceNotFoundPage = "456", DefaultBackLink = "789", GFCUrls = new GFCUrls{StartPage = "start"}};
             IOptions<ApplicationSettings> options = Options.Create(appSettings);
 
             //act

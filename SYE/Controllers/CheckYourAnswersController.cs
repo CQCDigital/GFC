@@ -80,6 +80,12 @@ namespace SYE.Controllers
                 var formStartPage = _configuration.GetSection("ApplicationSettings").GetValue<string>("FormStartPage");
                 var serviceNotFound = locationName.Equals(defaultLocation);
                 var pageVm = formVm.Pages.FirstOrDefault(p => p.PageId == _pageId);
+                if (!serviceNotFound)
+                {
+                    //a location has been selected but we may have a service not found visit that we need to remove
+                    //or it will be displayed
+                    _sessionService.RemoveFromNavOrder(serviceNotFoundPage);
+                }
 
                 if (!_pageHelper.CheckPageHistory(pageVm, lastPage, true, _sessionService, null, serviceNotFoundPage, formStartPage, serviceNotFound))
                 {
@@ -226,7 +232,7 @@ namespace SYE.Controllers
             var answers = new List<AnswerVM>();
 
             var pageHistory = _sessionService.GetNavOrder();
-            foreach (var page in formVm.Pages.Where(m => pageHistory.Contains(m.PageId)).OrderBy(m => pageHistory.IndexOf(m.PageId)))
+            foreach (var page in formVm.Pages.Where(m => pageHistory.Contains(m.PageId) && m.RemoveFromSubmission == false).OrderBy(m => pageHistory.IndexOf(m.PageId)))
             {
                 answers.AddRange(page.Questions.Where(m => !string.IsNullOrEmpty(m.Answer))
                     .Select(question => new AnswerVM

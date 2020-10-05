@@ -1,57 +1,14 @@
 {
-  "id": "732400afc0-ce7a-478e-91ee-9f99c3bae03c",
-  "version": "7.3.2",
+  "id": "759-400afc0-ce7a-478e-91ee-9f99c3bae03c",
+  "version": "7.5.9",
   "form_name": "give-feedback-on-care",
   "last_modified": "ISODate(\"2020-05-12T00:00:00.000Z\")",
   "pages": [
     {
-      "page_id": "tell-us-which-service",
-      "page_title": "Tell us which service",
-      "page_name": "",
-      "display_order": 1,
-      "pre_amble": "",
-      "post_amble": "",
-      "questions": [
-        {
-          "question_id": "tell-us-which-service-01",
-          "document_order": 1,
-          "question": "<h1 class=\"govuk-heading-xl\">Tell us which service you want to give feedback about</h1>",
-          "short_question": "The service your feedback is about",
-          "html_content": "<p class=\"govuk-body\">Tell us anything you can about its name and where it is. For example:</p><ul class=\"govuk-list govuk-list--bullet\"><li>you might know the service by a different name from our records</li><li>tell us the postcode, town or street</li><li>tell us if it's next to any shops or landmarks</li></ul><p class=\"govuk-body\">We'll use what you tell us to find it. We might need to contact you to make sure we've found the right service.</p>",
-          "data_type": "string",
-          "input_type": "textarea",
-          "validation": {
-            "required": {
-              "is_required": true,
-              "error_message": "Tell us which service your feedback is about"
-            },
-            "max_length": {
-              "type": "string",
-              "max": 1500,
-              "threshold": "95",
-              "error_message": "Enter 1,500 characters or less"
-            },
-            "is_errored": false,
-            "error_message": ""
-          },
-          "answer": ""
-        }
-      ],
-      "buttons": [
-        {
-          "button_text": "Continue",
-          "button_type": "submit"
-        }
-      ],
-      "previous_pages": [],
-      "next_page_id": "what-you-want-to-tell-us-about",
-      "change_mode_trigger_page_id": "what-you-want-to-tell-us-about"
-    },
-    {
       "page_id": "what-you-want-to-tell-us-about",
       "page_title": "Your experience",
       "page_name": "",
-      "display_order": 2,
+      "display_order": 1,
       "pre_amble": "",
       "post_amble": "",
       "questions": [
@@ -87,11 +44,11 @@
           "answer_logic": [
             {
               "value": "Bad experience",
-              "next_page_id": "have-you-worked-there"
+              "next_page_id": "where-it-happened"
             },
             {
               "value": "Both good and bad experience",
-              "next_page_id": "have-you-worked-there"
+              "next_page_id": "where-it-happened"
             }
           ],
           "answer": ""
@@ -103,56 +60,42 @@
           "button_type": "submit"
         }
       ],
-      "previous_pages": [
-        {
-          "question_id": "",
-          "answer": "",
-          "page_id": "tell-us-which-service"
-        }
-      ],
+      "previous_pages": [],
       "next_page_id": "give-your-feedback",
       "change_mode_trigger_page_id": "did-you-hear-about-this-form-from-a-charity"
     },
+
     {
-      "page_id": "have-you-worked-there",
-      "page_title": "Have you worked there",
+      "page_id": "tell-us-which-service",
+      "page_title": "Tell us which service",
       "page_name": "",
-      "display_order": 3,
+      "display_order": 2,
       "pre_amble": "",
       "post_amble": "",
       "questions": [
         {
-          "question_id": "have-you-worked-there-01",
-          "document_order": 7,
-          "question": "<h1 class=\"govuk-heading-xl\">Have you worked at !!location_name!!?</h1>",
-          "html_content": "<span id=\"have-you-worked-there-01-hint\" class=\"govuk-hint\">This includes if you were a contractor or a volunteer. It also includes if you work there now.</span>",
-          "short_question": "Have you worked there?",
+          "question_id": "tell-us-which-service-01",
+          "document_order": 1,
+          "question": "<h1 class=\"govuk-heading-xl\">Tell us the name of the service and where it is</h1>",
+          "short_question": "The service your feedback is about",
+          "additional_text": "<span class=\"govuk-visually-hidden\">Tell us the name of the service and where it is</span>",
+          "html_content": "<p class=\"govuk-body\">For example:</p><ul class=\"govuk-list govuk-list--bullet\"><li>you might know it by a different name from our records</li><li>tell us the postcode, town or street</li><li>give the names of any shops or landmarks nearby</li><li>tell us if it's a service you use online or by phone, or if it's a service provided in your own home</li></ul>",
           "data_type": "string",
-          "input_type": "optionlist",
-          "options": [
-            {
-              "value": "Yes",
-              "text": "Yes"
-            },
-            {
-              "value": "No",
-              "text": "No"
-            }
-          ],
+          "input_type": "textarea",
           "validation": {
             "required": {
               "is_required": true,
-              "error_message": "Select if your feedback is about somewhere you've worked"
+              "error_message": "Tell us which service your feedback is about"
+            },
+            "max_length": {
+              "type": "string",
+              "max": 1500,
+              "threshold": "95",
+              "error_message": "Enter 1,500 characters or less"
             },
             "is_errored": false,
             "error_message": ""
           },
-          "answer_logic": [
-            {
-              "value": "No",
-              "next_page_id": "when-and-where"
-            }
-          ],
           "answer": ""
         }
       ],
@@ -167,70 +110,92 @@
           "question_id": "",
           "answer": "",
           "page_id": "what-you-want-to-tell-us-about"
-        }
-      ],
-      "next_page_id": "check-if-you-are-protected",
-      "change_mode_trigger_page_id": "when-and-where"
-    },
-    {
-      "page_id": "check-if-you-are-protected",
-      "page_title": " Check if you're protected",
-      "page_name": "Check if you're protected",
-      "display_order": 4,
-      "pre_amble": "<p class=\"govuk-body-l\">In some circumstances, the law will protect you if you raise a concern about somewhere you work. This is sometimes called whistleblowing.</p><p class=\"govuk-body\">Your rights are set out in the <a href=\"https://www.gov.uk/government/publications/the-public-interest-disclosure-act\" target=\"_blank\">Public Interest Disclosure Act <span class=\"govuk-visually-hidden\"> (opens in new window)</span></a> (PIDA).</p><p class=\"govuk-body\">Your feedback is important to us. But it's also important to check if PIDA applies to you. This might mean talking to a lawyer, a trade union or an organisation like <a href=\"https://www.pcaw.org.uk\" target=\"_blank\">Public Concern at Work<span class=\"govuk-visually-hidden\"> (opens in new window)</span></a> - even if that means you decide not submit your feedback now.</p>",
-      "post_amble": "",
-      "questions": [],
-      "buttons": [
-        {
-          "button_text": "Continue",
-          "button_type": "submit"
-        }
-      ],
-      "previous_pages": [
+        },
         {
           "question_id": "",
           "answer": "",
-          "page_id": "have-you-worked-there"
+          "page_id": "give-your-feedback"
+        },
+        {
+          "question_id": "",
+          "answer": "",
+          "page_id": "where-it-happened"
         }
       ],
-      "next_page_id": "when-and-where",
-      "change_mode_trigger_page_id": "when-and-where"
+      "next_page_id": "next_page_reference_id",
+      "next_page_reference_id": "what-you-want-to-tell-us-about"
     },
+    
     {
-      "page_id": "when-and-where",
-      "page_title": "When and where",
-      "page_name": "Tell us when and where your feedback is about",
-      "display_order": 5,
+      "page_id": "search",
+      "remove_from_submission": true,
+      "page_title": "",
+      "page_name": "",
+      "display_order": 3,
       "pre_amble": "",
       "post_amble": "",
       "questions": [
         {
-          "question_id": "when-and-where-02",
-          "document_order": 9,
-          "question": "<label class=\"govuk-label govuk-label--m\" for=\"when-and-where-02\">When did it happen?</label><span id=\"when-and-where-02-hint\" class=\"govuk-hint\">For example, can you give a date, month or year? Or is it still happening?</span>",
-          "short_question": "When it happened",
-          "data_type": "text",
-          "input_type": "textbox",
-          "input_css": "govuk-!-width-two-thirds",
+          "question_id": "search-01",
+          "document_order": 7,
+          "question": "",
+          "html_content": "",
+          "short_question": "The service your feedback is about",
+          "data_type": "string",
+          "input_type": "search",
+          "options": [],
           "validation": {
             "required": {
               "is_required": true,
-              "error_message": "Enter when it happened"
-            },
-            "max_length": {
-              "type": "string",
-              "max": "1000",
-              "error_message": "Enter 1,000 characters or less"
+              "error_message": "Select if your feedback is about somewhere you've worked"
             },
             "is_errored": false,
             "error_message": ""
           },
+          "answer_logic": [],
           "answer": ""
+        }
+      ],
+      "buttons": [],
+      "previous_pages": [
+        {
+          "question_id": "",
+          "answer": "",
+          "page_id": "tell-us-which-service"
         },
         {
-          "question_id": "when-and-where-01",
+          "question_id": "",
+          "answer": "",
+          "page_id": "what-you-want-to-tell-us-about"
+        },
+        {
+          "question_id": "",
+          "answer": "",
+          "page_id": "give-your-feedback"
+        },
+        {
+          "question_id": "",
+          "answer": "",
+          "page_id": "where-it-happened"
+        }
+      ],
+      "next_page_id": "next_page_reference_id",
+      "next_page_reference_id": "what-you-want-to-tell-us-about"
+    },
+
+    {
+      "page_id": "where-it-happened",
+      "page_title": "Where it happened",
+      "page_name": "",
+      "display_order": 4,
+      "pre_amble": "",
+      "post_amble": "",
+      "questions": [
+        {
+          "question_id": "where-it-happened-01",
           "document_order": 10,
-          "question": "<label class=\"govuk-label govuk-label--m\" for=\"when-and-where-01\">Which part of the service are you telling us about?</label><span id=\"when-and-where-01-hint\" class=\"govuk-hint\">For example, if you're telling us about a hospital, which ward or department?</span>",
+          "question": "<h1 class=\"govuk-heading-xl\">Which part of the service are you telling us about?</h1>",
+          "additional_text": "For example, if it's a service with more than one room, try to remember which room or floor (this question is optional)",
           "short_question": "Exact location",
           "data_type": "text",
           "input_type": "textbox",
@@ -259,24 +224,164 @@
       ],
       "previous_pages": [
         {
-          "question_id": "have-you-worked-there-01",
-          "answer": "Yes",
-          "page_id": "check-if-you-are-protected"
+          "question_id": "search",
+          "answer": "locationFound",
+          "page_id": "search"
         },
         {
+          "question_id": "search",
+          "answer": "locationNotFound",
+          "page_id": "tell-us-which-service"
+        },
+        {
+          "question_id": "",
+          "answer": "",
+          "page_id": "what-you-want-to-tell-us-about"
+        }
+      ],
+      "next_page_id": "when-it-happened"
+    },
+
+    {
+      "page_id": "when-it-happened",
+      "page_title": "When it happened",
+      "page_name": "",
+      "display_order": 5,
+      "pre_amble": "",
+      "post_amble": "",
+      "questions": [
+        {
+          "question_id": "when-it-happened-01",
+          "document_order": 9,
+          "question": "<h1 class=\"govuk-heading-xl\">When did this happen?</h1>",
+          "additional_text": "Give exact dates if you can - or tell us which month or year it was, or if it's still happening now",
+          "short_question": "When it happened",
+          "data_type": "text",
+          "input_type": "textbox",
+          "input_css": "govuk-!-width-two-thirds",
+          "validation": {
+            "required": {
+              "is_required": true,
+              "error_message": "Enter when it happened"
+            },
+            "max_length": {
+              "type": "string",
+              "max": "1000",
+              "error_message": "Enter 1,000 characters or less"
+            },
+            "is_errored": false,
+            "error_message": ""
+          },
+          "answer": ""
+        }
+      ],
+      "buttons": [
+        {
+          "button_text": "Continue",
+          "button_type": "submit"
+        }
+      ],
+      "previous_pages": [
+        {
+          "question_id": "",
+          "answer": "",
+          "page_id": "where-it-happened"
+        }
+      ],
+      "next_page_id": "have-you-worked-there"
+    },
+
+    {
+      "page_id": "have-you-worked-there",
+      "page_title": "Have you worked there",
+      "page_name": "",
+      "display_order": 6,
+      "pre_amble": "",
+      "post_amble": "",
+      "questions": [
+        {
           "question_id": "have-you-worked-there-01",
-          "answer": "No",
+          "document_order": 7,
+          "question": "<h1 class=\"govuk-heading-xl\">Have you worked for !!location_name!!?</h1>",
+          "additional_text": "<span class=\"govuk-visually-hidden\">Have you worked for !!location_name!!?</span>",
+          "html_content": "<p class=\"govuk-hint\">This includes if you were a contractor or a volunteer. It also includes if you work there now.</p>",
+          "short_question": "Have you worked there?",
+          "data_type": "string",
+          "input_type": "optionlist",
+          "options": [
+            {
+              "value": "Yes",
+              "text": "Yes"
+            },
+            {
+              "value": "No",
+              "text": "No"
+            }
+          ],
+          "validation": {
+            "required": {
+              "is_required": true,
+              "error_message": "Select if your feedback is about somewhere you've worked"
+            },
+            "is_errored": false,
+            "error_message": ""
+          },
+          "answer_logic": [
+            {
+              "value": "No",
+              "next_page_id": "give-your-feedback"
+            }
+          ],
+          "answer": ""
+        }
+      ],
+      "buttons": [
+        {
+          "button_text": "Continue",
+          "button_type": "submit"
+        }
+      ],
+      "previous_pages": [
+        {
+          "question_id": "",
+          "answer": "",
+          "page_id": "when-it-happened"
+        }
+      ],
+      "next_page_id": "check-if-you-are-protected",
+      "change_mode_trigger_page_id": "give-your-feedback"
+    },
+
+    {
+      "page_id": "check-if-you-are-protected",
+      "page_title": " Check if you're protected",
+      "page_name": "Check if you're protected",
+      "display_order": 7,
+      "pre_amble": "<p class=\"govuk-body\">In some circumstances, the law will protect you if you raise a concern about somewhere you work. This is sometimes called whistleblowing.</p><p class=\"govuk-body\">Your rights are set out in the <a href=\"https://www.gov.uk/government/publications/the-public-interest-disclosure-act\" target=\"_blank\">Public Interest Disclosure Act <span class=\"govuk-visually-hidden\"> (opens in new window)</span></a> (PIDA).</p><p class=\"govuk-body\">Your feedback is important to us. But it's also important to check if PIDA applies to you. This might mean talking to a lawyer, a trade union or an organisation like <a href=\"https://www.pcaw.org.uk\" target=\"_blank\">Public Concern at Work<span class=\"govuk-visually-hidden\"> (opens in new window)</span></a> - even if that means you decide not submit your feedback now.</p>",
+      "post_amble": "",
+      "questions": [],
+      "buttons": [
+        {
+          "button_text": "Continue",
+          "button_type": "submit"
+        }
+      ],
+      "previous_pages": [
+        {
+          "question_id": "",
+          "answer": "",
           "page_id": "have-you-worked-there"
         }
       ],
       "next_page_id": "give-your-feedback",
       "change_mode_trigger_page_id": "give-your-feedback"
     },
+
     {
       "page_id": "give-your-feedback",
       "page_title": "Give your feedback",
       "page_name": "Give us your feedback about !!location_name!!",
-      "display_order": 6,
+      "display_order": 8,
       "pre_amble": "",
       "post_amble": "",
       "questions": [
@@ -299,7 +404,7 @@
                 "if_true": {
                   "override_question": {
                     "additional_text": "Try to give clear examples of what they did well",
-                    "html_content": "<label class=\"govuk-label govuk-visually-hidden\" for=\"give-your-feedback-01\">Enter your feedback about !!location_name!!</label>"
+                    "html_content": "<label class=\"govuk-label govuk-visually-hidden\" aria-label=\"Give us your feedback about !!location_name!!\" for=\"give-your-feedback-01\">Give us your feedback about !!location_name!!</label>"
                   }
                 }
               },
@@ -314,14 +419,14 @@
                 },
                 "if_true": {
                   "override_question": {
-                    "html_content": "<p class=\"govuk-body-l\">The more detail you give, the better.</p><p class=\"govuk-body\">It helps if you can tell us:</p><ul class=\"govuk-list govuk-list--bullet\"><li>examples of what was bad</li><li>the people involved or their jobs</li></ul><details class=\"govuk-details\" data-module=\"govuk-details\" role=\"group\"><summary class=\"govuk-details__summary\" role=\"button\" aria-controls=\"details-content-0\" aria-expanded=\"false\"><span class=\"govuk-details__summary-text\">Steps we can take</span></summary><div class=\"govuk-details__text\" id=\"details-content-0\" aria-hidden=\"true\"><p class=\"govuk-body\">When people tell us about bad care we can:</p><ul class=\"govuk-list govuk-list--bullet\"><li>send our inspectors to visit the service</li><li>talk to the people that run the service</li><li>share what we've been told with other agencies</li></ul><p class=\"govuk-body\">In the most serious cases, for example if someone is at risk of harm or abuse, we tell the police or local council.</p></div></details><label class=\"govuk-label govuk-visually-hidden\" for=\"give-your-feedback-01\">Enter your feedback about !!location_name!!</label>"
+                    "html_content": "<p class=\"govuk-body-l\">The more detail you give, the better.</p><p class=\"govuk-body\">It helps if you can tell us:</p><ul class=\"govuk-list govuk-list--bullet\"><li>examples of what was bad</li><li>the people involved or their jobs</li></ul><details class=\"govuk-details\" data-module=\"govuk-details\" role=\"group\"><summary class=\"govuk-details__summary\" role=\"button\" aria-controls=\"details-content-0\" aria-expanded=\"false\"><span class=\"govuk-details__summary-text\">Steps we can take</span></summary><div class=\"govuk-details__text\" id=\"details-content-0\" aria-hidden=\"true\"><p class=\"govuk-body\">When people tell us about bad care we can:</p><ul class=\"govuk-list govuk-list--bullet\"><li>send our inspectors to visit the service</li><li>talk to the people that run the service</li><li>share what we've been told with other agencies</li></ul><p class=\"govuk-body\">In the most serious cases, for example if someone is at risk of harm or abuse, we tell the police or local council.</p></div></details><label class=\"govuk-label govuk-visually-hidden\" aria-label=\"Give us your feedback about !!location_name!!\" for=\"give-your-feedback-01\">Give us your feedback about !!location_name!!</label>"
                   }
                 }
               }
             ]
           },
           "additional_text": "If you do not want the service to know who you are, avoid including things that can identify you",
-          "html_content": "<p class=\"govuk-body-l\">The more detail you give, the better.</p><p class=\"govuk-body\">It helps if you can tell us:</p><ul class=\"govuk-list govuk-list--bullet\"><li>examples of what was good or bad</li><li>the people involved or their jobs</li></ul><details class=\"govuk-details\" data-module=\"govuk-details\" role=\"group\"><summary class=\"govuk-details__summary\" role=\"button\" aria-controls=\"details-content-0\" aria-expanded=\"false\"><span class=\"govuk-details__summary-text\">Steps we can take</span></summary><div class=\"govuk-details__text\" id=\"details-content-0\" aria-hidden=\"true\"><p class=\"govuk-body\">When people tell us about bad care we can:</p><ul class=\"govuk-list govuk-list--bullet\"><li>send our inspectors to visit the service</li><li>talk to the people that run the service</li><li>share what we've been told with other agencies</li></ul><p class=\"govuk-body\">In the most serious cases, for example if someone is at risk of harm or abuse, we tell the police or local council.</p></div></details><label class=\"govuk-label govuk-visually-hidden\" for=\"give-your-feedback-01\">Enter your feedback about !!location_name!!</label>",
+          "html_content": "<p class=\"govuk-body-l\">The more detail you give, the better.</p><p class=\"govuk-body\">It helps if you can tell us:</p><ul class=\"govuk-list govuk-list--bullet\"><li>examples of what was good or bad</li><li>the people involved or their jobs</li></ul><details class=\"govuk-details\" data-module=\"govuk-details\" role=\"group\"><summary class=\"govuk-details__summary\" role=\"button\" aria-controls=\"details-content-0\" aria-expanded=\"false\"><span class=\"govuk-details__summary-text\">Steps we can take</span></summary><div class=\"govuk-details__text\" id=\"details-content-0\" aria-hidden=\"true\"><p class=\"govuk-body\">When people tell us about bad care we can:</p><ul class=\"govuk-list govuk-list--bullet\"><li>send our inspectors to visit the service</li><li>talk to the people that run the service</li><li>share what we've been told with other agencies</li></ul><p class=\"govuk-body\">In the most serious cases, for example if someone is at risk of harm or abuse, we tell the police or local council.</p></div></details><label class=\"govuk-label govuk-visually-hidden\" aria-label=\"Give us your feedback about !!location_name!!\" for=\"give-your-feedback-01\">Give us your feedback about !!location_name!!</label>",
           "noscript": "<span id=\"session-warning\" class=\"govuk-hint\">If you stay on this page without clicking the continue button for more than one hour, we have to reset your form. This means you will lose the answers you've entered. We do this to make sure the information you enter is secure, for example if you're using a shared computer.</span>",
           "content_order": [
             "noscript",
@@ -359,17 +464,27 @@
         {
           "question_id": "what-you-want-to-tell-us-about-01",
           "answer": "Good experience",
+          "page_id": "search"
+        },
+        {
+          "question_id": "have-you-worked-there-01",
+          "answer": "Yes",
+          "page_id": "check-if-you-are-protected"
+        },
+        {
+          "question_id": "have-you-worked-there-01",
+          "answer": "No",
+          "page_id": "have-you-worked-there"
+        },
+        {
+          "question_id": "search",
+          "answer": "locationNotFound",
+          "page_id": "tell-us-which-service"
+        },
+        {
+          "question_id": "",
+          "answer": "",
           "page_id": "what-you-want-to-tell-us-about"
-        },
-        {
-          "question_id": "what-you-want-to-tell-us-about-01",
-          "answer": "Bad experience",
-          "page_id": "when-and-where"
-        },
-        {
-          "question_id": "what-you-want-to-tell-us-about-01",
-          "answer": "Both good and bad experience",
-          "page_id": "when-and-where"
         }
       ],
       "path_change_question": {
@@ -384,7 +499,7 @@
       "page_id": "can-we-contact-you",
       "page_title": "Can we contact you",
       "page_name": "",
-      "display_order": 7,
+      "display_order": 9,
       "pre_amble": "",
       "post_amble": "",
       "questions": [
@@ -392,6 +507,7 @@
           "question_id": "can-we-contact-you-01",
           "document_order": 2,
           "question": "<h1 class=\"govuk-heading-xl\">Can our inspectors contact you to find out more?</h1>",
+          "additional_text": "<span class=\"govuk-visually-hidden\">Can our inspectors contact you to find out more?</span>",
           "html_content": "<p class=\"govuk-body\">We may need to ask you for more information about what you've told us.</p><p class=\"govuk-body\">You do not have to give your details. But it's more likely we can use your feedback if we can ask questions or check things with you.</p><p class=\"govuk-body\">We keep contact details confidential. The only exception is if we think someone's at risk of abuse or neglect, or there's been a serious crime.</p><details class=\"govuk-details\" data-module=\"govuk-details\" role=\"group\"><summary class=\"govuk-details__summary\" role=\"button\" aria-controls=\"details-content-0\" aria-expanded=\"false\"><span class=\"govuk-details__summary-text\">When we can and can't keep contact details confidential</span></summary><div class=\"govuk-details__text\" id=\"details-content-0\" aria-hidden=\"true\"><p class=\"govuk-body\">If we think someone's at risk of abuse or neglect or there's been a serious crime, we may have to pass everything we know about it to the police, the council or another authority.</p><p class=\"govuk-body\">In rare cases, we may need to contact the service straight away to protect someone. We only do this if we think the person is in immediate danger. This might mean we need to give them your name and the name of the person who is at risk.</p><p class=\"govuk-body\">Even if these reasons apply, we'll only pass on your details if it's necessary.</p></div></details><p class=\"govuk-body\">We'll only contact you about your feedback.</p>",
           "short_question": "Can we contact you?",
           "data_type": "string",
@@ -466,7 +582,7 @@
       "page_id": "contact-information",
       "page_title": "Your contact details",
       "page_name": "Your contact details",
-      "display_order": 8,
+      "display_order": 10,
       "pre_amble": "",
       "post_amble": "",
       "questions": [
@@ -502,7 +618,8 @@
           "document_order": 4,
           "instruction_text": "",
           "question": "Email address",
-          "html_content": "<span id=\"contact-email-hint\" class=\"govuk-hint\">We'll email you to tell you we've got your feedback</span>",
+          "additional_text": "We'll email you to tell you we've got your feedback",
+          "html_content": "",
           "short_question": "Email address",
           "data_type": "text",
           "input_type": "textbox",
@@ -523,7 +640,7 @@
             },
             "required_if": {
               "inclusive_logic": "or",
-              "parent_id": "contact-information-01",
+              "parent_id": "",
               "linked_ids": "contact-information-03",
               "error_message": "You must enter either an email address or a telephone number"
             },
@@ -596,7 +713,7 @@
       "page_id": "have-you-told-the-service",
       "page_title": "Have you told them",
       "page_name": "",
-      "display_order": 9,
+      "display_order": 11,
       "pre_amble": "",
       "post_amble": "",
       "questions": [
@@ -604,7 +721,8 @@
           "question_id": "have-you-told-the-service-01",
           "document_order": 11,
           "question": "<h1 class=\"govuk-heading-xl\">Have you told !!location_name!! about this?</h1>",
-          "html_content": "<span id=\"have-you-told-the-service-hint\" class=\"govuk-hint\">Every service should have a procedure for making formal complaints. If you make a complaint they should look into it and send you a response.</span>",
+          "additional_text": "<span class=\"govuk-visually-hidden\">Have you told !!location_name!! about this?</span>",
+          "html_content": "<p class=\"govuk-hint\">Every service should have a procedure for making formal complaints. If you make a complaint they should look into it and send you a response.</p>",
           "short_question": "Have you told the service?",
           "data_type": "string",
           "input_type": "optionlist",
@@ -658,7 +776,7 @@
       "page_id": "have-you-told-anyone-else",
       "page_title": "Have you told the authorities?",
       "page_name": "",
-      "display_order": 10,
+      "display_order": 12,
       "pre_amble": "",
       "post_amble": "",
       "questions": [
@@ -666,6 +784,7 @@
           "question_id": "have-you-told-anyone-else-01",
           "document_order": 12,
           "question": "<h1 class=\"govuk-heading-xl\">Have you told the authorities?</h1>",
+          "additional_text": "<span class=\"govuk-visually-hidden\">Have you told the authorities?</span>",
           "html_content": "<p class=\"govuk-body\">We ask this in case what you've told us is about abuse or neglect. When we read your feedback, we'll decide if we think someone is at risk.</p><p class=\"govuk-body\">If we think they are, we'll need to contact the police or council. It helps if we know who you've already told.</p>",
           "short_question": "Have you told the police or council?",
           "data_type": "string",
@@ -719,7 +838,7 @@
       "page_id": "did-you-hear-about-this-form-from-a-charity",
       "page_title": "How you heard about us",
       "page_name": "",
-      "display_order": 11,
+      "display_order": 13,
       "pre_amble": "",
       "post_amble": "",
       "questions": [
@@ -727,6 +846,8 @@
           "question_id": "did-you-hear-about-this-form-from-a-charity-01",
           "document_order": 13,
           "question": "<h1 class=\"govuk-heading-xl\">Did you hear about this form through a charity?</h1>",
+          "additional_text": "<span class=\"govuk-visually-hidden\">Did you hear about this form through a charity?</span>",
+          "html_content": "<p class=\"govuk-hint\">We'd like to know if you found it through one of the charities we work with.</p>",
           "short_question": "Did you come through a charity?",
           "data_type": "string",
           "input_type": "optionlist",
@@ -787,7 +908,7 @@
       "page_id": "tell-us-which-charity",
       "page_title": "Tell us which charity",
       "page_name": "",
-      "display_order": 12,
+      "display_order": 14,
       "pre_amble": "",
       "post_amble": "",
       "questions": [
@@ -883,7 +1004,7 @@
       "page_id": "CheckYourAnswers",
       "page_title": "Check your answers",
       "page_name": "",
-      "display_order": 13,
+      "display_order": 15,
       "questions": [],
       "buttons": [],
       "previous_pages": [
@@ -901,6 +1022,11 @@
           "question_id": "",
           "answer": "",
           "page_id": "did-you-hear-about-this-form-from-a-charity"
+        },
+        {
+          "question_id": "",
+          "answer": "",
+          "page_id": "search"
         }
       ],
       "next_page_id": "",

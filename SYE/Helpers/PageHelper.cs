@@ -21,7 +21,9 @@ namespace SYE.Helpers
         bool CheckPageHistory(PageVM pageVm, string urlReferer, bool checkAnswers, ISessionService sessionService, string externalStartPage, string serviceNoteFoundPage, string formStartPage, bool serviceNotFound);
         bool HasNextQuestionBeenAnswered(HttpRequest request, FormVM formVm, PageVM pageVm);
         bool HasAnswerChanged(HttpRequest request, IEnumerable<QuestionVM> questions);
+        bool IsQuestionAnswered(HttpRequest request, IEnumerable<QuestionVM> questions);
         bool HasPathChanged(HttpRequest request, IEnumerable<QuestionVM> questions);
+        string GetNextPageIdFromPage(FormVM formVm, string pageId);
     }
     [LifeTime(Models.Enums.LifeTime.Scoped)]
     public class PageHelper : IPageHelper
@@ -33,19 +35,17 @@ namespace SYE.Helpers
             var startPage = config.Value.FormStartPage;
             var targetPage = config.Value.DefaultBackLink;
             var searchUrl = sessionService.GetSearchUrl();
+            var cqcStart = config.Value.GFCUrls.StartPage;
 
             //Get all the back options for the current page
             var previousPageOptions = currentPage.PreviousPages?.ToList();
 
             //Check if we dealing with one of the start pages
-            if (serviceNotFound && currentPage.PageId == serviceNotFoundPage)
+            if (currentPage.PageId == serviceNotFoundPage)
                 return searchUrl;
 
-            if (!serviceNotFound && currentPage.PageId == startPage)
-                return searchUrl;
-
-            if (serviceNotFound && currentPage.PageId == startPage)
-                return url.Action("Index", "Form", new { id = serviceNotFoundPage });
+            if (currentPage.PageId == startPage)
+                return cqcStart;
 
             //Check if we only have 1 option
             if (previousPageOptions.Count() == 1) return url.Action("Index", "Form", new { id = previousPageOptions.FirstOrDefault()?.PageId });
@@ -57,8 +57,41 @@ namespace SYE.Helpers
             foreach (var pageOption in previousPageOptions)
             {
                 var answer = questions.FirstOrDefault(m => m.QuestionId == pageOption.QuestionId)?.Answer;
+
+                //If we're looking at answers to the Search question, set answer here instead:
+                if (pageOption.QuestionId == "search")
+                {
+                    answer = serviceNotFound ? "locationNotFound" : "locationFound";
+                }
+
+                //If we match answer
                 if (pageOption.Answer == answer)
+                    //|| (string.IsNullOrEmpty(pageOption.QuestionId) && string.IsNullOrEmpty(pageOption.Answer))) //Looked at handling option to send user to 'default' page this way; not implemented.
+                {
+                    //If we're sending the user back to 'search', we can send them back to their search results if they picked a location, or to the 'tell-us-which-service' page
+                    if (pageOption.PageId == "search")
+                    {
+                        //If user did not pick a location
+                        if (serviceNotFound)
+                            return url.Action("Index", "Form", new { id = "tell-us-which-service" });
+
+                        //If user picked a service on CQC site, search cannot have been the previous page ==> go to next previousPage
+                        var fromCqc = form.SubmissionData?.FirstOrDefault(x => x.Id == "LocationFromCqcFlag").Value;
+                        if (fromCqc != null)
+                        {
+                            if (string.IsNullOrWhiteSpace(searchUrl))
+                            {
+                                //cannot go back to search so go to start
+                                return url.Action("Index", "Form", new { id = startPage });
+                            }
+                            continue;//don't think we need this
+                        }
+
+                        //If we get here, return user to their search results
+                        return searchUrl;
+                    }
                     return url.Action("Index", "Form", new { id = pageOption.PageId });
+                }
             }
 
             return targetPage;
@@ -79,7 +112,12 @@ namespace SYE.Helpers
                 //check history
                 var pageHistory = sessionService.GetNavOrder();
                 var pageIdsToCheck = pageVm.PreviousPages.Select(m => m.PageId).ToList();
-
+                if (serviceNotFound)
+                {
+                    //swap out search with service not found
+                    pageIdsToCheck.Remove("search");
+                    pageIdsToCheck.Add(serviceNoteFoundPage);
+                }
                 pageOk = (pageIdsToCheck.All(x => pageHistory.Contains(x)));
             }
             else
@@ -87,10 +125,11 @@ namespace SYE.Helpers
                 var previousPages = pageVm.PreviousPages.Select(m => m.PageId).ToList();
                 previousPages.Add("check-your-answers");
                 previousPages.Add("search/results");
+                previousPages.Add("search/find-a-service");
                 previousPages.Add("select-location");
                 previousPages.Add("report-a-problem");
                 previousPages.Add("feedback-thank-you");
-
+                previousPages.Add("start-questions");
                 previousPages.Add(pageVm.PageId);
 
                 if (!string.IsNullOrWhiteSpace(externalStartPage))
@@ -136,8 +175,8 @@ namespace SYE.Helpers
         /// <returns></returns>
         private bool CheckPathToStart(string pageId, FormVM formVm, string serviceNoteFoundPage, string formStartPage, bool serviceNotFound)
         {
-            var startPageId = serviceNotFound ? serviceNoteFoundPage : formStartPage;
-
+            //var startPageId = serviceNotFound ? serviceNoteFoundPage : formStartPage;
+            var startPageId = formStartPage;
             var returnBool = false;
 
             if (pageId == startPageId)
@@ -151,6 +190,7 @@ namespace SYE.Helpers
             var previousLogicPages = new List<PageVM>();
             
             var previousPages = formVm.Pages.Where(p => p.NextPageId == pageId).ToList();
+
 
             //see if this page has a changePath object that may be the calling page
             var thisPage = formVm.Pages.FirstOrDefault(p => p.PageId == pageId);
@@ -201,25 +241,7 @@ namespace SYE.Helpers
                 {
                     foreach (var answerLogic in question.AnswerLogic)
                     {
-                        var validAnswer= false;
                         if (answerLogic.Value == question.Answer)
-                        {
-                            //this is valid
-                            validAnswer = true;
-                        }
-                        else
-                        {
-                            ////does the page we're checking exist in the answer logic
-
-                            ////there's a bug with editing answers that's fixed by this next line
-                            ////however this still allows users to jump between some pages in some scenarios
-                            //if (answerLogic.NextPageId == pageId)
-                            //{
-                            //    validAnswer = true;
-                            //}
-                        }
-
-                        if (validAnswer)
                         {
                             //ok we're valid with this question
                             return CheckPathToStart(page.PageId, formVm, serviceNoteFoundPage, formStartPage, serviceNotFound);
@@ -231,6 +253,7 @@ namespace SYE.Helpers
             foreach (var page in previousPages.OrderByDescending(p => p.DisplayOrder))
             {
                 var answerValid = false;
+                //If a valid previous page for this page is the serviceNotFound page, but the user did find a service, they will never have visited the serviceNotFound page ==> skip this page (by setting answerValid to 'true')
                 if (page.PageId == serviceNoteFoundPage && (serviceNotFound == false))
                 {
                     //location was found so ignore this
@@ -238,9 +261,10 @@ namespace SYE.Helpers
                 }
                 else
                 {
-                    if (page.Questions.Any())
+                    //If the page had any required questions...
+                    if (page.Questions.Any(q => q.Validation.Required.IsRequired.Equals(true)))
                     {
-                        //this is a question page that needs answering
+                        //...the page is valid if at least one question has an answer.
                         if (page.Questions.Any(q => !string.IsNullOrWhiteSpace(q.Answer)))
                         {
                             answerValid = true;
@@ -248,7 +272,7 @@ namespace SYE.Helpers
                     }
                     else
                     {
-                        //this is an information page so doesn't need answering
+                        //Otherwise this is an information page (or only has optional questions) - so doesn't need answering
                         answerValid = true;
                     }
                 }
@@ -283,10 +307,6 @@ namespace SYE.Helpers
                                     invalidPreviousPages.Add(al.Value == question.Answer ? page2 : page);
                                 }
                             }
-                            //if (question.AnswerLogic.Any(al => al.NextPageId == page.PageId && al.Value == question.Answer))
-                            //{
-                            //    invalidPreviousPages.Add(page2);
-                            //}
                         }
                     }
                 }
@@ -314,6 +334,15 @@ namespace SYE.Helpers
                 }
             }
 
+            var thisPage = formVm.Pages.FirstOrDefault(p => p.PageId == pageId);
+            if (!string.IsNullOrWhiteSpace(thisPage?.NextPageReferenceId))
+            {
+                var referencePage = formVm.Pages.FirstOrDefault(p => p.PageId == thisPage.NextPageReferenceId);
+                if (! previousPages.Contains(referencePage))
+                {
+                    previousPages.Add(referencePage);
+                }
+            }
         }
         public bool HasAnswerChanged(HttpRequest request, IEnumerable<QuestionVM> questions)
         {
@@ -330,6 +359,22 @@ namespace SYE.Helpers
             }
 
             return changed;
+        }
+        public bool IsQuestionAnswered(HttpRequest request, IEnumerable<QuestionVM> questions)
+        {
+            var questionAnswered = false;
+            foreach (var question in questions)
+            {
+                if (request.Form.ContainsKey(question.QuestionId))
+                {
+                    StringValues newAnswer;
+                    request.Form.TryGetValue(question.QuestionId, out newAnswer);
+                    questionAnswered = !(string.IsNullOrWhiteSpace(newAnswer.ToString()));
+                    if (questionAnswered) break;
+                }
+            }
+
+            return questionAnswered;
         }
 
         public bool HasPathChanged(HttpRequest request, IEnumerable<QuestionVM> questions)
@@ -368,6 +413,29 @@ namespace SYE.Helpers
 
             return pathChange;
         }
+
+        public string GetNextPageIdFromPage(FormVM formVm, string pageId)
+        {
+            var nextPageId = string.Empty;
+            var referencePage = formVm.Pages.FirstOrDefault(p => p.PageId == pageId);
+            if (referencePage?.Questions != null)
+            {
+                nextPageId = referencePage.NextPageId;
+                foreach (var question in referencePage.Questions)
+                {
+                    foreach (var answerLogic in question.AnswerLogic)
+                    {
+                        if (answerLogic.Value == question.Answer)
+                        {
+                            nextPageId = answerLogic.NextPageId;
+                        }
+                    }
+                }
+            }
+
+            return nextPageId;
+        }
+
         /// <summary>
         /// returns true if the next question in the path has been answered
         /// </summary>

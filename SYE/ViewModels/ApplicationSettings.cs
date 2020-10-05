@@ -29,6 +29,7 @@ namespace SYE.ViewModels
         public string SiteTitleSuffix { get; set; }
         public string DefaultServiceName { get; set; }
         public string EmptySearchError { get; set; }
+        public string NonSelectedServiceName { get; set; }
     }
 
     public class ApplicationSettings

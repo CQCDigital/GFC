@@ -39,6 +39,19 @@ namespace SYE.Controllers
             {
                 return GetCustomErrorCode(EnumStatusCode.FormPageAlreadySubmittedError, "Error with user action. Feedback already submitted");
             }
+            //this next piece of code determines if the user came from when it happened and pressed the back button
+            //this happens if a user comes from cqc having selected a location
+            //if so then the user skipped the search which would normally clear the change mode
+            if (lastPage != null && lastPage.Contains("where-it-happened") && id == _config.Value.FormStartPage)
+            {
+                var form = _sessionService.GetFormVmFromSession();
+                //If user picked a service on CQC site, search cannot have been the previous page ==> go to next previousPage
+                var fromCqc = form.SubmissionData?.FirstOrDefault(x => x.Id == "LocationFromCqcFlag").Value;
+                if (fromCqc != null)
+                {
+                    _sessionService.ClearChangeMode();
+                }
+            }
 
             _sessionService.SetLastPage($"form/{id}");
 
@@ -108,7 +121,7 @@ namespace SYE.Controllers
                 //Update the users journey                
                 if (!string.IsNullOrWhiteSpace(_sessionService.GetChangeModeRedirectId()) && pageVm.NextPageId != _config.Value.SiteTextStrings.ReviewPageId)
                 {
-                    _sessionService.UpdateNavOrder(pageVm.PageId, _sessionService.GetChangeModeRedirectId());
+                    _sessionService.UpdateNavOrderAtRedirectTrigger(pageVm.PageId, _sessionService.GetChangeModeRedirectId());
                 }
                 else
                 {                    
@@ -121,7 +134,9 @@ namespace SYE.Controllers
                     {
                         _sessionService.ClearChangeMode();
                     }
-                    _sessionService.UpdateNavOrder(pageVm.PageId);
+
+                    var serviceNotFoundPageId = _config.Value.ServiceNotFoundPage;
+                    _sessionService.UpdateNavOrder(pageVm.PageId, serviceNotFoundPageId);
                 }                
 
                 //Look for dynamic content, and update the page with dynamic content if it exists:
@@ -168,6 +183,35 @@ namespace SYE.Controllers
                 }
                 var skipNextQuestions = false;//is true if for example user changes from "bad" to "good and bad"
 
+                var formVm = _sessionService.GetFormVmFromSession();
+                if (pageVm.PageId == _config.Value.ServiceNotFoundPage)
+                {
+                    //this happens when a user changes from a selected location to a location not found
+                    _sessionService.UpdateNavOrder(pageVm.PageId);//this enables the page for edit to be this page
+                    //so remove any previously selected location
+                    var searchPage = formVm.Pages.FirstOrDefault(p => p.PageId == "search");
+                    if (searchPage != null)
+                    {
+                        searchPage.Questions.FirstOrDefault().Answer = string.Empty;
+                        //remove search from the nav order
+                        _sessionService.RemoveFromNavOrder(searchPage.PageId);
+                    }
+                    _sessionService.UpdateNavOrder(pageVm.PageId);
+
+                    //update any previously entered location not found
+                    var previousLocation = _sessionService.GetUserSession().LocationName;
+                    var defaultServiceName = _config.Value.SiteTextStrings.DefaultServiceName;
+                    //Store the user entered details
+                    _sessionService.SetUserSessionVars(new UserSessionVM { LocationId = "0", LocationName = defaultServiceName, ProviderId = "" });
+                    //Set up our replacement text
+                    var replacements = new Dictionary<string, string>
+                    {
+                        {previousLocation, defaultServiceName}
+                    };
+
+                    _sessionService.SaveFormVmToSession(formVm, replacements);
+                }
+
                 /*
                 Commented out second part of IF statement
 
@@ -185,14 +229,14 @@ namespace SYE.Controllers
                         if ((_sessionService.GetChangeMode() ?? "") == _config.Value.SiteTextStrings.ReviewPageId)
                         {
                             //this page was revisited and edited from check your answers so we have a completed form
-                            if (!_pageHelper.HasAnswerChanged(Request, pageVm.Questions))
+                            if (!_pageHelper.HasAnswerChanged(Request, pageVm.Questions) && _pageHelper.IsQuestionAnswered(Request, pageVm.Questions))
                             {
                                 //nothings changed so bomb out
                                 _sessionService.ClearChangeMode();
                                 return RedirectToAction("Index", "CheckYourAnswers");
                             }
 
-                            if (pageVm.Questions.Any() && _pageHelper.HasPathChanged(Request, pageVm.Questions))
+                            if (pageVm.Questions.Any() && _pageHelper.HasPathChanged(Request, pageVm.Questions) && (! _sessionService.ChangedLocationMode))
                             {
                                 //user journey will now go down a different path
                                 //so save the page where the journey goes back to the existing path
@@ -213,14 +257,21 @@ namespace SYE.Controllers
                             {
                                 //there's been a change but no change in the path so skip all the next questions
                                 skipNextQuestions = true;
+
                             }
                         }
                         else
                         {
-                            //page revisited from back button click
-                            //this would be the first journey through the questions at this point
-                            //so remove any possible answered questions further along the path
-                            _sessionService.RemoveNavOrderFrom(pageVm.PageId);
+                            if (pageVm.Questions.Any() && _pageHelper.HasPathChanged(Request, pageVm.Questions) &&
+                                (!_sessionService.ChangedLocationMode))
+                            {
+                                //page revisited from multiple back button clicks and the journey path has changed
+                                //so remove any possible answered questions further along the path
+                                _sessionService.RemoveNavOrderFrom(pageVm.PageId);
+                                //user will have to go through the entire journey again
+                                _sessionService.ClearChangeModeRedirectId();
+                            }
+                            //the path hasn't changed e.g. "Bad" to "Good And Bad"
                         }
                     }
                 }
@@ -252,32 +303,15 @@ namespace SYE.Controllers
                 {
                     ViewBag.Title = "Error: " + pageVm.PageTitle + _config.Value.SiteTextStrings.SiteTitleSuffix;
                     return View(pageVm);
-                }                    
+                }
+                
+                _sessionService.ChangedLocationMode = false;//always reset this
 
                 //Now we need to update the FormVM in session.
                 _sessionService.UpdatePageVmInFormVm(pageVm);
 
                 //No errors redirect to the Index page with our new PageId
-                var nextPageId = pageVm.NextPageId;
-
-                if (pageVm.PathChangeQuestion != null)
-                {
-                    //branch the user journey if a previous question has a specific answer
-                    var formVm = _sessionService.GetFormVmFromSession();
-                    var questions = formVm.Pages.SelectMany(m => m.Questions).ToList();
-
-                    var startChangeJourney = questions.FirstOrDefault(m => m.QuestionId == pageVm.PathChangeQuestion.QuestionId);
-                    if (startChangeJourney != null && startChangeJourney.Answer == pageVm.PathChangeQuestion.Answer)
-                    {
-                        nextPageId = pageVm.PathChangeQuestion.NextPageId;
-                    }
-                }
-
-                //check if this is the end of the changed question flow in edit mode
-                if ((_sessionService.GetChangeModeRedirectId() ?? string.Empty) == nextPageId || (_sessionService.GetChangeModeRedirectId() ?? string.Empty) == pageVm.NextPageId || skipNextQuestions)
-                {
-                    nextPageId = _config.Value.SiteTextStrings.ReviewPageId;
-                }
+                var nextPageId = GetNextPageId(formVm, pageVm, userSession.LocationName, skipNextQuestions, serviceNotFound);              
 
                 //Check the nextPageId for preset controller names
                 switch (nextPageId)
@@ -290,6 +324,9 @@ namespace SYE.Controllers
 
                     case "Home":
                         return RedirectToAction("Index", "Home");
+
+                    case "search":
+                        return RedirectToAction("Index", "Search");
                 }
 
                 //Finally, No Errors so load the next page
@@ -302,5 +339,49 @@ namespace SYE.Controllers
                 throw ex;
             }
         }
-   }
+
+        private string GetNextPageId(FormVM formVm, PageVM pageVm, string location, bool skipNextQuestions, bool serviceNotFound)
+        {
+
+            var nextPageId = !string.IsNullOrWhiteSpace(pageVm.NextPageReferenceId) ? _pageHelper.GetNextPageIdFromPage(formVm, pageVm.NextPageReferenceId) : pageVm.NextPageId;
+
+            if (pageVm.PathChangeQuestion != null)
+            {
+                //branch the user journey if a previous question has a specific answer
+                var questions = formVm.Pages.SelectMany(m => m.Questions).ToList();
+
+                var startChangeJourney = questions.FirstOrDefault(m => m.QuestionId == pageVm.PathChangeQuestion.QuestionId);
+                if (startChangeJourney != null && startChangeJourney.Answer == pageVm.PathChangeQuestion.Answer)
+                {
+                    nextPageId = pageVm.PathChangeQuestion.NextPageId;
+                }
+            }
+
+            //check if this is the end of the changed question flow in edit mode
+            if ((_sessionService.GetChangeModeRedirectId() ?? string.Empty) == nextPageId || (_sessionService.GetChangeModeRedirectId() ?? string.Empty) == pageVm.NextPageId || skipNextQuestions)
+            {
+                nextPageId = _config.Value.SiteTextStrings.ReviewPageId;
+            }
+            if (pageVm.PageId == _config.Value.FormStartPage)
+            {
+                if (location == _config.Value.SiteTextStrings.NonSelectedServiceName)
+                {
+                    //this is the first time into the search so show it
+                    nextPageId = "search";
+                }
+                else
+                {
+                    //skip the search but put it into the page history
+                    _sessionService.UpdateNavOrder("search");
+                    if (serviceNotFound)
+                    {
+                        var serviceNotFoundPageId = _config.Value.ServiceNotFoundPage;
+                        _sessionService.UpdateNavOrder(serviceNotFoundPageId);
+                    }
+                }
+            }
+
+            return nextPageId;
+        }
+    }
 }

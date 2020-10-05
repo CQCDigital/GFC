@@ -1,7 +1,6 @@
 
 /*Position and style full-screen modal*/
 .css-dialog {
-    position: fixed;
     left: 0;
     right: 0;
     top: 0;
@@ -54,13 +53,24 @@ css-dialog.fixed {
 }
 
 
+/*Apply 'fixed' property only when modal is tall enough (accessibility issue)*/
+@media (min-height: 424px) {
+    .modal-header-container, .modal-body-container, .modal-footer-container, .css-dialog {
+        position: fixed;
+    }
+
+    .modal-body-container {
+        padding-bottom: 86px;
+    }
+}
+
 /*Style internal modal elements*/
+
 .modal-header-container {
     /*background: #602662;
     height: 20px;
     color: white;
     padding: 7px;*/
-    position: fixed;
     top: 0;
     width: 100%;
     display: grid;
@@ -73,7 +83,7 @@ css-dialog.fixed {
     z-index: 1;
 }
 
-    .modal-header-container .modal-title {
+.modal-header-container .modal-title {
         padding-left: 15px;
         line-height: 2.09375;
     }
@@ -103,10 +113,9 @@ css-dialog.fixed {
 
 
 .modal-body-container {
-    padding: 15px 0px 86px;
+    padding: 15px 0px 0px;
     width: 100%;
     overflow-y: auto;
-    position: fixed;
     top: 115px;
     bottom: 0px;
 }
@@ -116,7 +125,6 @@ css-dialog.fixed {
     }
 
 .modal-footer-container {
-    position: fixed;
     bottom: 0px;
     width: 100%;
     padding-top: 15px;

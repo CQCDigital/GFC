@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 using System.Web;
+using GDSHelpers.Models.FormSchema;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -33,6 +34,7 @@ namespace SYE.Tests.Controllers
         private Mock<ISearchService> mockService;
         private Mock<IOptions<ApplicationSettings>> mockSettings;
         private Mock<IGdsValidation> mockValidation;
+        private Mock<IPageHelper> mockPageHelper;
         private Mock<IUrlHelper> mockUrlHelper;
         private Mock<HttpContext> mockHttpContext;
         private ActionContext actionContext;
@@ -46,6 +48,7 @@ namespace SYE.Tests.Controllers
             mockValidation = new Mock<IGdsValidation>();
             mockUrlHelper = new Mock<IUrlHelper>();
             mockHttpContext = new Mock<HttpContext>();
+            mockPageHelper = new Mock<IPageHelper>();
 
             actionContext = new ActionContext()
             {
@@ -71,10 +74,9 @@ namespace SYE.Tests.Controllers
             mockSettings.Setup(ap => ap.Value).Returns(appSettings);
 
         }
-
         [Fact]
         public void ShouldBeRedirectedToCQCStartpageWhenUserVisitDirectlyToFindAServicePage()
-        {           
+        {
 
             // arrange
             var httpContext = new DefaultHttpContext();
@@ -114,19 +116,27 @@ namespace SYE.Tests.Controllers
                 Page = 1
             };
             var expectedResult = new SearchServiceResult() { Data = new List<SearchResult>() };
-            expectedResult.Data.Add(expectedRecord);           
+            expectedResult.Data.Add(expectedRecord);
+            var formVm = new FormVM { Pages = new List<PageVM> { new PageVM { PageId = "test" } } };
+            var userVm = new UserSessionVM { ProviderId = "123", LocationId = "234", LocationName = "test location" };
+
+            mockSession.Setup(x => x.GetUserSession()).Returns(userVm);
+            mockSession.Setup(x => x.GetFormVmFromSession()).Returns(formVm);
+            mockPageHelper.Setup(x => x.CheckPageHistory(It.IsAny<PageVM>(), It.IsAny<string>(), It.IsAny<bool>(),
+                It.IsAny<ISessionService>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(),
+                It.IsAny<bool>())).Returns(true);
             mockService.Setup(x => x.GetPaginatedResult(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(),
-                It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(expectedResult).Verifiable();            
+                It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(expectedResult).Verifiable();
             mockUrlHelper.Setup(x => x.Action(It.IsAny<UrlActionContext>())).Returns((UrlActionContext uac) =>
                 $"{uac.Controller}/{uac.Action}#{uac.Fragment}?" + string.Join("&",
                     new RouteValueDictionary(uac.Values).Select(p => p.Key + "=" + p.Value)));
             mockValidation.Setup(x => x.CleanText(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<List<string>>(), It.IsAny<HashSet<char>>())).Returns("abc");
-            
-            
+
+
             var tempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
             tempData["search"] = "";
             //act
-            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object);
+            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object);
             sut.Url = mockUrlHelper.Object;
             sut.TempData = tempData;
             var result = sut.SearchResults("search");
@@ -154,18 +164,26 @@ namespace SYE.Tests.Controllers
         {
             //arrange
             SearchServiceResult expectedResult = null;
-          
+
+            var formVm = new FormVM { Pages = new List<PageVM> { new PageVM { PageId = "test" } } };
+            var userVm = new UserSessionVM { ProviderId = "123", LocationId = "234", LocationName = "test location" };
+
+            mockSession.Setup(x => x.GetUserSession()).Returns(userVm);
+            mockSession.Setup(x => x.GetFormVmFromSession()).Returns(formVm);
+            mockPageHelper.Setup(x => x.CheckPageHistory(It.IsAny<PageVM>(), It.IsAny<string>(), It.IsAny<bool>(),
+                It.IsAny<ISessionService>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(),
+                It.IsAny<bool>())).Returns(true);
             mockService.Setup(x => x.GetPaginatedResult(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(),
-                It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(expectedResult).Verifiable();            
+                It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(expectedResult).Verifiable();
             mockValidation.Setup(x => x.CleanText(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<List<string>>(), It.IsAny<HashSet<char>>())).Returns("abc");
             mockUrlHelper.Setup(x => x.Action(It.IsAny<UrlActionContext>())).Returns((UrlActionContext uac) =>
                 $"{uac.Controller}/{uac.Action}#{uac.Fragment}?" + string.Join("&",
-                    new RouteValueDictionary(uac.Values).Select(p => p.Key + "=" + p.Value)));                    
+                    new RouteValueDictionary(uac.Values).Select(p => p.Key + "=" + p.Value)));
 
             var tempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
-            tempData["search"] = "";          
+            tempData["search"] = "";
             //act
-            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object);
+            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object);
             sut.Url = mockUrlHelper.Object;
             sut.TempData = tempData;
 
@@ -186,19 +204,27 @@ namespace SYE.Tests.Controllers
             //arrange
             var search = new string('a', 5000);
             var cleansearch = search;
-         
+
             var mockUrlHelper = new Mock<IUrlHelper>();
+            var formVm = new FormVM { Pages = new List<PageVM> { new PageVM { PageId = "test" } } };
+            var userVm = new UserSessionVM { ProviderId = "123", LocationId = "234", LocationName = "test location" };
+
+            mockSession.Setup(x => x.GetUserSession()).Returns(userVm);
+            mockSession.Setup(x => x.GetFormVmFromSession()).Returns(formVm);
+            mockPageHelper.Setup(x => x.CheckPageHistory(It.IsAny<PageVM>(), It.IsAny<string>(), It.IsAny<bool>(),
+                It.IsAny<ISessionService>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(),
+                It.IsAny<bool>())).Returns(true);
             mockValidation.Setup(x => x.CleanText(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<List<string>>(), It.IsAny<HashSet<char>>())).Returns(cleansearch);
             mockUrlHelper.Setup(x => x.Action(It.IsAny<UrlActionContext>())).Returns((UrlActionContext uac) =>
                 $"{uac.Controller}/{uac.Action}#{uac.Fragment}?" + string.Join("&",
                     new RouteValueDictionary(uac.Values).Select(p => p.Key + "=" + p.Value)));
-                 
+
 
             var tempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
             tempData["search"] = "";
-            
+
             //act
-            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object);
+            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object);
             sut.Url = mockUrlHelper.Object;
             sut.TempData = tempData;
 
@@ -216,13 +242,19 @@ namespace SYE.Tests.Controllers
         public void SearchResults_Should_Return_Internal_Error()
         {
             //arrange            
-           
+            var formVm = new FormVM { Pages = new List<PageVM> { new PageVM { PageId = "test" } } };
+            var userVm = new UserSessionVM { ProviderId = "123", LocationId = "234", LocationName = "test location" };
+
+            mockSession.Setup(x => x.GetUserSession()).Returns(userVm);
+            mockSession.Setup(x => x.GetFormVmFromSession()).Returns(formVm);
+            mockPageHelper.Setup(x => x.CheckPageHistory(It.IsAny<PageVM>(), It.IsAny<string>(), It.IsAny<bool>(),
+                It.IsAny<ISessionService>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(),
+                It.IsAny<bool>())).Returns(true);
             mockService.Setup(x => x.GetPaginatedResult(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(),
                 It.IsAny<string>(), It.IsAny<bool>())).Throws(new Exception());
-           
             mockValidation.Setup(x => x.CleanText(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<List<string>>(), It.IsAny<HashSet<char>>())).Returns("abc");
             //act
-            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object);
+            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object);
             Action act = () => sut.SearchResults("search");
             //assert
             act.Should().Throw<Exception>().Where(ex => ex.Data.Contains("GFCError"));
@@ -245,22 +277,28 @@ namespace SYE.Tests.Controllers
             };
             var expectedResult = new SearchServiceResult() { Data = new List<Models.SearchResult>() };
             expectedResult.Data.Add(expectedrecord);
-         
+
+            var formVm = new FormVM { Pages = new List<PageVM> { new PageVM { PageId = "test" } } };
+            var userVm = new UserSessionVM { ProviderId = "123", LocationId = "234", LocationName = "test location" };
+
+            mockSession.Setup(x => x.GetUserSession()).Returns(userVm);
+            mockSession.Setup(x => x.GetFormVmFromSession()).Returns(formVm);
+            mockPageHelper.Setup(x => x.CheckPageHistory(It.IsAny<PageVM>(), It.IsAny<string>(), It.IsAny<bool>(),
+                It.IsAny<ISessionService>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(),
+                It.IsAny<bool>())).Returns(true);
             mockService.Setup(x => x.GetPaginatedResult(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(),
                 It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(expectedResult).Verifiable();
-        
             mockValidation.Setup(x => x.CleanText(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<List<string>>(), It.IsAny<HashSet<char>>())).Returns("abc");
-           
             mockUrlHelper.Setup(x => x.Action(It.IsAny<UrlActionContext>())).Returns((UrlActionContext uac) =>
                 $"{uac.Controller}/{uac.Action}#{uac.Fragment}?" + string.Join("&",
                     new RouteValueDictionary(uac.Values).Select(p => p.Key + "=" + p.Value)));
-                   
+
 
             var tempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
             tempData["search"] = "";
 
             //act
-            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object);
+            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object);
             sut.Url = mockUrlHelper.Object;
             sut.TempData = tempData;
 
@@ -295,22 +333,28 @@ namespace SYE.Tests.Controllers
                 Data = new List<Models.SearchResult>()
             };
             expectedResult.Data.Add(expectedrecord);
-          
+
+            var formVm = new FormVM { Pages = new List<PageVM> { new PageVM { PageId = "test" } } };
+            var userVm = new UserSessionVM { ProviderId = "123", LocationId = "234", LocationName = "test location" };
+
+            mockSession.Setup(x => x.GetUserSession()).Returns(userVm);
+            mockSession.Setup(x => x.GetFormVmFromSession()).Returns(formVm);
+            mockPageHelper.Setup(x => x.CheckPageHistory(It.IsAny<PageVM>(), It.IsAny<string>(), It.IsAny<bool>(),
+                It.IsAny<ISessionService>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(),
+                It.IsAny<bool>())).Returns(true);
             mockService.Setup(x => x.GetPaginatedResult(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(),
                 It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(expectedResult).Verifiable();
-         
             mockValidation.Setup(x => x.CleanText(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<List<string>>(), It.IsAny<HashSet<char>>())).Returns("abc");
-           
             mockUrlHelper.Setup(x => x.Action(It.IsAny<UrlActionContext>())).Returns((UrlActionContext uac) =>
                 $"{uac.Controller}/{uac.Action}#{uac.Fragment}?" + string.Join("&",
                     new RouteValueDictionary(uac.Values).Select(p => p.Key + "=" + p.Value)));
-                    
+
 
             var tempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
             tempData["search"] = "";
 
             //act
-            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object);
+            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object);
             sut.Url = mockUrlHelper.Object;
             sut.TempData = tempData;
 
@@ -347,14 +391,18 @@ namespace SYE.Tests.Controllers
             };
             expectedResult.Data.Add(expectedrecord);
 
-         
+            var formVm = new FormVM { Pages = new List<PageVM> { new PageVM { PageId = "test" } } };
+            var userVm = new UserSessionVM { ProviderId = "123", LocationId = "234", LocationName = "test location" };
+
+            mockSession.Setup(x => x.GetUserSession()).Returns(userVm);
+            mockSession.Setup(x => x.GetFormVmFromSession()).Returns(formVm);
+            mockPageHelper.Setup(x => x.CheckPageHistory(It.IsAny<PageVM>(), It.IsAny<string>(), It.IsAny<bool>(),
+                It.IsAny<ISessionService>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(),
+                It.IsAny<bool>())).Returns(true);
             mockSession.Setup(x => x.GetUserSearch()).Returns(search);
-            
             mockService.Setup(x => x.GetPaginatedResult(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(),
                 It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(expectedResult).Verifiable();
-           
             mockValidation.Setup(x => x.CleanText(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<List<string>>(), It.IsAny<HashSet<char>>())).Returns(search);
-            
             mockUrlHelper.Setup(x => x.Action(It.IsAny<UrlActionContext>())).Returns((UrlActionContext uac) =>
                 $"{uac.Controller}/{uac.Action}#{uac.Fragment}?" + string.Join("&",
                     new RouteValueDictionary(uac.Values).Select(p => p.Key + "=" + p.Value)));
@@ -363,11 +411,11 @@ namespace SYE.Tests.Controllers
             tempData["search"] = "";
 
             //act
-            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object);
+            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object);
             sut.Url = mockUrlHelper.Object;
             sut.TempData = tempData;
 
-             var result = sut.SearchResults(search, 1, "TestFacet");
+            var result = sut.SearchResults(search, 1, "TestFacet");
 
             //assert
             var viewResult = result as ViewResult;
@@ -396,13 +444,13 @@ namespace SYE.Tests.Controllers
             var expectedResult = new SearchServiceResult() { Data = new List<SearchResult> { expectedrecord } };
 
             var facets = new List<SelectItem>
-            {
-                new SelectItem {Text = "Facet1", Selected = true},
-                new SelectItem {Text = "Facet2", Selected = true},
-                new SelectItem {Text = "Facet3", Selected = false},
-                new SelectItem {Text = "Face41", Selected = false}
-            };
-            var facetsModal = new List<SelectItem> {}; //Pass empty list of Modal facets
+                    {
+                        new SelectItem {Text = "Facet1", Selected = true},
+                        new SelectItem {Text = "Facet2", Selected = true},
+                        new SelectItem {Text = "Facet3", Selected = false},
+                        new SelectItem {Text = "Face41", Selected = false}
+                    };
+            var facetsModal = new List<SelectItem> { }; //Pass empty list of Modal facets
             var expectedTotalCount = facets.Count();
             var expectedSelectedCount = facets.Count(x => x.Selected);
 
@@ -410,24 +458,28 @@ namespace SYE.Tests.Controllers
             facetsList.AddRange(facets.Select(x => x.Text));
             expectedResult.Facets = facetsList;
 
-            
+            var formVm = new FormVM { Pages = new List<PageVM> { new PageVM { PageId = "test" } } };
+            var userVm = new UserSessionVM { ProviderId = "123", LocationId = "234", LocationName = "test location" };
+
+            mockSession.Setup(x => x.GetUserSession()).Returns(userVm);
+            mockSession.Setup(x => x.GetFormVmFromSession()).Returns(formVm);
+            mockPageHelper.Setup(x => x.CheckPageHistory(It.IsAny<PageVM>(), It.IsAny<string>(), It.IsAny<bool>(),
+                It.IsAny<ISessionService>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(),
+                It.IsAny<bool>())).Returns(true);
             mockSession.Setup(x => x.GetUserSearch()).Returns(search);
-            
             mockService.Setup(x => x.GetPaginatedResult(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(),
                 It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(expectedResult).Verifiable();
-           
             mockValidation.Setup(x => x.CleanText(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<List<string>>(), It.IsAny<HashSet<char>>())).Returns(search);
-          
             mockUrlHelper.Setup(x => x.Action(It.IsAny<UrlActionContext>())).Returns((UrlActionContext uac) =>
                 $"{uac.Controller}/{uac.Action}#{uac.Fragment}?" + string.Join("&",
                     new RouteValueDictionary(uac.Values).Select(p => p.Key + "=" + p.Value)));
-                   
+
 
             var tempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
             tempData["search"] = "";
 
             //act
-            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object);
+            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object);
             sut.Url = mockUrlHelper.Object;
             sut.TempData = tempData;
 
@@ -481,14 +533,14 @@ namespace SYE.Tests.Controllers
             };
             var expectedResult = new SearchServiceResult() { Data = new List<SearchResult> { expectedrecord } };
 
-            var facets = new List<SelectItem> {};  //Pass empty list of standard facets
+            var facets = new List<SelectItem> { };  //Pass empty list of standard facets
             var facetsModal = new List<SelectItem>
-            {
-                new SelectItem {Text = "Facet1", Selected = true},
-                new SelectItem {Text = "Facet2", Selected = true},
-                new SelectItem {Text = "Facet3", Selected = false},
-                new SelectItem {Text = "Face41", Selected = false}
-            };
+                    {
+                        new SelectItem {Text = "Facet1", Selected = true},
+                        new SelectItem {Text = "Facet2", Selected = true},
+                        new SelectItem {Text = "Facet3", Selected = false},
+                        new SelectItem {Text = "Face41", Selected = false}
+                    };
             var expectedTotalCount = facetsModal.Count();
             var expectedSelectedCount = facetsModal.Count(x => x.Selected);
 
@@ -496,14 +548,18 @@ namespace SYE.Tests.Controllers
             facetsList.AddRange(facetsModal.Select(x => x.Text));
             expectedResult.Facets = facetsList;
 
+            var formVm = new FormVM { Pages = new List<PageVM> { new PageVM { PageId = "test" } } };
+            var userVm = new UserSessionVM { ProviderId = "123", LocationId = "234", LocationName = "test location" };
 
+            mockSession.Setup(x => x.GetUserSession()).Returns(userVm);
+            mockSession.Setup(x => x.GetFormVmFromSession()).Returns(formVm);
+            mockPageHelper.Setup(x => x.CheckPageHistory(It.IsAny<PageVM>(), It.IsAny<string>(), It.IsAny<bool>(),
+                It.IsAny<ISessionService>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(),
+                It.IsAny<bool>())).Returns(true);
             mockSession.Setup(x => x.GetUserSearch()).Returns(search);
-
             mockService.Setup(x => x.GetPaginatedResult(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(),
                 It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(expectedResult).Verifiable();
-
             mockValidation.Setup(x => x.CleanText(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<List<string>>(), It.IsAny<HashSet<char>>())).Returns(search);
-
             mockUrlHelper.Setup(x => x.Action(It.IsAny<UrlActionContext>())).Returns((UrlActionContext uac) =>
                 $"{uac.Controller}/{uac.Action}#{uac.Fragment}?" + string.Join("&",
                     new RouteValueDictionary(uac.Values).Select(p => p.Key + "=" + p.Value)));
@@ -513,7 +569,7 @@ namespace SYE.Tests.Controllers
             tempData["search"] = "";
 
             //act
-            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object);
+            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object);
             sut.Url = mockUrlHelper.Object;
             sut.TempData = tempData;
 
@@ -568,20 +624,20 @@ namespace SYE.Tests.Controllers
             var expectedResult = new SearchServiceResult() { Data = new List<SearchResult> { expectedrecord } };
 
             var facets = new List<SelectItem>
-            {
-                new SelectItem {Text = "Facet1", Selected = true},
-                new SelectItem {Text = "Facet2", Selected = false},
-                new SelectItem {Text = "Facet3", Selected = true},
-                new SelectItem {Text = "Face41", Selected = false}
-            };
+                    {
+                        new SelectItem {Text = "Facet1", Selected = true},
+                        new SelectItem {Text = "Facet2", Selected = false},
+                        new SelectItem {Text = "Facet3", Selected = true},
+                        new SelectItem {Text = "Face41", Selected = false}
+                    };
             var facetsModal = new List<SelectItem>
-            {
-                new SelectItem {Text = "Facet1", Selected = true},
-                new SelectItem {Text = "Facet2", Selected = true},
-                new SelectItem {Text = "Facet3", Selected = false},
-                new SelectItem {Text = "Face41", Selected = false}
-            };
-            
+                    {
+                        new SelectItem {Text = "Facet1", Selected = true},
+                        new SelectItem {Text = "Facet2", Selected = true},
+                        new SelectItem {Text = "Facet3", Selected = false},
+                        new SelectItem {Text = "Face41", Selected = false}
+                    };
+
             var expectedTotalCount = facets.Count();
             var expectedSelectedCount = 0; //As we are passing content that should never be supplied, we want to never select facets to filter by.
 
@@ -589,9 +645,15 @@ namespace SYE.Tests.Controllers
             facetsList.AddRange(facets.Select(x => x.Text));
             expectedResult.Facets = facetsList;
 
+            var formVm = new FormVM { Pages = new List<PageVM> { new PageVM { PageId = "test" } } };
+            var userVm = new UserSessionVM { ProviderId = "123", LocationId = "234", LocationName = "test location" };
 
+            mockSession.Setup(x => x.GetUserSession()).Returns(userVm);
+            mockSession.Setup(x => x.GetFormVmFromSession()).Returns(formVm);
+            mockPageHelper.Setup(x => x.CheckPageHistory(It.IsAny<PageVM>(), It.IsAny<string>(), It.IsAny<bool>(),
+                It.IsAny<ISessionService>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(),
+                It.IsAny<bool>())).Returns(true);
             mockSession.Setup(x => x.GetUserSearch()).Returns(search);
-
             mockService.Setup(x => x.GetPaginatedResult(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(),
                 It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(expectedResult).Verifiable();
 
@@ -606,7 +668,7 @@ namespace SYE.Tests.Controllers
             tempData["search"] = "";
 
             //act
-            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object);
+            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object);
             sut.Url = mockUrlHelper.Object;
             sut.TempData = tempData;
 
@@ -645,9 +707,16 @@ namespace SYE.Tests.Controllers
         public void SearchResultsWithEmptySearchShouldReturnErrorMessage(string search)
         {
             //arrange
-           
+            var formVm = new FormVM { Pages = new List<PageVM> { new PageVM { PageId = "test" } } };
+            var userVm = new UserSessionVM { ProviderId = "123", LocationId = "234", LocationName = "test location" };
+
+            mockSession.Setup(x => x.GetUserSession()).Returns(userVm);
+            mockSession.Setup(x => x.GetFormVmFromSession()).Returns(formVm);
+            mockPageHelper.Setup(x => x.CheckPageHistory(It.IsAny<PageVM>(), It.IsAny<string>(), It.IsAny<bool>(),
+                It.IsAny<ISessionService>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(),
+                It.IsAny<bool>())).Returns(true);
             mockValidation.Setup(x => x.CleanText(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<List<string>>(), It.IsAny<HashSet<char>>())).Returns(search);
-           
+
             mockUrlHelper.Setup(x => x.Action(It.IsAny<UrlActionContext>())).Returns((UrlActionContext uac) =>
                 $"{uac.Controller}/{uac.Action}#{uac.Fragment}?" + string.Join("&",
                     new RouteValueDictionary(uac.Values).Select(p => p.Key + "=" + p.Value)));
@@ -655,7 +724,7 @@ namespace SYE.Tests.Controllers
             var tempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
             tempData["search"] = "";
             //act
-            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object);
+            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object);
             sut.Url = mockUrlHelper.Object;
             sut.TempData = tempData;
 
@@ -687,15 +756,22 @@ namespace SYE.Tests.Controllers
             var expectedResult = new List<Models.SearchResult>();
             expectedResult.Add(expectedrecord);
 
-           
-           
+
+            var formVm = new FormVM { Pages = new List<PageVM> { new PageVM { PageId = "test" } } };
+            var userVm = new UserSessionVM { ProviderId = "123", LocationId = "234", LocationName = "test location" };
+
+            mockSession.Setup(x => x.GetUserSession()).Returns(userVm);
+            mockSession.Setup(x => x.GetFormVmFromSession()).Returns(formVm);
+            mockPageHelper.Setup(x => x.CheckPageHistory(It.IsAny<PageVM>(), It.IsAny<string>(), It.IsAny<bool>(),
+                It.IsAny<ISessionService>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(),
+                It.IsAny<bool>())).Returns(true);
             mockService.Setup(x => x.GetPaginatedResult(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(),
                 It.IsAny<string>(), It.IsAny<bool>())).Throws(new Exception());
-           
+
             mockValidation.Setup(x => x.CleanText(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<List<string>>(), It.IsAny<HashSet<char>>())).Returns("abc");
 
             //act
-            var sut = new SearchController( mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object);
+            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object);
             Action act = () => sut.SearchResults("search", 1);
 
             //assert
@@ -708,10 +784,18 @@ namespace SYE.Tests.Controllers
             var temData = new Mock<TempDataSerializer>();
             var mockTempDataProvider = new Mock<SessionStateTempDataProvider>(temData.Object);
 
+            var formVm = new FormVM { Pages = new List<PageVM> { new PageVM { PageId = "test" } } };
+            var userVm = new UserSessionVM { ProviderId = "123", LocationId = "234", LocationName = "test location" };
+
+            mockSession.Setup(x => x.GetUserSession()).Returns(userVm);
+            mockSession.Setup(x => x.GetFormVmFromSession()).Returns(formVm);
+            mockPageHelper.Setup(x => x.CheckPageHistory(It.IsAny<PageVM>(), It.IsAny<string>(), It.IsAny<bool>(),
+                It.IsAny<ISessionService>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(),
+                It.IsAny<bool>())).Returns(true);
             mockValidation.Setup(x => x.CleanText(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<List<string>>(), It.IsAny<HashSet<char>>())).Returns("abc");
 
 
-            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object);
+            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object);
 
             sut.TempData = new TempDataDictionary(mockHttpContext.Object, mockTempDataProvider.Object);
             sut.Url = mockUrlHelper.Object;
@@ -723,6 +807,7 @@ namespace SYE.Tests.Controllers
             var viewResult = result as ViewResult;
 
             var model = viewResult.Model as SearchVm;
+            model.Should().NotBe(null);
             model.SearchTerm.Should().Be(null);
         }
 
@@ -736,14 +821,18 @@ namespace SYE.Tests.Controllers
             {
                 HttpContext = httpContext,
             };
-            
+
             IOptions<ApplicationSettings> options = Options.Create(appSettings);
 
-           
+            var userVm = new UserSessionVM { ProviderId = "123", LocationId = "234", LocationName = "test location" };
+            var formVm = new FormVM { Pages = new List<PageVM> { new PageVM { PageId = "test" } } };
+
+            mockSession.Setup(x => x.GetUserSession()).Returns(userVm);
+            mockSession.Setup(x => x.GetFormVmFromSession()).Returns(formVm);
             mockValidation.Setup(x => x.CleanText(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<List<string>>(), It.IsAny<HashSet<char>>())).Returns("abc");
 
             //act
-            var sut = new SearchController( mockService.Object, mockSession.Object, options, mockValidation.Object);
+            var sut = new SearchController(mockService.Object, mockSession.Object, options, mockValidation.Object, mockPageHelper.Object);
             sut.ControllerContext = controllerContext;
             var result = sut.SelectLocation(new UserSessionVM());
 
@@ -765,22 +854,25 @@ namespace SYE.Tests.Controllers
                 HttpContext = httpContext,
             };
 
-            var userVm = new UserSessionVM { ProviderId = "123", LocationId = "234", LocationName = "test location" };           
-           
+            var userVm = new UserSessionVM { ProviderId = "123", LocationId = "234", LocationName = "test location" };
+
+            var formVm = new FormVM { Pages = new List<PageVM> { new PageVM { PageId = "test" } } };
+
+            mockSession.Setup(x => x.GetUserSession()).Returns(userVm);
+            mockSession.Setup(x => x.GetFormVmFromSession()).Returns(formVm);
             mockSession.Setup(x => x.SetUserSessionVars(userVm)).Verifiable();
             IOptions<ApplicationSettings> options = Options.Create(appSettings);
-           
+
             mockValidation.Setup(x => x.CleanText(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<List<string>>(), It.IsAny<HashSet<char>>())).Returns("abc");
 
             //act
-            var sut = new SearchController(mockService.Object, mockSession.Object, options, mockValidation.Object);
+            var sut = new SearchController(mockService.Object, mockSession.Object, options, mockValidation.Object, mockPageHelper.Object);
             sut.ControllerContext = controllerContext;
             sut.SelectLocation(userVm);
 
             //assert
             mockSession.Verify();
         }
-
         [Fact]
         public void SelectLocationShouldCallSessionToSaveForm()
         {
@@ -792,21 +884,27 @@ namespace SYE.Tests.Controllers
                 HttpContext = httpContext,
             };
 
-            var locationName = "test location";
-                     
+            var oldlocationName = "test location1";
+            var newlocationName = "test location2";
+
             var replacements = new Dictionary<string, string>
             {
-                {"!!location_name!!", locationName}
+                {oldlocationName, newlocationName}
             };
-            mockSession.Setup(x => x.LoadLatestFormIntoSession(replacements)).Verifiable();
+            var formVm = new FormVM { Pages = new List<PageVM> { new PageVM { PageId = "test" } } };
+            var userVm = new UserSessionVM { ProviderId = "123", LocationId = "234", LocationName = oldlocationName };
+
+            mockSession.Setup(x => x.GetUserSession()).Returns(userVm);
+            mockSession.Setup(x => x.GetFormVmFromSession()).Returns(formVm);
+            mockSession.Setup(x => x.SaveFormVmToSession(formVm, replacements)).Verifiable();
             IOptions<ApplicationSettings> options = Options.Create(appSettings);
-          
+
             mockValidation.Setup(x => x.CleanText(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<List<string>>(), It.IsAny<HashSet<char>>())).Returns("abc");
 
             //act
-            var sut = new SearchController(mockService.Object, mockSession.Object, options, mockValidation.Object);
+            var sut = new SearchController(mockService.Object, mockSession.Object, options, mockValidation.Object, mockPageHelper.Object);
             sut.ControllerContext = controllerContext;
-            sut.SelectLocation(new UserSessionVM { LocationName = locationName });
+            sut.SelectLocation(new UserSessionVM { LocationName = newlocationName });
 
             //assert
             mockSession.Verify();
@@ -817,12 +915,15 @@ namespace SYE.Tests.Controllers
         {
             //arrange
             var userVm = new UserSessionVM { ProviderId = "123", LocationId = "234", LocationName = "test location" };
-                   
+            var formVm = new FormVM { Pages = new List<PageVM> { new PageVM { PageId = "test" } } };
+
+            mockSession.Setup(x => x.GetUserSession()).Returns(userVm);
+            mockSession.Setup(x => x.GetFormVmFromSession()).Returns(formVm);
             mockSession.Setup(x => x.SetUserSessionVars(userVm)).Throws(new Exception());
-          
+
             mockValidation.Setup(x => x.CleanText(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<List<string>>(), It.IsAny<HashSet<char>>())).Returns("abc");
             //act
-            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object);
+            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object);
             Action act = () => sut.SelectLocation(userVm);
             //assert
             act.Should().Throw<Exception>().Where(ex => ex.Data.Contains("GFCError"));
@@ -837,14 +938,19 @@ namespace SYE.Tests.Controllers
             {
                 HttpContext = httpContext,
             };
-
+            var formVm = new FormVM { Pages = new List<PageVM> { new PageVM { PageId = "test" } } };
             var userVm = new UserSessionVM { ProviderId = "123", LocationId = "234", LocationName = "test location" };
-                      
+
+            mockSession.Setup(x => x.GetUserSession()).Returns(userVm);
+            mockSession.Setup(x => x.GetFormVmFromSession()).Returns(formVm);
+            mockPageHelper.Setup(x => x.CheckPageHistory(It.IsAny<PageVM>(), It.IsAny<string>(), It.IsAny<bool>(),
+                It.IsAny<ISessionService>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(),
+                It.IsAny<bool>())).Returns(true);
             mockService.Setup(x => x.GetPaginatedResult(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), true)).Throws(new Exception());
-           
+
             mockValidation.Setup(x => x.CleanText(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<List<string>>(), It.IsAny<HashSet<char>>())).Returns("abc");
             //act
-            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object);
+            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object);
             sut.ControllerContext = controllerContext;
             var response = sut.SearchResults("searchString");
             //assert
@@ -861,20 +967,23 @@ namespace SYE.Tests.Controllers
             {
                 HttpContext = httpContext,
             };
-
+            var formVm = new FormVM { Pages = new List<PageVM> { new PageVM { PageId = "test" } } };
             var userVm = new UserSessionVM { ProviderId = "123", LocationId = "234", LocationName = "test location" };
-           
+
+            mockSession.Setup(x => x.GetUserSession()).Returns(userVm);
+            mockSession.Setup(x => x.GetFormVmFromSession()).Returns(formVm);
+            mockSession.Setup(x => x.SaveFormVmToSession(It.IsAny<FormVM>(), It.IsAny<Dictionary<string, string>>())).Throws(new Exception());
             mockSession.Setup(x => x.LoadLatestFormIntoSession(It.IsAny<Dictionary<string, string>>())).Throws(new Exception());
-           
             mockValidation.Setup(x => x.CleanText(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<List<string>>(), It.IsAny<HashSet<char>>())).Returns("abc");
             //act
-            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object);
+            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object);
             sut.ControllerContext = controllerContext;
             var response = sut.SelectLocation(userVm);
             //assert
             var result = response as StatusResult;
             result.StatusCode.Should().Be(551);
         }
+
         [Fact]
         public void LocationNotFoundShouldReturn552ErrorCode()
         {
@@ -887,19 +996,58 @@ namespace SYE.Tests.Controllers
             };
 
             var userVm = new UserSessionVM { ProviderId = "123", LocationId = "234", LocationName = "test location" };
-                     
 
-            mockSession.Setup(x => x.LoadLatestFormIntoSession(It.IsAny<Dictionary<string, string>>())).Throws(new Exception());
-        
+            mockSession.Setup(x => x.GetUserSession()).Returns(userVm);
+            mockSession.Setup(x => x.SaveFormVmToSession(It.IsAny<FormVM>(), It.IsAny<Dictionary<string, string>>())).Throws(new Exception());
             mockValidation.Setup(x => x.CleanText(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<List<string>>(), It.IsAny<HashSet<char>>())).Returns("abc");
             //act
-            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object);
+            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object);
             sut.ControllerContext = controllerContext;
             var response = sut.LocationNotFound();
             //assert
             var result = response as StatusResult;
             result.StatusCode.Should().Be(552);
         }
-       
+
+        [Fact]
+        public void SearchResultsShouldReturn568ErrorCode()
+        {
+            //arrange
+            //Controller needs a controller context
+            var httpContext = new DefaultHttpContext();
+            var controllerContext = new ControllerContext()
+            {
+                HttpContext = httpContext,
+            };
+
+            mockSession.Setup(x => x.GetLastPage()).Returns("you-have-sent-your-feedback");
+            //act
+            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object);
+            sut.ControllerContext = controllerContext;
+            var response = sut.SearchResults("searchString");
+            //assert
+            var result = response as StatusResult;
+            result.StatusCode.Should().Be(568);
+        }
+        [Fact]
+        public void IndexShouldReturn568ErrorCode()
+        {
+            //arrange
+            //Controller needs a controller context
+            var httpContext = new DefaultHttpContext();
+            var controllerContext = new ControllerContext()
+            {
+                HttpContext = httpContext,
+            };
+
+            mockSession.Setup(x => x.GetLastPage()).Returns("you-have-sent-your-feedback");
+            //act
+            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object);
+            sut.ControllerContext = controllerContext;
+            var response = sut.Index();
+            //assert
+            var result = response as StatusResult;
+            result.StatusCode.Should().Be(568);
+        }
     }
 }

@@ -40,25 +40,28 @@
 
                 <form asp-action="SearchResults" method="get">
 
-                    <gds-form-group isError="@(!string.IsNullOrEmpty(Model.ErrorMessage))">
-                        <span id="search-error" class="govuk-error-message">
-                            <span class="govuk-visually-hidden">Error:</span> @Model.ErrorMessage
-                        </span>
-                        @{ var inputCss = !string.IsNullOrEmpty(Model.ErrorMessage) ? "govuk-input gfc-search-button govuk-input--error" : "govuk-input gfc-search-button"; }
-                        <input class="@inputCss" id="search" name="search" type="text" value="@Model.Search">
-                        <input alt="Search For A Service" class="search-button" type="image" name="submit" src="~/images/search.png" />
+                    @{
+                        var inputCss = "govuk-input gfc-search-button";
+                        var errorIdForAria = "";
+                        var showError = !string.IsNullOrEmpty(Model.ErrorMessage);
+                        if (showError)
+                        {
+                            inputCss += " govuk-input--error";
+                            errorIdForAria = "search-error";
+                        }
+                    }
+                    
+                    <gds-form-group isError="@showError">
+                        
+                        @if (showError)
+                        {
+                            <span id="search-error" class="govuk-error-message">
+                                <span class="govuk-visually-hidden">Error:</span> @Model.ErrorMessage
+                            </span>
+                        }
+                        <input class="@inputCss" id="search" name="search" type="text" value="@Model.Search" aria-describedby="@errorIdForAria">
+                        <button alt="Search For A Service" class="search-button" name="submit"/>
                     </gds-form-group>
-
-                    @*<div class="govuk-form-group">
-                            @if (Model.ShowExceededMaxLengthMessage)
-                            {
-                                <label class="govuk-error-message" for="event-name">
-                                    Please reduce the number of characters in the text field below. (Max 1000)
-                                </label>
-                            }
-                            <input class="govuk-input gfc-search-button" id="search" name="search" type="text" value="@Model.Search">
-                            <input alt="Search For A Service" class="search-button" type="image" name="submit" src="~/images/search.png" />
-                        </div>*@
 
                 </form>
 
@@ -103,41 +106,46 @@
 @if (Model.Data.Count > 0)
 {
     <gds-row>
-        <div class="govuk-grid-column-full govuk-grid-column-one-third-from-desktop sticky-element-top hide-tablet-or-below">
+        <div class="govuk-grid-column-full govuk-grid-column-one-third-from-desktop hide-tablet-or-below">
             <a id="results-skiplink" href="#search-results" class="govuk-skip-link">Skip to results</a>
 
             <details id="gfc-search-details" class="govuk-details" open>
                 <summary class="govuk-details__summary govuk-details__summaryboarder">
-                    <span class="govuk-visually-hidden">Filter by type of service</span>
-                    <span disabled="true" class="govuk-input gfc-filter-title">
+                    <h2 disabled="true" class="govuk-input gfc-filter-title">
                         Filter by type of service
-                        <img class="gfc-filter-title-arrow" alt="Select Type Of Service" src="~/images/select.png" />
-                    </span>
+                        <span class="govuk-visually-hidden">: show filters</span>
+                        <img class="gfc-filter-title-arrow" alt="" src="~/images/select.png" />
+                    </h2>
                 </summary>
                 @if (Model.Facets.Count > 0)
                 {
                     <div class="govuk-details__text">
                         <form id="frm_facets" asp-action="ApplyFilter" method="post">
-                            <div class="govuk-form-group govuk-checkboxes--small gfc-filter-items">
-                                @for (var index = 0; index < Model.Facets.Count; index++)
-                                {
-                                <div class="govuk-checkboxes__item">
+                            <fieldset class="gfc-fieldset-no-border">
+                                <legend>
+                                    <span class="govuk-visually-hidden">Filter by type of service</span>
+                                </legend>
+                                <div class="govuk-form-group govuk-checkboxes--small gfc-filter-items">
+                                    @for (var index = 0; index < Model.Facets.Count; index++)
+                                    {
+                                        <div class="govuk-checkboxes__item">
 
-                                    <input class="govuk-checkboxes__input" asp-for="@Model.Facets[index].Selected" type="checkbox" onchange="doSubmitIfDesktop(this, 'frm_facets')">
-                                    <label class="govuk-label govuk-checkboxes__label gfc-filter-item" asp-for="@Model.Facets[index].Selected">
-                                        @Model.Facets[index].Text
-                                    </label>
-                                    <input asp-for="@Model.Facets[index].Selected" value="false" type="hidden" />
-                                    <input asp-for="@Model.Facets[index].Text" type="hidden" />
+                                            <input class="govuk-checkboxes__input" asp-for="@Model.Facets[index].Selected" type="checkbox" onchange="doSubmitIfDesktop(this, 'frm_facets')">
+                                            <label class="govuk-label govuk-checkboxes__label gfc-filter-item" asp-for="@Model.Facets[index].Selected">
+                                                @Model.Facets[index].Text
+                                            </label>
+                                            <input asp-for="@Model.Facets[index].Selected" value="false" type="hidden" />
+                                            <input asp-for="@Model.Facets[index].Text" type="hidden" />
 
+                                        </div>
+                                    }
                                 </div>
-                                }
-                            </div>
+                            </fieldset>
                             <input type="hidden" asp-for="Search" />
-                            <button type="button" id="btn--filter-clear" onclick="clearFiltersAndSubmit('frm_facets');" class="govuk-button link-button gfc-filter-apply-button govuk-filter-button-blue govuk-filter-button-hide">
+                            <button type="button" id="btn--filter-clear" onclick="clearFiltersAndSubmit('frm_facets');" class="govuk-button link-button gfc-filter-apply-button govuk-filter-button-blue govuk-filter-button-hide jsOnly" role="link">
                                 Clear filter
                             </button>
-                            <button type="submit" id="btn--filter" class="govuk-button link-button gfc-filter-apply-button govuk-filter-button-blue">
+                            <button type="submit" id="btn--filter" class="govuk-button link-button gfc-filter-apply-button govuk-filter-button-blue" role="link">
                                 Apply filter
                             </button>
                         </form>
@@ -156,7 +164,7 @@
             <gds-row id="filter-results-header">
                 <gds-column desktop-size="OneThird" tablet-size="None" hide-at-or-below-size="Tablet">
                     <h2 class="govuk-!-margin-0">
-                        <gds-paragraph>
+                        <gds-paragraph id="resultsCount" role="status">
                             @Model.Count.ToString("#,##0") results
                         </gds-paragraph>
                     </h2>
@@ -179,9 +187,16 @@
                             <input id="page-@result.Page-page-pos-@result.Index" name="SelectedPosition" value="page-@result.Page-page-pos-@result.Index" type="hidden" />
                             <gds-row>
                                 <gds-column desktop-size="FullWidth" tablet-size="FullWidth">
-                                    <button type="submit" id="btn-@result.Id" class="govuk-button link-button">
-                                        <gds-heading heading-type="H3" class="govuk-heading-s" text="@result.Name"></gds-heading>
-                                    </button>
+
+                                    <div class="govuk-visually-hidden">
+                                        <span id="fb-@result.Id">Give feedback on </span>
+                                    </div>
+                                    <h3 class="govuk-heading-s">
+                                        <button role="link" type="submit" id="btn-@result.Id" class="govuk-button link-button" aria-labelledby="fb-@result.Id btn-@result.Id">
+                                            @result.Name
+                                        </button>
+                                    </h3>
+
                                     @if (!string.IsNullOrWhiteSpace(result.AlsoKnownAs) && result.AlsoKnownAs != result.Name)
                                     {
                                         <p class="govuk-hint">
@@ -258,50 +273,6 @@
         </gds-column>
 
     </gds-row>
-
-    @*<div class="gfc-modal-overlay"></div>*@
-    @*<div id="modalContent" class="css-dialog" aria-modal="true" role="dialog" tabindex="-1">
-
-            <form id="frm_facets_modal" asp-action="ApplyFilter" method="post">
-
-                <div class="modal-header-container">
-                    <h1 class="govuk-heading-xl modal-title">Filter</h1>
-                    <gds-paragraph class="category">
-                        <a id="modal-close-btn-header" class="govuk-link modal-close-link show-hide-modal-link tabbable" onclick="hideModal()" tabindex="0" href="#content">Return to results</a>
-                    </gds-paragraph>
-                </div>
-
-                <div class="modal-body-container">
-                    <div class="govuk-width-container">
-                        <div class="govuk-form-group govuk-checkboxes--small">
-
-                            @for (var index = 0; index < Model.FacetsModal.Count; index++)
-                            {
-                                <div class="govuk-checkboxes__item">
-
-                                    <input class="govuk-checkboxes__input" asp-for="@Model.FacetsModal[index].Selected" type="checkbox">
-                                    <label class="govuk-label govuk-checkboxes__label gfc-filter-item" asp-for="@Model.FacetsModal[index].Selected">
-                                        @Model.FacetsModal[index].Text
-                                    </label>
-                                    <input asp-for="@Model.FacetsModal[index].Selected" value="false" type="hidden" />
-                                    <input asp-for="@Model.FacetsModal[index].Text" type="hidden" />
-
-                                </div>
-                            }
-                            <input type="hidden" asp-for="Search" />
-
-                        </div>
-                    </div>
-                </div>
-
-                <div class="modal-footer-container">
-                    <div class="govuk-width-container">
-                        <button type="submit" id="modal-close-btn-main" class="govuk-button modal-close-btn tabbable">Apply Filter</button>
-                    </div>
-                </div>
-
-            </form>
-        </div>*@
 }
 <script src="~/lib/dialog-polyfill/dialog-polyfill.js"></script>
 <link href="~/css/filter-modal.css" rel="stylesheet" />
@@ -322,24 +293,28 @@
 
             <div class="modal-body-container">
                 <div class="govuk-width-container">
-                    <div class="govuk-form-group govuk-checkboxes--small">
-                        <input type="hidden" asp-for="FacetsModal.Count" />
-                        @for (var index = 0; index < Model.FacetsModal.Count; index++)
-                        {
-                            <div class="govuk-checkboxes__item">
+                    <fieldset class="gfc-fieldset-no-border">
+                        <legend>
+                            <span class="govuk-visually-hidden">Filter by type of service</span>
+                        </legend>
+                        <div class="govuk-form-group govuk-checkboxes--small">
+                            <input type="hidden" asp-for="FacetsModal.Count" />
+                            @for (var index = 0; index < Model.FacetsModal.Count; index++)
+                            {
+                                <div class="govuk-checkboxes__item">
 
-                                <input class="govuk-checkboxes__input" asp-for="@Model.FacetsModal[index].Selected" type="checkbox">
-                                <label class="govuk-label govuk-checkboxes__label gfc-filter-item" asp-for="@Model.FacetsModal[index].Selected">
-                                    @Model.FacetsModal[index].Text
-                                </label>
-                                <input asp-for="@Model.FacetsModal[index].Selected" value="false" type="hidden" />
-                                <input asp-for="@Model.FacetsModal[index].Text" type="hidden" />
+                                    <input class="govuk-checkboxes__input" asp-for="@Model.FacetsModal[index].Selected" type="checkbox">
+                                    <label class="govuk-label govuk-checkboxes__label gfc-filter-item" asp-for="@Model.FacetsModal[index].Selected">
+                                        @Model.FacetsModal[index].Text
+                                    </label>
+                                    <input asp-for="@Model.FacetsModal[index].Selected" value="false" type="hidden" />
+                                    <input asp-for="@Model.FacetsModal[index].Text" type="hidden" />
 
-                            </div>
-                        }
-                        <input type="hidden" asp-for="Search" />
-
-                    </div>
+                                </div>
+                            }
+                        </div>
+                    </fieldset>
+                    <input type="hidden" asp-for="Search" />
                 </div>
             </div>
 
@@ -355,6 +330,7 @@
 <script>
     $(document).ready(function () {
         setFilterButtons();
+        announceStatusMessages();
     });
 </script>
 

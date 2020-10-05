@@ -46,6 +46,9 @@ namespace SYE.Services
         #region Private Methods
         private async Task<SearchServiceResult> GetDataAsync(string search, int currentPage, int pageSize, string refinementFacets, bool newSearch)
         {
+            refinementFacets = refinementFacets.Replace("'", "");
+            refinementFacets = refinementFacets.Replace("\"", "");
+
             if (newSearch)
             {
                 //clear out all facets for previous search

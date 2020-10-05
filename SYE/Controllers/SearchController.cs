@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using GDSHelpers;
+using GDSHelpers.Models.FormSchema;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using SYE.Models;
 using SYE.Services;
 using SYE.ViewModels;
@@ -15,6 +17,7 @@ namespace SYE.Controllers
 {
     public class SearchController : BaseController
     {
+        private const string _pageId = "search";
         private readonly int _pageSize = 20;
         private readonly int _maxSearchChars = 1000;
         private readonly int _minSearchChars = 1;
@@ -22,6 +25,7 @@ namespace SYE.Controllers
         private readonly ISessionService _sessionService;
         private readonly IOptions<ApplicationSettings> _config;
         private readonly IGdsValidation _gdsValidate;
+        private readonly IPageHelper _pageHelper;
 
         private static readonly HashSet<char> allowedChars = new HashSet<char>(@"1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.,'()?!#$£%^@*;:+=_-/ ");
         private static readonly List<string> restrictedWords = new List<string> { "javascript", "onblur", "onchange", "onfocus", "onfocusin", "onfocusout", "oninput", "onmouseenter", "onmouseleave",
@@ -29,13 +33,13 @@ namespace SYE.Controllers
             "ontouchend", "ontouchmove", "ontouchcancel", "onwheel" };
 
 
-        public SearchController(ISearchService searchService, ISessionService sessionService, IOptions<ApplicationSettings> config, IGdsValidation gdsValidate)
+        public SearchController(ISearchService searchService, ISessionService sessionService, IOptions<ApplicationSettings> config, IGdsValidation gdsValidate, IPageHelper pageHelper)
         {
             _searchService = searchService;
             _sessionService = sessionService;
             _config = config;
             _gdsValidate = gdsValidate;
-            
+            _pageHelper = pageHelper;
         }
 
 
@@ -44,13 +48,36 @@ namespace SYE.Controllers
         [Route("search/find-a-service")]
         public IActionResult Index()
         {
-            //Make Sure we have a clean session
-            _sessionService.ClearSession();
+            var lastPage = _sessionService.GetLastPage();
 
+            if (lastPage != null && lastPage.Contains("you-have-sent-your-feedback"))
+            {
+                return GetCustomErrorCode(EnumStatusCode.FormPageAlreadySubmittedError, "Error with user action. Feedback already submitted");
+            }
+
+            var formVm = _sessionService.GetFormVmFromSession();
+            if (formVm == null)
+            {
+                //clicking on old link or back button from submit does this
+                return GetCustomErrorCode(EnumStatusCode.CYAFormNullError, "Error with user session. formVm is null.");
+            }
+            if ((_sessionService.GetUserSession().LocationName) == null)
+            {
+                return GetCustomErrorCode(EnumStatusCode.CYALocationNullError, "Error with user session. Location is null.");
+            }
+            var pageVm = formVm.Pages.FirstOrDefault(p => p.PageId == _pageId);
+            var serviceNotFoundPage = _config.Value.ServiceNotFoundPage;
+            var formStartPage = _config.Value.FormStartPage;
+
+            if (!_pageHelper.CheckPageHistory(pageVm, lastPage, false, _sessionService, null, serviceNotFoundPage, formStartPage, true))
+            {
+                //user jumps between pages
+                return GetCustomErrorCode(EnumStatusCode.CYASubmissionHistoryError, "Error with user submission. Page history not found: Id='" + _pageId + "'");
+            }
             _sessionService.SetLastPage("search/find-a-service");
 
-            ViewBag.BackLink = new BackLinkVM { Show = true, Url = _config.Value.GFCUrls.StartPage, Text = _config.Value.SiteTextStrings.BackLinkText };
-
+            ViewBag.BackLink = new BackLinkVM { Show = true, Url = Url.Action("Index", "Form", new { id = _config.Value.FormStartPage }), Text = _config.Value.SiteTextStrings.BackLinkText };
+            
             ViewBag.title = "Find a service" + _config.Value.SiteTextStrings.SiteTitleSuffix;
             var vm = new SearchVm();
             return View(vm);
@@ -66,9 +93,6 @@ namespace SYE.Controllers
             _sessionService.SetLastPage("search/find-a-service");
 
             ViewBag.BackLink = new BackLinkVM { Show = true, Url = _config.Value.GFCUrls.StartPage, Text = _config.Value.SiteTextStrings.BackLinkText };
-
-            //Make Sure we have a clean session
-            _sessionService.ClearSession();
 
             if (!ModelState.IsValid)
             {
@@ -94,7 +118,45 @@ namespace SYE.Controllers
         [TypeFilter(typeof(RedirectionFilter))]
         public IActionResult SearchResults(string search, int pageNo = 1, string selectedFacets = "")
         {
-            _sessionService.SetLastPage("search/results");
+            var lastPage = _sessionService.GetLastPage();
+
+            if (lastPage != null && lastPage.Contains("you-have-sent-your-feedback"))
+            {
+                return GetCustomErrorCode(EnumStatusCode.FormPageAlreadySubmittedError, "Error with user action. Feedback already submitted");
+            }
+
+            var formVm = _sessionService.GetFormVmFromSession();
+            if (formVm == null)
+            {
+                //clicking on old link or back button from submit does this
+                return GetCustomErrorCode(EnumStatusCode.CYAFormNullError, "Error with user session. formVm is null.");
+            }
+            if ((_sessionService.GetUserSession().LocationName) == null)
+            {
+                return GetCustomErrorCode(EnumStatusCode.CYALocationNullError, "Error with user session. Location is null.");
+            }
+            var pageVm = formVm.Pages.FirstOrDefault(p => p.PageId == _pageId);
+            var serviceNotFoundPage = _config.Value.ServiceNotFoundPage;
+            var formStartPage = _config.Value.FormStartPage;
+
+            if (!_pageHelper.CheckPageHistory(pageVm, lastPage, false, _sessionService, null, serviceNotFoundPage, formStartPage, true))
+            {
+                //user jumps between pages
+                return GetCustomErrorCode(EnumStatusCode.CYASubmissionHistoryError, "Error with user submission. Page history not found: Id='" + _pageId + "'");
+            }
+
+            var refererIsCheckYourAnswers = ((lastPage ?? "").Contains(_config.Value.SiteTextStrings.ReviewPage) || _sessionService.ChangedLocationMode == true);
+            if (refererIsCheckYourAnswers)
+            {
+                //comes from check your answers
+                _sessionService.SaveChangeMode(_config.Value.SiteTextStrings.ReviewPageId);
+                //leave last page as check your answers
+            }
+            else
+            {
+                _sessionService.ClearChangeMode();
+                _sessionService.SetLastPage("search/results");
+            }
 
             var cleanSearch = _gdsValidate.CleanText(search, true, restrictedWords, allowedChars);
 
@@ -102,11 +164,11 @@ namespace SYE.Controllers
             if (errorMessage != null)
             {
                 ViewBag.Title = $"Error: Find a service" + _config.Value.SiteTextStrings.SiteTitleSuffix;
-                return GetSearchResult(cleanSearch, pageNo, selectedFacets, errorMessage);
+                return GetSearchResult(cleanSearch, pageNo, selectedFacets, refererIsCheckYourAnswers, errorMessage);
             }
 
             ViewBag.Title = "Results for " + cleanSearch + _config.Value.SiteTextStrings.SiteTitleSuffix;
-            return GetSearchResult(cleanSearch, pageNo, selectedFacets);
+            return GetSearchResult(cleanSearch, pageNo, selectedFacets, refererIsCheckYourAnswers);
         }
 
 
@@ -138,23 +200,33 @@ namespace SYE.Controllers
         [HttpGet]
         public IActionResult LocationNotFound()
         {
-            var defaultServiceName = _config.Value.SiteTextStrings.DefaultServiceName;
-
             try
             {
+                var serviceNotFoundPage = _config.Value.ServiceNotFoundPage;
+                if ((_sessionService.GetChangeMode() ?? "") == _config.Value.SiteTextStrings.ReviewPageId)
+                {
+                    //this happens when a user changes from a selected location to a location not found
+                    _sessionService.ChangedLocationMode = true;
+                    return RedirectToAction("Index", "Form", new { id = serviceNotFoundPage });
+                }
+
+                //get the next page from the start page answer
+                var formVm = _sessionService.GetFormVmFromSession();
+                //get the previous location name to replace
+                var previousLocation = _sessionService.GetUserSession().LocationName;
+                var defaultServiceName = _config.Value.SiteTextStrings.DefaultServiceName;
+
                 //Store the user entered details
                 _sessionService.SetUserSessionVars(new UserSessionVM { LocationId = "0", LocationName = defaultServiceName, ProviderId = "" });
-                _sessionService.ClearNavOrder();
                 //Set up our replacement text
                 var replacements = new Dictionary<string, string>
                 {
-                    {"!!location_name!!", defaultServiceName}
+                    {previousLocation, defaultServiceName}
                 };
 
                 try
                 {
-                    //Load the Form into Session
-                    _sessionService.LoadLatestFormIntoSession(replacements);
+                    _sessionService.SaveFormVmToSession(formVm, replacements);
                     var searchUrl = Request.Headers["Referer"].ToString();
                     _sessionService.SaveSearchUrl(searchUrl);
                 }
@@ -163,7 +235,6 @@ namespace SYE.Controllers
                     return GetCustomErrorCode(EnumStatusCode.SearchLocationNotFoundJsonError, "Error in location not found. json form not loaded");
                 }
 
-                var serviceNotFoundPage = _config.Value.ServiceNotFoundPage;
                 return RedirectToAction("Index", "Form", new { id = serviceNotFoundPage });
             }
             catch (Exception ex)
@@ -177,29 +248,48 @@ namespace SYE.Controllers
         [Route("search/select-location")]
         public IActionResult SelectLocation(UserSessionVM vm)
         {
+            //get the previous location name to replace
+            var previousLocation = _sessionService.GetUserSession().LocationName;
+            //get the next page from the start page answer
+            var formVm = _sessionService.GetFormVmFromSession();
+            var startPageId = _config.Value.FormStartPage;
+            var startPage = formVm.Pages.FirstOrDefault(p => p.PageId == startPageId);
+
             _sessionService.SetLastPage("search/select-location");
 
             try
             {
                 //Store the location we are giving feedback about
                 _sessionService.SetUserSessionVars(vm);
+                //put the location into the answer
+                var searchPage = formVm.Pages.FirstOrDefault(p => p.PageId == "search");
+                if (searchPage != null) searchPage.Questions.FirstOrDefault().Answer = vm.LocationName;
 
                 //Set up our replacement text
                 var replacements = new Dictionary<string, string>
                 {
-                    {"!!location_name!!", vm.LocationName}
+                    {previousLocation, vm.LocationName}
                 };
                 try
                 {
-                    //Load the Form and the search url into Session
-                    _sessionService.LoadLatestFormIntoSession(replacements);
+                    _sessionService.SaveFormVmToSession(formVm, replacements);
+
                     var searchUrl = Request.Headers["Referer"].ToString();
                     _sessionService.SaveSearchUrl(searchUrl);
 
-                    var startPage = _config.Value.FormStartPage;
-                    return RedirectToAction("Index", "Form", new { id = startPage, searchReferrer = "select-location" });
+                    var nextId = _pageHelper.GetNextPageIdFromPage(formVm, startPage.PageId);
+                    //remove any previously entered location not found
+                    _sessionService.RemoveFromNavOrder(_config.Value.ServiceNotFoundPage);
+                    if ((_sessionService.GetChangeMode() ?? "") == _config.Value.SiteTextStrings.ReviewPageId)
+                    {
+                        _sessionService.ClearChangeMode();
+                        return RedirectToAction("Index", "CheckYourAnswers");
+                    }
+                    _sessionService.UpdateNavOrder("search");
+                    return RedirectToAction("Index", "Form", new { id = nextId, searchReferrer = "select-location" });
+
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     return GetCustomErrorCode(EnumStatusCode.SearchSelectLocationJsonError, "Error selecting location. json form not loaded");
                 }
@@ -234,7 +324,7 @@ namespace SYE.Controllers
             return errorMessage;
         }
 
-        private IActionResult GetSearchResult(string search, int pageNo, string selectedFacets, string errorMessage = "")
+        private IActionResult GetSearchResult(string search, int pageNo, string selectedFacets, bool refererIsCheckYourAnswers, string errorMessage = "")
         {
             //This is commented out as it is causing Facets to not work
             //Make Sure we have a clean session
@@ -289,8 +379,8 @@ namespace SYE.Controllers
                     return GetCustomErrorCode(EnumStatusCode.SearchUnavailableError,
                         "Search unavailable: Search string='" + search + "'");
                 }
-                
-                ViewBag.BackLink = new BackLinkVM { Show = true, Url = Url.Action("Index", "Search"), Text = "Back" };
+
+                ViewBag.BackLink = new BackLinkVM { Show = true, Url = Url.Action("Index", refererIsCheckYourAnswers ? "CheckYourAnswers" : "Search"), Text = "Back" };
 
                 TempData["search"] = search;
 

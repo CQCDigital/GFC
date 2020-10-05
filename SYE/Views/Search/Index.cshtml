@@ -7,7 +7,7 @@
 
         @if (ViewData.ModelState.GetFieldValidationState("SearchTerm") == ModelValidationState.Invalid)
         {
-            <div class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" tabindex="-1" data-module="error-summary">
+            <div class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" tabindex="-1" data-module="error-summary" id="error-summary-container">
                 <h2 class="govuk-error-summary__title" id="error-summary-title">
                     There's a problem
                 </h2>
@@ -27,32 +27,46 @@
             </div>
         }
 
-        <form asp-action="Index" asp-controller="Search" method="post">
+    <form asp-action="Index" asp-controller="Search" method="post">
 
-            <fieldset class="govuk-fieldset">
-                <legend class="govuk-fieldset__legend govuk-fieldset__legend--xl">
-                    <h1 class="govuk-fieldset__heading">
-                        Find the service you want to tell us about
-                    </h1>
-                </legend>
+        <fieldset class="govuk-fieldset">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--xl">
+                <h1 class="govuk-fieldset__heading">
+                    Find the service you want to tell us about
+                </h1>
+            </legend>
 
-                <gds-form-group isError="@(ViewData.ModelState.GetFieldValidationState("SearchTerm") == ModelValidationState.Invalid)">
-                    <label class="govuk-label" asp-for="SearchTerm" for="SearchTerm"></label>
-                    <span id="SearchTerm-hint" class="govuk-hint">You do not need to use the whole name or address. For example, 'Great Ormond St WC1N' will find Great Ormond Street Hospital.</span>
+            @{
+                var inputCss = "govuk-input govuk-input govuk-!-width-two-thirds";
+                var errorIdForAria = "";
+                var showError = ViewData.ModelState.GetFieldValidationState("SearchTerm") == ModelValidationState.Invalid;
+                if (showError)
+                {
+                    inputCss += " govuk-input--error";
+                    errorIdForAria = "SearchTerm-error";
+                }
+            }
+
+            <gds-form-group isError="@showError">
+                <label class="govuk-label" asp-for="SearchTerm" for="SearchTerm"></label>
+                <span id="SearchTerm-hint" class="govuk-hint">You do not need to use the whole name or address. For example, 'Great Ormond St WC1N' will find Great Ormond Street Hospital.</span>
+
+                @if (showError)
+                {
                     <span id="SearchTerm-error" class="govuk-error-message">
                         <span class="govuk-visually-hidden">Error:</span> @Html.ValidationMessageFor(m => m.SearchTerm)
                     </span>
+                }
 
-                    @{ var inputCss = ViewData.ModelState.GetFieldValidationState("SearchTerm") == ModelValidationState.Invalid ? "govuk-input govuk-input govuk-!-width-two-thirds govuk-input--error" : "govuk-input govuk-input govuk-!-width-two-thirds"; }
-                    <input class="@inputCss" type="text" asp-for="SearchTerm" spellcheck="false" autocomplete="off" />
+                <input class="@inputCss" type="text" asp-for="SearchTerm" spellcheck="false" autocomplete="off" aria-describedby="SearchTerm-hint @errorIdForAria" />
 
-                </gds-form-group>
+            </gds-form-group>
 
-                <gds-button button-type="Submit" button-text="Search"></gds-button>
+        </fieldset>
 
-            </fieldset>
+        <gds-button button-type="Submit" button-text="Search"></gds-button>
 
-        </form>
+    </form>
 
     </gds-column>
 </gds-row>

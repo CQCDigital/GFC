@@ -3,6 +3,12 @@
 
 // Write your JavaScript code.
 
+//Run these functions once page is loaded:
+$(document).ready(function () {
+    focusElementIfExists("#error-summary-container");
+});
+
+//Functions
 
 jQuery("[data-showwhen-questionid]").each(function (s, e) {
 
@@ -95,6 +101,16 @@ function getCookie(name) {
 function windowClose() {
     window.open('', '_parent', '');
     window.close();
+}
+
+//Function to enable the 'status' message to be announced
+//Rationale: this data is already on the page but the content must be updated for teh status message to be announced properly, as per DAC audit
+function announceStatusMessages() {
+    var statusMessages = document.querySelectorAll("[role='status']");
+    for (let i = 0; i < statusMessages.length; i++) {
+        //Set just the inner HTML:
+        statusMessages[i].innerHTML = statusMessages[i].innerHTML;
+    }
 }
 
 //filter functions
@@ -199,4 +215,12 @@ function countRows(textArea) {
         rows += softreturns;
     }
     return Math.round(rows)-1;
+}
+
+function focusElementIfExists(selector) {
+    var element = document.querySelector(selector);
+
+    if (element != null) {
+        element.focus();
+    }
 }
