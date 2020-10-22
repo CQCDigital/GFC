@@ -113,6 +113,12 @@ function announceStatusMessages() {
     }
 }
 
+//Function to return user focus to checkbox they clicked
+function reselectCheckbox(domId) {
+    $("#" + domId).focus();
+    //setTimeout(function () { element.focus(); }, 1);
+}
+
 //filter functions
 function setFilterButtons() {
     if (isFilterActive()) {
@@ -122,12 +128,16 @@ function setFilterButtons() {
     }
     $("#btn--filter").hide();
 }
-function doSubmitIfDesktop(checkboxElem, formName) {
+function doSubmitIfDesktop(checkboxElem, formName, checkboxClicked) {
     if (checkboxElem.checked) {
         $("#btn--filter-clear").show();//don't really need this
     }
     if (!isMobile()) {
         //This is a tablet or desktop so apply the filter
+        //Set 'selectedCheckbox' option to the id of what they picked before
+        if (checkboxClicked != null) {
+            $("#checkboxClicked").val(checkboxClicked);
+        }
         $("form#" + formName).submit();
     }
 }

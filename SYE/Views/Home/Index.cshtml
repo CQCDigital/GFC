@@ -13,17 +13,21 @@
     <gds-column tablet-size="TwoThirds">
 
         <gds-heading heading-type="H1" text="Give feedback on care" caption="TEST START PAGE"></gds-heading>
-        <gds-paragraph>Use this form to tell us about:</gds-paragraph>
+        <p gds>
+            Use this form to tell us about:
+        </p>
         <ul class="govuk-list govuk-list--bullet">
-            <li>an experience of care - it can be good or bad</li>
+            <li>care you or someone you know has experienced - it can be good or bad</li>
             <li>a concern about a service you work for</li>
         </ul>
 
-        <gds-paragraph>This is different from making a formal complaint. To <a href="@config.GFCUrls.CQCHomepage/contact-us/how-complain/complain-about-service-or-provider" class="govuk-link" target="_blank">make a formal complaint<span class="govuk-visually-hidden"> (opens in new window)</span></a>, you must contact the service itself.</gds-paragraph>
+        <p gds>
+            This is different from making a formal complaint. Find out <a href="@config.GFCUrls.CQCHomepage/contact-us/how-complain/complain-about-service-or-provider" class="govuk-link" >how to make a formal complaint.</a>
+        </p>
 
         <gds-warning-text message="Call 999 if there's an immediate risk of harm or abuse" warning-id=""></gds-warning-text>
 
-        <gds-paragraph>
+        <p gds>
             <a href="@Url.Action("StartQuestions", "Home")" role="button" draggable="false" class="govuk-button govuk-button--start" data-module="govuk-button">
                 Start now
                 <svg class="govuk-button__start-icon" xmlns="http://www.w3.org/2000/svg" width="17.5" height="19" viewBox="0 0 33 40" aria-hidden="true" focusable="false">
@@ -31,17 +35,33 @@
                 </svg>
             </a>
 
-        </gds-paragraph>
+        </p>
 
         <h2 class="govuk-heading-m">Your feedback helps make care better</h2>
-        <gds-paragraph>
+
+        <p gds>
             We use what people tell us to understand the quality of care they get from services like care homes, care agencies, hospitals and GPs. It helps make care better for everybody.
-        </gds-paragraph>
-        <gds-paragraph>We look at it alongside other information. For example, information from the service itself or what we found when we last visited them.</gds-paragraph>
+        </p>
+
+        <p gds>
+            We look at it alongside other information. For example, information from the service itself or what we found when we last visited them.
+        </p>
+
+        <p gds>
+            We only cover services in England.
+        </p>
+
+
 
         <h2 class="govuk-heading-m">We may want to contact you</h2>
-        <gds-paragraph>You do not have to give us your name or contact details. But it's more likely we can take action if you do.</gds-paragraph>
-        <gds-paragraph>Find out <a href="@Url.Action("Index", "HowWeUseYourInformation" )" target="_blank" class="govuk-link">how we handle personal information<span class="govuk-visually-hidden"> (opens in new window)</span></a> like contact details.</gds-paragraph>
+
+        <p gds>
+            You do not have to give us your name or contact details. But it's more likely we can take action if you do.
+        </p>
+
+        <p gds>
+            Find out <a href="@Url.Action("Index", "HowWeUseYourInformation")" class="govuk-link">how we handle personal information</a> like contact details.
+        </p>
 
     </gds-column>
 
@@ -51,13 +71,13 @@
 
             <h2 class="govuk-heading-m">Related content</h2>
 
-            <gds-paragraph>
-                <gds-link class="govuk-link app-related-items-font-resize" target="_blank" add-hidden-text="true" link-id="related-content" link-text="How to make a formal complaint to a service or provider" href="@config.GFCUrls.CQCHomepage/contact-us/how-complain/complain-about-service-or-provider"></gds-link>
-            </gds-paragraph>
+            <p gds>
+                <a href="@config.GFCUrls.CQCHomepage/what-we-do/services-we-regulate/services-we-regulate" id="regulated-services" class="govuk-link app-related-items-font-resize">Find out which types of service we regulate</a>
+            </p>
 
-            <gds-paragraph>
-                <gds-link class="govuk-link app-related-items-font-resize" target="_blank" add-hidden-text="true" link-id="regulated-services" link-text="Find out which types of service we regulate" href="@config.GFCUrls.CQCHomepage/what-we-do/services-we-regulate/services-we-regulate"></gds-link>
-            </gds-paragraph>
+            <p gds>
+                <a href="@config.GFCUrls.CQCHomepage/contact-us/how-complain/complain-about-use-mental-health-act" id="related-content" class="govuk-link app-related-items-font-resize">How to complain about the use of the Mental Health Act</a>
+            </p>
 
         </aside>
 

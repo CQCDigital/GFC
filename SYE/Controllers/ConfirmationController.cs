@@ -29,6 +29,13 @@ namespace SYE.Controllers
 
             ViewBag.Reference = HttpContext.Session.GetString("ReferenceNumber");
             ViewBag.Title = "You’ve sent your feedback" + _config.Value.SiteTextStrings.SiteTitleSuffix;
+
+            ViewBag.OnlyGoodFeedback = HttpContext.Session.GetString("OnlyGoodFeedback");
+            ViewBag.SubmittedEmail = HttpContext.Session.GetString("SubmittedEmail");
+            ViewBag.SubmittedPhoneNumber = HttpContext.Session.GetString("SubmittedPhoneNumber");
+            ViewBag.AnsweredToldServiceQuestion = HttpContext.Session.GetString("AnsweredToldServiceQuestion");
+            ViewBag.MadeComplaint = HttpContext.Session.GetString("MadeComplaint");
+
             return View();
         }
     }

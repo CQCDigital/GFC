@@ -27,7 +27,11 @@
                 {
                     if (conditions.Any(m => m.QuestionId == question.QuestionId && m.Answer == question.Answer && m.HideParentQuestionInCheckYourAnswers))
                     {
-                        continue;
+                        //If we're on the charity question and they picked 'another charity' with a blank answer, we still want to show the question in this specific circumstance
+                        if (! (question.QuestionId == ViewBag.TellUsWhichCharityQuestion && ViewBag.AnotherCharityFlag && ViewBag.CustomCharityBlankFlag) )
+                        {
+                            continue;
+                        }
                     }
 
                     <div class="govuk-summary-list__row">

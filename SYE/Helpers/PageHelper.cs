@@ -48,15 +48,20 @@ namespace SYE.Helpers
                 return cqcStart;
 
             //Check if we only have 1 option
-            if (previousPageOptions.Count() == 1) return url.Action("Index", "Form", new { id = previousPageOptions.FirstOrDefault()?.PageId });
+            if (previousPageOptions.Count() == 1)
+                return url.Action("Index", "Form", new { id = previousPageOptions.FirstOrDefault()?.PageId });
 
-            //Get all the questions in the FormVM
+            //Get all the questions and formData in the FormVM
             var questions = form.Pages.SelectMany(m => m.Questions).ToList();
+            var formData = form.SubmissionData?.ToList();
 
             //Loop through each option and return the pageId when 
             foreach (var pageOption in previousPageOptions)
             {
-                var answer = questions.FirstOrDefault(m => m.QuestionId == pageOption.QuestionId)?.Answer;
+                //If the 'question' can't be found in the question list, try the formData list as well.
+                var answer = questions.FirstOrDefault(m => m.QuestionId == pageOption.QuestionId)?.Answer
+                             ?? formData?.FirstOrDefault(d => d.Id == pageOption.QuestionId)?.Value;
+                             
 
                 //If we're looking at answers to the Search question, set answer here instead:
                 if (pageOption.QuestionId == "search")
@@ -76,7 +81,7 @@ namespace SYE.Helpers
                             return url.Action("Index", "Form", new { id = "tell-us-which-service" });
 
                         //If user picked a service on CQC site, search cannot have been the previous page ==> go to next previousPage
-                        var fromCqc = form.SubmissionData?.FirstOrDefault(x => x.Id == "LocationFromCqcFlag").Value;
+                        var fromCqc = form.SubmissionData?.FirstOrDefault(x => x.Id == "LocationFromCqcFlag")?.Value;
                         if (fromCqc != null)
                         {
                             if (string.IsNullOrWhiteSpace(searchUrl))

@@ -1,0 +1,15 @@
+{
+  "ApplicationSettings": {
+    "SiteTextStrings": {
+      "CategoriesForExactlyWhereQuestion": [
+        "Category in list"
+      ]
+    },
+    "QuestionStrings": {
+      "GoodBadFeedbackQuestion": {
+        "id": "test-goodBadFeedbackQuestion",
+        "GoodFeedbackAnswer": "good-journey"
+      } 
+    } 
+  }
+}

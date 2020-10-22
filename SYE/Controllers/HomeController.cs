@@ -184,20 +184,13 @@ namespace SYE.Controllers
                         _sessionService.SaveFormVmToSession(formVm);
 
                         //Add a flag to the form, and save location data
-                        _sessionService.UpdateFormData(new DataItemVM()
+                        _sessionService.UpdateFormData(new List<DataItemVM>()
                         {
-                            Id = "LocationFromCqcFlag",
-                            Value = "true"
-                        });
-                        _sessionService.UpdateFormData(new DataItemVM()
-                        {
-                            Id = "LocationName",
-                            Value = vm.LocationName
-                        });
-                        _sessionService.UpdateFormData(new DataItemVM()
-                        {
-                            Id = "LocationId",
-                            Value = vm.LocationId
+                            new DataItemVM() { Id = "LocationFromCqcFlag", Value = "true" },
+                            new DataItemVM() {Id = "skippedExactLocationFlag", Value = "False"}, //This capitalisation is deliberate, to aid boolean conversion
+                            new DataItemVM() { Id = "LocationName", Value = vm.LocationName },
+                            new DataItemVM() { Id = "LocationId", Value = vm.LocationId },
+                            new DataItemVM() { Id = "LocationCategory", Value = "unknown" }
                         });
                     }
                     var startPage = _config.Value.FormStartPage;

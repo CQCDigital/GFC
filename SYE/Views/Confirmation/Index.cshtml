@@ -22,32 +22,63 @@
         </div>
 
 
-        <gds-heading heading-type="H2" class="govuk-heading-m" text="What happens next"></gds-heading>
+        <gds-heading heading-type="H2" class="govuk-heading-m" text="What we'll do next"></gds-heading>
         <gds-paragraph>
             What people tell us about services helps us build a picture of the standard of care they give.
         </gds-paragraph>
-        <gds-paragraph>
-            We'll look at the information you've given us. How we use it will depend on what you've said. For example, if you've told us about a serious concern we'll take action, like contacting or visiting the service.
-        </gds-paragraph>
-        <gds-paragraph>
-            If you've given us your email address, we'll email you to tell you when we've passed your feedback to the right person. This will be in the next 2 working days.
-        </gds-paragraph>
 
-        <gds-heading heading-type="H2" class="govuk-heading-m" text="What you can do"></gds-heading>
+        @if (ViewBag.OnlyGoodFeedback == "true")
+        {
+            <gds-paragraph id="good-feedback-next-action">We'll look at the information you've given us. How we use it will depend on what you've said.</gds-paragraph>
+        }
+        else
+        {
+            <gds-paragraph id="bad-feedback-next-action">We'll look at the information you've given us. How we use it will depend on what you've said. For example, if you've told us about a serious concern we'll take action, like contacting or visiting the service.</gds-paragraph>
+        }
 
-        <gds-paragraph>If your experience of care was bad, you can make a complaint to the service itself - if you haven't already.</gds-paragraph>
+        @if (ViewBag.SubmittedEmail == "true")
+        {
+            <gds-heading heading-type="H2" class="govuk-heading-m" text="When you'll hear from us"  id="hear-from-us-email-heading"></gds-heading>
 
-        <gds-paragraph>
-            <a href="@config.GFCUrls.CQCHomepage/contact-us/how-complain/complain-about-service-or-provider" class="govuk-link" target="_blank">How to complain to a health or care service<span class="govuk-visually-hidden"> (opens in new window)</span></a>
-        </gds-paragraph>
+            <gds-paragraph id="hear-from-us-email-para-1">We've sent you a confirmation email. We'll email you again to tell you when we've passed your feedback to one of our team. Normally this is one of our inspectors. This will be in the next 5 working days.</gds-paragraph>
 
-        <gds-paragraph>
-            <a href="@Url.Action("WhatDoYouThink", "Feedback")" class="govuk-link" target="_blank">What did you think of this form?<span class="govuk-visually-hidden"> (opens in new window)</span></a> (takes 30 seconds)
-        </gds-paragraph>
+            <gds-paragraph id="hear-from-us-email-para-2">After this, we'll only contact you if we need more details. If you do not hear from us, it means we've got everything we need.</gds-paragraph>
+        }
+        else if (ViewBag.SubmittedPhoneNumber == "true")
+        {
+            <gds-heading heading-type="H2" class="govuk-heading-m" text="We may contact you if we need to know more"  id="hear-from-us-phone-heading"></gds-heading>
 
-        <gds-paragraph>
-            <a href="@config.GFCUrls.CQCHomepage" class="govuk-link">Leave this form and go to the CQC homepage</a>
-        </gds-paragraph>
+            <gds-paragraph id="hear-from-us-phone-para">We'll only contact you if we need more details. If you do not hear from us, it means we've got everything we need.</gds-paragraph>
+        }
+
+        @if (ViewBag.AnsweredToldServiceQuestion == "true" && ViewBag.MadeComplaint == "false")
+        {
+            <gds-heading heading-type="H2" class="govuk-heading-m" text="What you can do" id="what-you-can-do-no-complaint-heading"></gds-heading>
+
+            <gds-paragraph id="what-you-can-do-no-complaint-para-1">
+                <a href="@config.GFCUrls.CQCHomepage/contact-us/how-complain/complain-about-service-or-provider" class="govuk-link" target="_blank">Make a formal complaint to the service<span class="govuk-visually-hidden"> (opens in new window)</span></a>
+            </gds-paragraph>
+
+            <gds-paragraph id="what-you-can-do-no-complaint-para-2">
+                <a href="@config.GFCUrls.StartPage" class="govuk-link">Give feedback on another service</a>
+            </gds-paragraph>
+
+            <gds-paragraph id="what-you-can-do-no-complaint-para-3">
+                <a href="@Url.Action("WhatDoYouThink", "Feedback")" class="govuk-link" target="_blank">Tell us what you think of this form<span class="govuk-visually-hidden"> (opens in new window)</span></a> (takes 30 seconds)
+            </gds-paragraph>
+        }
+        else if (ViewBag.MadeComplaint == "true" || ViewBag.OnlyGoodFeedback == "true")
+        {
+            <gds-heading heading-type="H2" class="govuk-heading-m" text="Before you close this window" id="before-you-close-heading"></gds-heading>
+
+            <gds-paragraph id="before-you-close-para-1">
+                <a href="@config.GFCUrls.StartPage" class="govuk-link">Give feedback on another service</a>
+            </gds-paragraph>
+
+            <gds-paragraph id="before-you-close-para-2">
+                <a href="@Url.Action("WhatDoYouThink", "Feedback")" class="govuk-link" target="_blank">Tell us what you think of this form<span class="govuk-visually-hidden"> (opens in new window)</span></a> (takes 30 seconds)
+            </gds-paragraph>
+        }
 
     </gds-column>
 

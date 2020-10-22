@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="mockappsettings.json" />
     <None Remove="Resources\submission-schema-contact-details-no-location.json" />
     <None Remove="Resources\submission-schema-contact-details.json" />
     <None Remove="Resources\submission-schema-no-contact-details-no-location.json" />
@@ -16,6 +17,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="mockappsettings.json">
+      <TransformOnBuild>true</TransformOnBuild>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
     <Content Include="Resources\submission-schema-no-contact-new-date-format.json">
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>

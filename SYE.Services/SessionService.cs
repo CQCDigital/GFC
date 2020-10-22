@@ -26,7 +26,8 @@ namespace SYE.Services
         UserSessionVM GetUserSession();
         void SaveFormVmToSession(FormVM vm);
         void SaveFormVmToSession(FormVM vm, Dictionary<string, string> replacements);
-        void UpdateFormData(DataItemVM dataItem);
+        DataItemVM GetFormData(string id);
+        void UpdateFormData(IEnumerable<DataItemVM> dataItems);
         FormVM GetFormVmFromSession();
         void UpdatePageVmInFormVm(PageVM vm);
         void SaveUserSearch(string search);
@@ -49,6 +50,7 @@ namespace SYE.Services
         void SetLastPage(string lastPage);
         string GetLastPage();
         string PageOrder { get; set; }
+        string CheckboxClick { get; set; }
     }
 
     [LifeTime(LifeTime.Scoped)]
@@ -277,26 +279,39 @@ namespace SYE.Services
             context.Session.SetString(schemaKey, json);
         }
 
-        public void UpdateFormData(DataItemVM dataItem)
+        public DataItemVM GetFormData(string id)
+        {
+            var formVm = GetFormVmFromSession();
+            return formVm?.SubmissionData?.FirstOrDefault(x => x.Id == id) ?? null;
+        }
+
+        /// <summary>
+        /// Adds a data item to the form with the specified values, or replaces it if it already exists
+        /// </summary>
+        /// <param name="dataItems">List of DataItemVMs to update - contains string fields ID, Notes, and Value</param>
+        public void UpdateFormData(IEnumerable<DataItemVM> dataItems)
         {
             var formVm = GetFormVmFromSession();
 
             //Create new local object from the dataItems in the form
-            var dataItems = formVm.SubmissionData != null ? formVm.SubmissionData.ToList() : new List<DataItemVM>();
+            var dataItemsInForm = formVm.SubmissionData != null ? formVm.SubmissionData.ToList() : new List<DataItemVM>();
 
-            //Update this local dataItems list
-            var index = dataItems.FindIndex(x => x.Id == dataItem.Id);
-            if (index != -1) //i.e. the data item already exists
+            foreach (var dataItem in dataItems)
             {
-                dataItems[index] = dataItem;
-            }
-            else
-            {
-                dataItems.Add(dataItem);
+                //Update this local dataItems list
+                var index = dataItemsInForm.FindIndex(x => x.Id == dataItem.Id);
+                if (index != -1) //i.e. the data item already exists
+                {
+                    dataItemsInForm[index] = dataItem;
+                }
+                else
+                {
+                    dataItemsInForm.Add(dataItem);
+                }
             }
 
             //Assign the new dataItems back to the formVm
-            formVm.SubmissionData = dataItems;
+            formVm.SubmissionData = dataItemsInForm;
             SaveFormVmToSession(formVm);
         }
 
@@ -500,6 +515,20 @@ namespace SYE.Services
             {
                 var context = _httpContextAccessor.HttpContext;
                 context.Session.SetString("PageOrder", value);
+            }
+        }
+
+        public string CheckboxClick
+        {
+            get
+            {
+                var context = _httpContextAccessor.HttpContext;
+                return context.Session.GetString("CheckboxClick");
+            }
+            set
+            {
+                var context = _httpContextAccessor.HttpContext;
+                context.Session.SetString("CheckboxClick", value);
             }
         }
     }

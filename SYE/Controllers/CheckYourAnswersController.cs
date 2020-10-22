@@ -17,6 +17,7 @@ using SYE.Repository;
 using SYE.Services;
 using SYE.Helpers.Enums;
 using SYE.Helpers.Extensions;
+using SYE.ViewModels;
 
 namespace SYE.Controllers
 {
@@ -101,7 +102,36 @@ namespace SYE.Controllers
                     PageHistory = _sessionService.GetNavOrder()
                 };
 
+                //Setting up variables to ensure we can show the 'another charity' answer if the custom charity is blank.
+                var charityQuestionPage = formVm.Pages.FirstOrDefault(p => p.PageId == _configuration
+                    .GetSection("ApplicationSettings:PageIdStrings")
+                    .GetValue<String>("TellUsWhichCharityPage"));
+
+                var tellUsWhichCharityQuestion = _configuration
+                    .GetSection("ApplicationSettings:QuestionStrings:TellUsWhichCharityQuestion")
+                    .GetValue<String>("id");
+
+                var anotherCharityAnswer = _configuration
+                    .GetSection("ApplicationSettings:QuestionStrings:TellUsWhichCharityQuestion")
+                    .GetValue<String>("AnotherCharityAnswer");
+
+                var customCharityQuestion = _configuration
+                    .GetSection("ApplicationSettings:QuestionStrings:CustomCharityQuestion")
+                    .GetValue<String>("id");
+
+                var anotherCharityFlag = charityQuestionPage
+                    .Questions.FirstOrDefault(q => q.QuestionId == tellUsWhichCharityQuestion)?
+                    .Answer == anotherCharityAnswer;
+
+                var customCharityBlankFlag = string.IsNullOrEmpty(charityQuestionPage
+                    .Questions.FirstOrDefault(q => q.QuestionId == customCharityQuestion)?
+                    .Answer);
+
                 ViewBag.Title = "Check your answers" + _configuration.GetSection("ApplicationSettings:SiteTextStrings").GetValue<string>("SiteTitleSuffix");
+
+                ViewBag.TellUsWhichCharityQuestion = tellUsWhichCharityQuestion;
+                ViewBag.AnotherCharityFlag = anotherCharityFlag;
+                ViewBag.CustomCharityBlankFlag = customCharityBlankFlag;
 
                 return View(vm);
             }
@@ -205,6 +235,38 @@ namespace SYE.Controllers
                 //Reset this flag so the cookie banner does not show on the confirmation page
                 _sessionService.SetCookieFlagOnSession("true");
                 _sessionService.SetLastPage("form/check-your-answers");
+
+                //Collate information for confirmation page
+                var toldServiceQuestion = _configuration
+                    .GetSection("ApplicationSettings:QuestionStrings:ToldServiceQuestion")
+                    .GetValue<string>("id");
+                var goodBadFeedbackQuestion = _configuration
+                    .GetSection("ApplicationSettings:QuestionStrings:GoodBadFeedbackQuestion")
+                    .GetValue<string>("id");
+                var emailQuestion = _configuration
+                    .GetSection("ApplicationSettings:QuestionStrings:EmailQuestion")
+                    .GetValue<string>("id");
+                var phoneNumberQuestion = _configuration
+                    .GetSection("ApplicationSettings:QuestionStrings:PhoneNumberQuestion")
+                    .GetValue<string>("id");
+
+                var formalComplaint = _configuration
+                    .GetSection("ApplicationSettings:QuestionStrings:ToldServiceQuestion")
+                    .GetValue<string>("MadeFormalComplaintAnswer");
+                var toldNoComplaint = _configuration
+                    .GetSection("ApplicationSettings:QuestionStrings:ToldServiceQuestion")
+                    .GetValue<string>("ToldServiceNoComplaintAnswer");
+                var goodExperience = _configuration
+                    .GetSection("ApplicationSettings:QuestionStrings:GoodBadFeedbackQuestion")
+                    .GetValue<string>("GoodFeedbackAnswer");
+
+                var toldServiceAnswer = formVm.GetQuestion(toldServiceQuestion).Answer;
+
+                HttpContext.Session.SetString("OnlyGoodFeedback", formVm.GetQuestion(goodBadFeedbackQuestion).Answer == goodExperience ? "true" : "false");
+                HttpContext.Session.SetString("SubmittedEmail", string.IsNullOrEmpty(formVm.GetQuestion(emailQuestion).Answer) ? "false": "true");
+                HttpContext.Session.SetString("SubmittedPhoneNumber", string.IsNullOrEmpty(formVm.GetQuestion(phoneNumberQuestion).Answer) ? "false" : "true");
+                HttpContext.Session.SetString("AnsweredToldServiceQuestion", !string.IsNullOrWhiteSpace(toldServiceAnswer) ? "true" : "false");
+                HttpContext.Session.SetString("MadeComplaint", toldServiceAnswer == formalComplaint ? "true" : "false");
 
                 return RedirectToAction("Index", "Confirmation");
             }

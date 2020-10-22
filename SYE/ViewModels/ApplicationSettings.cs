@@ -5,6 +5,14 @@ using System.Threading.Tasks;
 
 namespace SYE.ViewModels
 {
+    public class Paging
+    {
+        public string StartPage { get; set; }
+        public string HidePagingIfStartPageEqauls { get; set; }
+        public int StartPagingAtPageNo { get; set; }
+    }
+
+
     public class GetHelp
     {
         public string ContactNumber { get; set; }
@@ -30,8 +38,17 @@ namespace SYE.ViewModels
         public string DefaultServiceName { get; set; }
         public string EmptySearchError { get; set; }
         public string NonSelectedServiceName { get; set; }
+        public List<string> CategoriesForExactlyWhereQuestion { get; set; }
     }
 
+    public class PageIdStrings
+    {
+        public string TellUsWhichCharityPage { get; set; }
+        public string WhereItHappenedPage { get; set; }
+        public string WhenItHappenedPage { get; set; }
+    }
+
+    
     public class ApplicationSettings
     {
         public string AppName { get; set; }
@@ -43,6 +60,21 @@ namespace SYE.ViewModels
         public string AllowedCorsDomains { get; set; }
         public GFCUrls GFCUrls { get; set; }
         public SiteTextStrings SiteTextStrings { get; set; }
+        public PageIdStrings PageIdStrings { get; set; }
+        public Paging Paging { get; set; }
+        public QuestionStrings QuestionStrings { get; set; }
+    }
+
+    public class QuestionStrings
+    {
+        public GoodBadFeedbackQuestion GoodBadFeedbackQuestion { get; set; }
+
+    }
+
+    public class GoodBadFeedbackQuestion
+    {
+        public string id { get; set; }
+        public string GoodFeedbackAnswer { get; set; }
     }
 
 

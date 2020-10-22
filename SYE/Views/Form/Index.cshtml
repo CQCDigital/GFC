@@ -19,6 +19,13 @@
             @Html.HiddenFor(m => m.PageId)
             @Html.AntiForgeryToken()
 
+            @*Currently disabled, pending additional development:*@
+            @*@if (ViewBag.HidePageCounter == false)
+            {
+                <span class="govuk-caption-l">Question @ViewBag.Position of @ViewBag.PageCount</span>
+            }*@
+
+
             @if (!string.IsNullOrEmpty(Model.PageName))
             {
                 <gds-heading heading-type="H1" text="@Model.PageName"></gds-heading>

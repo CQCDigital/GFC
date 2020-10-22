@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using AngleSharp.Text;
 using GDSHelpers;
 using GDSHelpers.Models.FormSchema;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
@@ -22,7 +24,7 @@ namespace SYE.Controllers
         private readonly ISessionService _sessionService;
         private readonly IOptions<ApplicationSettings> _config;
         private readonly IPageHelper _pageHelper;
-
+        
         public FormController(IGdsValidation gdsValidate, ISessionService sessionService, IOptions<ApplicationSettings> config, ILogger<FormController> logger, IPageHelper pageHelper)
         {
             _gdsValidate = gdsValidate;
@@ -34,19 +36,31 @@ namespace SYE.Controllers
         [HttpGet("form/{id}")]
         public IActionResult Index(string id = "", string searchReferrer = "")
         {
+            //First, check for specific case: If this is 'exactly where' page and location choice means that this should be skipped, redirect user to 'exactly-when' instead
+            var whereItHappened = _config.Value.PageIdStrings?.WhereItHappenedPage;
+            var whenItHappened = _config.Value.PageIdStrings?.WhenItHappenedPage;
+            var skippedWhereFlag = _sessionService.GetFormData("skippedExactLocationFlag")?.Value;
+
+            if (id == whereItHappened && skippedWhereFlag == "True")
+            {
+                return RedirectToAction("Index", "Form", new { id = whenItHappened, searchReferrer = "select-location" });
+            }
+
+            //Now check whether user has already submitted the form
             var lastPage = _sessionService.GetLastPage();
             if (lastPage != null && lastPage.Contains("you-have-sent-your-feedback"))
             {
                 return GetCustomErrorCode(EnumStatusCode.FormPageAlreadySubmittedError, "Error with user action. Feedback already submitted");
             }
-            //this next piece of code determines if the user came from when it happened and pressed the back button
+
+            //this next piece of code determines if the user came to 'what-you-want-to-tell-us-about' from when it happened and pressed the back button
             //this happens if a user comes from cqc having selected a location
             //if so then the user skipped the search which would normally clear the change mode
-            if (lastPage != null && lastPage.Contains("where-it-happened") && id == _config.Value.FormStartPage)
+            if (lastPage != null && lastPage.Contains(whereItHappened) && id == _config.Value.FormStartPage)
             {
-                var form = _sessionService.GetFormVmFromSession();
+                
                 //If user picked a service on CQC site, search cannot have been the previous page ==> go to next previousPage
-                var fromCqc = form.SubmissionData?.FirstOrDefault(x => x.Id == "LocationFromCqcFlag").Value;
+                var fromCqc = _sessionService.GetFormData("LocationFromCqcFlag").Value;
                 if (fromCqc != null)
                 {
                     _sessionService.ClearChangeMode();
@@ -143,6 +157,11 @@ namespace SYE.Controllers
                 var formContext = _sessionService.GetFormVmFromSession();
                 pageVm.HandleDynamicContent(formContext);
 
+
+                //Add Paging to the current page -- currently disabled
+                //SetUpPaging(formContext, id);
+
+
                 ViewBag.Title = pageVm.PageTitle + _config.Value.SiteTextStrings.SiteTitleSuffix;
                 return View(pageVm);
             }
@@ -152,6 +171,37 @@ namespace SYE.Controllers
                 throw ex;
             }
         }
+
+        // -- Currently disabled, pending additional development
+        //private void SetUpPaging(FormVM formContext, string id)
+        //{
+        //    var pages = formContext.Pages
+        //             .Where(m => m.Questions.Count() > 0 && !m.RemoveFromSubmission)
+        //             .Select(m => m.PageId)
+        //             .ToList();
+        //
+        //    pages.Remove("tell-us-which-service");
+        //
+        //    var position = pages.IndexOf(id) + 1;
+        //
+        //    ViewBag.PageCount = pages.Count();
+        //    ViewBag.Position = position;
+        //    ViewBag.HidePageCounter = false;
+        //
+        //    var hideForJourney = _config.Value.Paging.StartPage;
+        //    var hideForJourneyAnswer = _config.Value.Paging.HidePagingIfStartPageEqauls;
+        //    var showFromPageNo = _config.Value.Paging.StartPagingAtPageNo;
+        //
+        //    var questions = formContext.Pages.SelectMany(m => m.Questions).ToList();
+        //    var hidePagingForJourney = questions.Any(m => m.QuestionId == hideForJourney && m.Answer == hideForJourneyAnswer);
+        //
+        //    if (position == 0 || position < showFromPageNo || hidePagingForJourney)
+        //    {
+        //        ViewBag.HidePageCounter = true;
+        //    }
+        //                
+        //}
+
 
         private static readonly HashSet<char> allowedChars = new HashSet<char>(@"1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.,'()?!#&$£%^@*;:+=_-/ ");
         private static readonly List<string> restrictedWords = new List<string> { "javascript", "onblur", "onchange", "onfocus", "onfocusin", "onfocusout", "oninput", "onmouseenter", "onmouseleave",
@@ -203,6 +253,12 @@ namespace SYE.Controllers
                     var defaultServiceName = _config.Value.SiteTextStrings.DefaultServiceName;
                     //Store the user entered details
                     _sessionService.SetUserSessionVars(new UserSessionVM { LocationId = "0", LocationName = defaultServiceName, ProviderId = "" });
+                    _sessionService.UpdateFormData(new List<DataItemVM>()
+                    {
+                        new DataItemVM() { Id = "LocationName", Value = defaultServiceName },
+                        new DataItemVM() { Id = "LocationId", Value = "0" },
+                        new DataItemVM() { Id = "LocationCategory", Value = "unknown" }
+                    });
                     //Set up our replacement text
                     var replacements = new Dictionary<string, string>
                     {

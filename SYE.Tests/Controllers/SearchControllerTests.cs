@@ -16,6 +16,7 @@ using SYE.Services;
 using SYE.ViewModels;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Xunit;
 using System.Web;
@@ -24,6 +25,10 @@ using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.FileProviders;
+using Newtonsoft.Json;
+using NSubstitute;
 using SYE.Filters;
 
 namespace SYE.Tests.Controllers
@@ -37,6 +42,7 @@ namespace SYE.Tests.Controllers
         private Mock<IPageHelper> mockPageHelper;
         private Mock<IUrlHelper> mockUrlHelper;
         private Mock<HttpContext> mockHttpContext;
+        private Mock<IConfiguration> mockConfiguration;
         private ActionContext actionContext;
         private ApplicationSettings appSettings;
         
@@ -48,6 +54,7 @@ namespace SYE.Tests.Controllers
             mockValidation = new Mock<IGdsValidation>();
             mockUrlHelper = new Mock<IUrlHelper>();
             mockHttpContext = new Mock<HttpContext>();
+            mockConfiguration = new Mock<IConfiguration>();
             mockPageHelper = new Mock<IPageHelper>();
 
             actionContext = new ActionContext()
@@ -68,7 +75,17 @@ namespace SYE.Tests.Controllers
                     ReviewPageId = "CheckYourAnswers",
                     BackLinkText = "test back link",
                     SiteTitleSuffix = " - test suffix",
-                    DefaultServiceName = "default service name"
+                    DefaultServiceName = "default service name",
+                    CategoriesForExactlyWhereQuestion = new List<string> { "Category in list" }
+                },
+                QuestionStrings = new QuestionStrings()
+                {
+                    GoodBadFeedbackQuestion = new GoodBadFeedbackQuestion()
+                    {
+                        id = "test-goodBadFeedbackQuestion",
+                        GoodFeedbackAnswer = "good-journey"
+                    }
+
                 }
             };
             mockSettings.Setup(ap => ap.Value).Returns(appSettings);
@@ -136,7 +153,7 @@ namespace SYE.Tests.Controllers
             var tempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
             tempData["search"] = "";
             //act
-            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object);
+            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object, mockConfiguration.Object);
             sut.Url = mockUrlHelper.Object;
             sut.TempData = tempData;
             var result = sut.SearchResults("search");
@@ -183,7 +200,7 @@ namespace SYE.Tests.Controllers
             var tempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
             tempData["search"] = "";
             //act
-            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object);
+            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object, mockConfiguration.Object);
             sut.Url = mockUrlHelper.Object;
             sut.TempData = tempData;
 
@@ -224,7 +241,7 @@ namespace SYE.Tests.Controllers
             tempData["search"] = "";
 
             //act
-            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object);
+            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object, mockConfiguration.Object);
             sut.Url = mockUrlHelper.Object;
             sut.TempData = tempData;
 
@@ -254,7 +271,7 @@ namespace SYE.Tests.Controllers
                 It.IsAny<string>(), It.IsAny<bool>())).Throws(new Exception());
             mockValidation.Setup(x => x.CleanText(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<List<string>>(), It.IsAny<HashSet<char>>())).Returns("abc");
             //act
-            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object);
+            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object, mockConfiguration.Object);
             Action act = () => sut.SearchResults("search");
             //assert
             act.Should().Throw<Exception>().Where(ex => ex.Data.Contains("GFCError"));
@@ -298,7 +315,7 @@ namespace SYE.Tests.Controllers
             tempData["search"] = "";
 
             //act
-            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object);
+            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object, mockConfiguration.Object);
             sut.Url = mockUrlHelper.Object;
             sut.TempData = tempData;
 
@@ -354,7 +371,7 @@ namespace SYE.Tests.Controllers
             tempData["search"] = "";
 
             //act
-            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object);
+            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object, mockConfiguration.Object);
             sut.Url = mockUrlHelper.Object;
             sut.TempData = tempData;
 
@@ -411,7 +428,7 @@ namespace SYE.Tests.Controllers
             tempData["search"] = "";
 
             //act
-            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object);
+            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object, mockConfiguration.Object);
             sut.Url = mockUrlHelper.Object;
             sut.TempData = tempData;
 
@@ -479,7 +496,7 @@ namespace SYE.Tests.Controllers
             tempData["search"] = "";
 
             //act
-            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object);
+            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object, mockConfiguration.Object);
             sut.Url = mockUrlHelper.Object;
             sut.TempData = tempData;
 
@@ -569,7 +586,7 @@ namespace SYE.Tests.Controllers
             tempData["search"] = "";
 
             //act
-            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object);
+            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object, mockConfiguration.Object);
             sut.Url = mockUrlHelper.Object;
             sut.TempData = tempData;
 
@@ -668,7 +685,7 @@ namespace SYE.Tests.Controllers
             tempData["search"] = "";
 
             //act
-            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object);
+            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object, mockConfiguration.Object);
             sut.Url = mockUrlHelper.Object;
             sut.TempData = tempData;
 
@@ -724,7 +741,7 @@ namespace SYE.Tests.Controllers
             var tempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
             tempData["search"] = "";
             //act
-            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object);
+            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object, mockConfiguration.Object);
             sut.Url = mockUrlHelper.Object;
             sut.TempData = tempData;
 
@@ -771,7 +788,7 @@ namespace SYE.Tests.Controllers
             mockValidation.Setup(x => x.CleanText(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<List<string>>(), It.IsAny<HashSet<char>>())).Returns("abc");
 
             //act
-            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object);
+            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object, mockConfiguration.Object);
             Action act = () => sut.SearchResults("search", 1);
 
             //assert
@@ -795,7 +812,7 @@ namespace SYE.Tests.Controllers
             mockValidation.Setup(x => x.CleanText(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<List<string>>(), It.IsAny<HashSet<char>>())).Returns("abc");
 
 
-            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object);
+            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object, mockConfiguration.Object);
 
             sut.TempData = new TempDataDictionary(mockHttpContext.Object, mockTempDataProvider.Object);
             sut.Url = mockUrlHelper.Object;
@@ -825,20 +842,85 @@ namespace SYE.Tests.Controllers
             IOptions<ApplicationSettings> options = Options.Create(appSettings);
 
             var userVm = new UserSessionVM { ProviderId = "123", LocationId = "234", LocationName = "test location" };
-            var formVm = new FormVM { Pages = new List<PageVM> { new PageVM { PageId = "test" } } };
+            var goodBadFeedbackQuestions = new List<QuestionVM>()
+            {
+                new QuestionVM() { QuestionId = "test-goodBadFeedbackQuestion", Answer = "goodBadFeedbackAnswer" }
+            };
+            var formVm = new FormVM { Pages = new List<PageVM> { new PageVM { PageId = "test", Questions = goodBadFeedbackQuestions } } };
 
             mockSession.Setup(x => x.GetUserSession()).Returns(userVm);
             mockSession.Setup(x => x.GetFormVmFromSession()).Returns(formVm);
             mockValidation.Setup(x => x.CleanText(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<List<string>>(), It.IsAny<HashSet<char>>())).Returns("abc");
+            var testIConfiguration = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("mockappsettings.json")
+                .Build();
 
             //act
-            var sut = new SearchController(mockService.Object, mockSession.Object, options, mockValidation.Object, mockPageHelper.Object);
+            var sut = new SearchController(mockService.Object, mockSession.Object, options, mockValidation.Object, mockPageHelper.Object, testIConfiguration);
             sut.ControllerContext = controllerContext;
             var result = sut.SelectLocation(new UserSessionVM());
 
             //assert
             var redirectResult = result as RedirectToActionResult;
 
+            redirectResult.ActionName.Should().Be("Index");
+            redirectResult.ControllerName.Should().Be("Form");
+        }
+
+        [Theory]
+        [InlineData("Category Not In List", "True")]
+        [InlineData("Category in list", "False")]
+        [InlineData("Category in list, Other Category", "False")]
+        //If any part of locationCategory matches a listed category, don't skip, just redirect to the default next page as expected.
+        public void SelectLocationShould_SetSkipWhereToTrue_OnlyIfListedCategoryNotPresent(string locationCategory, string expectedFlagValue)
+        {
+            //arrange
+            //Controller needs a controller context
+            var httpContext = new DefaultHttpContext();
+            var controllerContext = new ControllerContext()
+            {
+                HttpContext = httpContext,
+            };
+
+            var userVm = new UserSessionVM { ProviderId = "123", LocationId = "234", LocationName = "test location", LocationCategory = locationCategory};
+            var goodBadFeedbackQuestions = new List<QuestionVM>() { new QuestionVM() { QuestionId = "test-goodBadFeedbackQuestion", Answer = "test-journeytype" } };
+            var formVm = new FormVM { Pages = new List<PageVM> { new PageVM { PageId = "test", Questions = goodBadFeedbackQuestions} } };
+            var defaultNextPage = "DefaultNextPageValue";
+            RouteValueDictionary expectedRouteValues = new RouteValueDictionary
+            {
+                {"id", "DefaultNextPageValue"},
+                {"searchReferrer", "select-location"}
+            };
+
+            IOptions<ApplicationSettings> options = Options.Create(appSettings);
+
+            mockSession.Setup(x => x.GetUserSession()).Returns(userVm);
+            mockSession.Setup(x => x.GetFormVmFromSession()).Returns(formVm);
+
+            string returnedFormData = "";
+            mockSession.Setup(x => x.UpdateFormData(It.IsAny<IEnumerable<DataItemVM>>()))
+                .Callback<IEnumerable<DataItemVM>>((obj) => returnedFormData = obj.FirstOrDefault().Value)
+                .Verifiable();
+
+            mockPageHelper.Setup(x => x.GetNextPageIdFromPage(It.IsAny<FormVM>(), It.IsAny<String>()))
+                .Returns(defaultNextPage);
+            mockValidation.Setup(x => x.CleanText(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<List<string>>(), It.IsAny<HashSet<char>>())).Returns("abc");
+            var testIConfiguration = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("mockappsettings.json")
+                .Build();
+            
+            //act
+            var sut = new SearchController(mockService.Object, mockSession.Object, options, mockValidation.Object, mockPageHelper.Object, testIConfiguration);
+            sut.ControllerContext = controllerContext;
+            var result = sut.SelectLocation(userVm);
+
+            //assert
+            var redirectResult = result as RedirectToActionResult;
+            
+            mockSession.Verify();
+            returnedFormData.Should().BeEquivalentTo(expectedFlagValue);
             redirectResult.ActionName.Should().Be("Index");
             redirectResult.ControllerName.Should().Be("Form");
         }
@@ -866,7 +948,7 @@ namespace SYE.Tests.Controllers
             mockValidation.Setup(x => x.CleanText(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<List<string>>(), It.IsAny<HashSet<char>>())).Returns("abc");
 
             //act
-            var sut = new SearchController(mockService.Object, mockSession.Object, options, mockValidation.Object, mockPageHelper.Object);
+            var sut = new SearchController(mockService.Object, mockSession.Object, options, mockValidation.Object, mockPageHelper.Object, mockConfiguration.Object);
             sut.ControllerContext = controllerContext;
             sut.SelectLocation(userVm);
 
@@ -891,7 +973,11 @@ namespace SYE.Tests.Controllers
             {
                 {oldlocationName, newlocationName}
             };
-            var formVm = new FormVM { Pages = new List<PageVM> { new PageVM { PageId = "test" } } };
+
+
+            var goodBadFeedbackQuestions = new List<QuestionVM>() { new QuestionVM() { QuestionId = "test-goodBadFeedbackQuestion" } };
+            var formVm = new FormVM { Pages = new List<PageVM> { new PageVM { PageId = "test", Questions = goodBadFeedbackQuestions } } };
+
             var userVm = new UserSessionVM { ProviderId = "123", LocationId = "234", LocationName = oldlocationName };
 
             mockSession.Setup(x => x.GetUserSession()).Returns(userVm);
@@ -899,14 +985,20 @@ namespace SYE.Tests.Controllers
             mockSession.Setup(x => x.SaveFormVmToSession(formVm, replacements)).Verifiable();
             IOptions<ApplicationSettings> options = Options.Create(appSettings);
 
-            mockValidation.Setup(x => x.CleanText(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<List<string>>(), It.IsAny<HashSet<char>>())).Returns("abc");
+            mockValidation.Setup(x => x.CleanText(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<List<string>>(), It.IsAny<HashSet<char>>())).Returns("test location2");
 
             //act
-            var sut = new SearchController(mockService.Object, mockSession.Object, options, mockValidation.Object, mockPageHelper.Object);
+            var sut = new SearchController(mockService.Object, mockSession.Object, options, mockValidation.Object, mockPageHelper.Object, mockConfiguration.Object);
             sut.ControllerContext = controllerContext;
             sut.SelectLocation(new UserSessionVM { LocationName = newlocationName });
 
             //assert
+            var mySession = mockSession.Object.GetUserSession();
+
+            Assert.Equal(mySession.LocationName, userVm.LocationName);
+            Assert.Equal(mySession.LocationId, userVm.LocationId);
+            Assert.Equal(mySession.LocationCategory, userVm.LocationCategory);
+
             mockSession.Verify();
         }
 
@@ -923,7 +1015,7 @@ namespace SYE.Tests.Controllers
 
             mockValidation.Setup(x => x.CleanText(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<List<string>>(), It.IsAny<HashSet<char>>())).Returns("abc");
             //act
-            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object);
+            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object, mockConfiguration.Object);
             Action act = () => sut.SelectLocation(userVm);
             //assert
             act.Should().Throw<Exception>().Where(ex => ex.Data.Contains("GFCError"));
@@ -950,7 +1042,7 @@ namespace SYE.Tests.Controllers
 
             mockValidation.Setup(x => x.CleanText(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<List<string>>(), It.IsAny<HashSet<char>>())).Returns("abc");
             //act
-            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object);
+            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object, mockConfiguration.Object);
             sut.ControllerContext = controllerContext;
             var response = sut.SearchResults("searchString");
             //assert
@@ -976,7 +1068,7 @@ namespace SYE.Tests.Controllers
             mockSession.Setup(x => x.LoadLatestFormIntoSession(It.IsAny<Dictionary<string, string>>())).Throws(new Exception());
             mockValidation.Setup(x => x.CleanText(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<List<string>>(), It.IsAny<HashSet<char>>())).Returns("abc");
             //act
-            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object);
+            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object, mockConfiguration.Object);
             sut.ControllerContext = controllerContext;
             var response = sut.SelectLocation(userVm);
             //assert
@@ -1001,7 +1093,7 @@ namespace SYE.Tests.Controllers
             mockSession.Setup(x => x.SaveFormVmToSession(It.IsAny<FormVM>(), It.IsAny<Dictionary<string, string>>())).Throws(new Exception());
             mockValidation.Setup(x => x.CleanText(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<List<string>>(), It.IsAny<HashSet<char>>())).Returns("abc");
             //act
-            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object);
+            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object, mockConfiguration.Object);
             sut.ControllerContext = controllerContext;
             var response = sut.LocationNotFound();
             //assert
@@ -1022,7 +1114,7 @@ namespace SYE.Tests.Controllers
 
             mockSession.Setup(x => x.GetLastPage()).Returns("you-have-sent-your-feedback");
             //act
-            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object);
+            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object, mockConfiguration.Object);
             sut.ControllerContext = controllerContext;
             var response = sut.SearchResults("searchString");
             //assert
@@ -1042,7 +1134,7 @@ namespace SYE.Tests.Controllers
 
             mockSession.Setup(x => x.GetLastPage()).Returns("you-have-sent-your-feedback");
             //act
-            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object);
+            var sut = new SearchController(mockService.Object, mockSession.Object, mockSettings.Object, mockValidation.Object, mockPageHelper.Object, mockConfiguration.Object);
             sut.ControllerContext = controllerContext;
             var response = sut.Index();
             //assert

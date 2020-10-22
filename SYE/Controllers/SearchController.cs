@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using DocumentFormat.OpenXml.VariantTypes;
 using GDSHelpers;
 using GDSHelpers.Models.FormSchema;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using SYE.Models;
@@ -26,6 +28,7 @@ namespace SYE.Controllers
         private readonly IOptions<ApplicationSettings> _config;
         private readonly IGdsValidation _gdsValidate;
         private readonly IPageHelper _pageHelper;
+        private readonly IConfiguration _configuration;
 
         private static readonly HashSet<char> allowedChars = new HashSet<char>(@"1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.,'()?!#$£%^@*;:+=_-/ ");
         private static readonly List<string> restrictedWords = new List<string> { "javascript", "onblur", "onchange", "onfocus", "onfocusin", "onfocusout", "oninput", "onmouseenter", "onmouseleave",
@@ -33,13 +36,14 @@ namespace SYE.Controllers
             "ontouchend", "ontouchmove", "ontouchcancel", "onwheel" };
 
 
-        public SearchController(ISearchService searchService, ISessionService sessionService, IOptions<ApplicationSettings> config, IGdsValidation gdsValidate, IPageHelper pageHelper)
+        public SearchController(ISearchService searchService, ISessionService sessionService, IOptions<ApplicationSettings> config, IGdsValidation gdsValidate, IPageHelper pageHelper, IConfiguration configuration)
         {
             _searchService = searchService;
             _sessionService = sessionService;
             _config = config;
             _gdsValidate = gdsValidate;
             _pageHelper = pageHelper;
+            _configuration = configuration;
         }
 
 
@@ -175,7 +179,7 @@ namespace SYE.Controllers
         [HttpPost]
         [Route("search/results")]//applies the filter & does a search
         [TypeFilter(typeof(RedirectionFilter))]
-        public IActionResult ApplyFilter(string search, List<SelectItem> facets = null, List<SelectItem> facetsModal = null)
+        public IActionResult ApplyFilter(string search, List<SelectItem> facets = null, List<SelectItem> facetsModal = null, string checkboxClicked = null)
         {
             var cleanSearch = _gdsValidate.CleanText(search, true, restrictedWords, allowedChars);
             if (string.IsNullOrEmpty(cleanSearch))
@@ -193,6 +197,11 @@ namespace SYE.Controllers
                     selectedFacets = string.Join(',', facetsModal.Where(x => x.Selected).Select(x => x.Text).ToList());
             }
 
+            if (checkboxClicked != null)
+            {
+                _sessionService.CheckboxClick = checkboxClicked;
+            }
+
             return RedirectToAction(nameof(SearchResults), new { search = search, pageno = 1, selectedFacets = selectedFacets });
         }
 
@@ -203,10 +212,18 @@ namespace SYE.Controllers
             try
             {
                 var serviceNotFoundPage = _config.Value.ServiceNotFoundPage;
+
+                //Requesting location not found implies user may be shown exactly-where question later:
+                _sessionService.UpdateFormData(new List<DataItemVM>()
+                {
+                    new DataItemVM() {Id = "skippedExactLocationFlag", Value = "False"}
+                });
+
                 if ((_sessionService.GetChangeMode() ?? "") == _config.Value.SiteTextStrings.ReviewPageId)
                 {
                     //this happens when a user changes from a selected location to a location not found
                     _sessionService.ChangedLocationMode = true;
+
                     return RedirectToAction("Index", "Form", new { id = serviceNotFoundPage });
                 }
 
@@ -259,6 +276,12 @@ namespace SYE.Controllers
 
             try
             {
+                //Lets clean our vm just in case anyone has tried to inject anything
+                vm.LocationName = _gdsValidate.CleanText(vm.LocationName, true);
+                vm.LocationId = _gdsValidate.CleanText(vm.LocationId, true);
+                vm.ProviderId = _gdsValidate.CleanText(vm.ProviderId, true);
+
+
                 //Store the location we are giving feedback about
                 _sessionService.SetUserSessionVars(vm);
                 //put the location into the answer
@@ -274,18 +297,80 @@ namespace SYE.Controllers
                 {
                     _sessionService.SaveFormVmToSession(formVm, replacements);
 
+                    //Save location data to form
+                    _sessionService.UpdateFormData(new List<DataItemVM>()
+                    {
+                        new DataItemVM() { Id = "LocationName", Value = vm.LocationName },
+                        new DataItemVM() { Id = "LocationId", Value = vm.LocationId },
+                        new DataItemVM() { Id = "LocationCategory", Value = vm.LocationCategory }
+                    });
+
                     var searchUrl = Request.Headers["Referer"].ToString();
                     _sessionService.SaveSearchUrl(searchUrl);
 
                     var nextId = _pageHelper.GetNextPageIdFromPage(formVm, startPage.PageId);
+
+                    //set up variables for skipping the where question and navigation to check-your-answers
+                    var showExactlyWhere = _config.Value.SiteTextStrings.CategoriesForExactlyWhereQuestion;
+                    var goodBadFeedbackQuestion = _config.Value.QuestionStrings.GoodBadFeedbackQuestion.id;
+                    var goodExperienceAnswer = _config.Value.QuestionStrings.GoodBadFeedbackQuestion.GoodFeedbackAnswer;
+                    var whereItHappened = _config.Value.PageIdStrings?.WhereItHappenedPage;
+                    var whenItHappened = _config.Value.PageIdStrings?.WhenItHappenedPage;
+
+
+                    var goodJourney = formVm.GetQuestion(goodBadFeedbackQuestion).Answer == goodExperienceAnswer;
+
+                    var skipWhere = (!string.IsNullOrEmpty(vm.LocationCategory)
+                                     && !showExactlyWhere.Any(category => vm.LocationCategory.Contains(category)));
+
+                    //If skipWhere is true, set a flag that will ensure that attempts to load exactly-where will instead load exactly-when
+                    _sessionService.UpdateFormData(new List<DataItemVM>()
+                    {
+                        new DataItemVM() {Id = "skippedExactLocationFlag", Value = skipWhere.ToString()}
+                    });
+
                     //remove any previously entered location not found
                     _sessionService.RemoveFromNavOrder(_config.Value.ServiceNotFoundPage);
+
+                    //If user came from check-your-answers
                     if ((_sessionService.GetChangeMode() ?? "") == _config.Value.SiteTextStrings.ReviewPageId)
                     {
-                        _sessionService.ClearChangeMode();
-                        return RedirectToAction("Index", "CheckYourAnswers");
+                        //We want to send the user back to CYA unless: they previously skipped the 'where' question and now need to answer it
+                        var returnToCya = true;
+                        if (skipWhere || goodJourney)
+                        {
+                            //User should still skip where, so make sure where question is removed from the nav order
+                            _sessionService.RemoveFromNavOrder(whereItHappened);
+                        }
+                        else
+                        {
+                            //User should have visited the 'where' question => Check if it's been visited/answered before returning to CYA
+                            var wherePage = formVm.Pages.FirstOrDefault(p => p.PageId == whereItHappened);
+                            
+                            //If user has answered 'where', ensure that it's in the nav order
+                            if (wherePage != null && wherePage.Questions.All(x => !string.IsNullOrWhiteSpace(x.Answer)) )
+                            {
+                                _sessionService.UpdateNavOrder(whereItHappened);
+                            }
+
+                            var wherePageInNavOrder = _sessionService.GetNavOrder().Contains(whereItHappened);
+                            if (!wherePageInNavOrder)
+                            {
+                                //This journey doesn't include 'where' but does require it, so update the redirectId to trigger on 'when' and skip the return to CYA for now
+                                returnToCya = false;
+                                _sessionService.SaveChangeModeRedirectId(whenItHappened);
+                            }
+                        }
+
+                        if (returnToCya)
+                        {
+                            _sessionService.ClearChangeMode();
+                            return RedirectToAction("Index", "CheckYourAnswers");
+                        }
                     }
+
                     _sessionService.UpdateNavOrder("search");
+                    
                     return RedirectToAction("Index", "Form", new { id = nextId, searchReferrer = "select-location" });
 
                 }
@@ -387,6 +472,15 @@ namespace SYE.Controllers
                 if (viewModel.Count == 0)
                     viewModel.ErrorMessage = "There are no results matching your search";
 
+                //New bit, to get the right selected checkbox
+                if (!string.IsNullOrWhiteSpace(_sessionService.CheckboxClick))
+                {
+                    var selectedCheckbox = viewModel.Facets.FindIndex(f => f.Text == _sessionService.CheckboxClick).ToString();
+
+                    ViewBag.SelectedCheckbox = $"Facets_{selectedCheckbox}__Selected";
+                    _sessionService.CheckboxClick = "";
+                }
+                
                 return View(viewModel);
             }
             catch (Exception ex)

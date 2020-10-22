@@ -32,6 +32,7 @@ namespace SYE.ViewModels
         [Required(ErrorMessage = "Please enter a search")]
         public string Search { get; set; }
         public List<SearchResult> Data { get; set; }
+        public string CheckboxClicked { get; set; }
         public List<SelectItem> Facets { get; set; }
         public List<SelectItem> FacetsModal { get; set; }
         public string SelectedFacets

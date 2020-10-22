@@ -69,6 +69,7 @@ namespace SYE.Tests.Helpers
             //assert
             result.Should().BeEquivalentTo(previousPage);
         }
+
         [Fact]
         public void GetGetPreviousPage_should_return_first_previous_page()
         {

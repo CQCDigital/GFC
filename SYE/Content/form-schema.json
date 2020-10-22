@@ -1,6 +1,6 @@
 {
-  "id": "759-400afc0-ce7a-478e-91ee-9f99c3bae03c",
-  "version": "7.5.9",
+  "id": "7511-400afc0-ce7a-478e-91ee-9f99c3bae03c",
+  "version": "7.5.11",
   "form_name": "give-feedback-on-care",
   "last_modified": "ISODate(\"2020-05-12T00:00:00.000Z\")",
   "pages": [
@@ -177,6 +177,11 @@
           "question_id": "",
           "answer": "",
           "page_id": "where-it-happened"
+        },
+        {
+          "question_id": "skippedExactLocationFlag",
+          "answer": "True",
+          "page_id": "when-it-happened"
         }
       ],
       "next_page_id": "next_page_reference_id",
@@ -195,8 +200,42 @@
           "question_id": "where-it-happened-01",
           "document_order": 10,
           "question": "<h1 class=\"govuk-heading-xl\">Which part of the service are you telling us about?</h1>",
-          "additional_text": "For example, if it's a service with more than one room, try to remember which room or floor (this question is optional)",
+          "additional_text": "For example, if it's a service with more than one room, try to remember which room or floor (optional)",
           "short_question": "Exact location",
+          "dynamic_content": {
+            "conditions": [
+              {
+                "dev_notes": "If service category is care home, show this additional text instead:",
+                "priority": 1,
+                "logic": {
+                  "variable_source": "formData",
+                  "variable_name": "LocationCategory",
+                  "operator": "contains",
+                  "variable_answer": "Care home"
+                },
+                "if_true": {
+                  "override_question": {
+                    "additional_text": "For example, if it's a care home, be as exact as you can about which room, floor or part of the home (optional)"
+                  }
+                }
+              },
+              {
+                "dev_notes": "If service category is hospital, show this additional text instead (this will overwrite the care home option if present)",
+                "priority": 2,
+                "logic": {
+                  "variable_source": "formData",
+                  "variable_name": "LocationCategory",
+                  "operator": "contains",
+                  "variable_answer": "Hospital - NHS|Hospital - independent (non-NHS)"
+                },
+                "if_true": {
+                  "override_question": {
+                    "additional_text": "For example, if it's a hospital, which ward or department? (optional)"
+                  }
+                }
+              }
+            ]
+          },
           "data_type": "text",
           "input_type": "textbox",
           "input_css": "govuk-!-width-two-thirds",
@@ -283,9 +322,19 @@
       ],
       "previous_pages": [
         {
+          "question_id": "skippedExactLocationFlag",
+          "answer": "True",
+          "page_id": "search"
+        },
+        {
+          "question_id": "skippedExactLocationFlag",
+          "answer": "False",
+          "page_id": "where-it-happened"
+        },
+        {
           "question_id": "",
           "answer": "",
-          "page_id": "where-it-happened"
+          "page_id": "what-you-want-to-tell-us-about"
         }
       ],
       "next_page_id": "have-you-worked-there"
