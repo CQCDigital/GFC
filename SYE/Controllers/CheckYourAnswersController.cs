@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
+using AngleSharp.Text;
 using GDSHelpers.Models.FormSchema;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -188,8 +189,55 @@ namespace SYE.Controllers
                 // Update cosmos with our updated record
                 submission = _submissionService.UpdateAsync(submission.Id, submission).Result;
 
+                //Clear the session
+                HttpContext.Session.Clear();
+                TempData.Clear();//clear any residual items
+                HttpContext.Session.SetString("ReferenceNumber", reference);
 
+                //Reset this flag so the cookie banner does not show on the confirmation page
+                _sessionService.SetCookieFlagOnSession("true");
+                _sessionService.SetLastPage("form/check-your-answers");
 
+                //Get variables for confirmation page content from appSettings
+                var toldServiceQuestion = _configuration
+                    .GetSection("ApplicationSettings:QuestionStrings:ToldServiceQuestion")
+                    .GetValue<string>("id");
+                var goodBadFeedbackQuestion = _configuration
+                    .GetSection("ApplicationSettings:QuestionStrings:GoodBadFeedbackQuestion")
+                    .GetValue<string>("id");
+                var emailQuestion = _configuration
+                    .GetSection("ApplicationSettings:QuestionStrings:EmailQuestion")
+                    .GetValue<string>("id");
+                var phoneNumberQuestion = _configuration
+                    .GetSection("ApplicationSettings:QuestionStrings:PhoneNumberQuestion")
+                    .GetValue<string>("id");
+
+                var formalComplaint = _configuration
+                    .GetSection("ApplicationSettings:QuestionStrings:ToldServiceQuestion")
+                    .GetValue<string>("MadeFormalComplaintAnswer");
+                var toldNoComplaint = _configuration
+                    .GetSection("ApplicationSettings:QuestionStrings:ToldServiceQuestion")
+                    .GetValue<string>("ToldServiceNoComplaintAnswer");
+                var goodExperience = _configuration
+                    .GetSection("ApplicationSettings:QuestionStrings:GoodBadFeedbackQuestion")
+                    .GetValue<string>("GoodFeedbackAnswer");
+
+                //Set variables for confirmation page content
+                var toldServiceAnswer = submission.Answers.FirstOrDefault(a => a.QuestionId == toldServiceQuestion)?.Answer;
+
+                var goodFeedback = submission.Answers.FirstOrDefault(a => a.QuestionId == goodBadFeedbackQuestion)?.Answer == goodExperience
+                    ? "true"
+                    : "false";
+
+                HttpContext.Session.SetString("OnlyGoodFeedback", goodFeedback);
+                HttpContext.Session.SetString("SubmittedEmail", string.IsNullOrEmpty(submission.Answers
+                        .FirstOrDefault(a => a.QuestionId == emailQuestion)?.Answer) ? "false" : "true");
+                HttpContext.Session.SetString("SubmittedPhoneNumber", string.IsNullOrEmpty(submission.Answers
+                    .FirstOrDefault(a => a.QuestionId == phoneNumberQuestion)?.Answer) ? "false" : "true");
+                HttpContext.Session.SetString("AnsweredToldServiceQuestion", !string.IsNullOrWhiteSpace(toldServiceAnswer) ? "true" : "false");
+                HttpContext.Session.SetString("MadeComplaint", toldServiceAnswer == formalComplaint ? "true" : "false");
+
+                //Send confirmation email, taking into account whether location was given and whether this is good feedback.
                 if (vm?.SendConfirmationEmail == true && !string.IsNullOrWhiteSpace(reference))
                 {
                     var fieldMappings = _configuration
@@ -215,7 +263,7 @@ namespace SYE.Controllers
 
                         Task.Run(async () =>
                         {
-                            await SendEmailNotificationAsync(feedbackUserName, emailAddress, locationId, locationName, submissionId, reference)
+                            await SendEmailNotificationAsync(feedbackUserName, emailAddress, locationId, locationName, submissionId, reference, goodFeedback.ToBoolean())
                                     .ContinueWith(notificationTask =>
                                     {
                                         if (notificationTask.IsFaulted)
@@ -227,46 +275,6 @@ namespace SYE.Controllers
                         });
                     }
                 }
-
-                HttpContext.Session.Clear();
-                TempData.Clear();//clear any residual items
-                HttpContext.Session.SetString("ReferenceNumber", reference);
-
-                //Reset this flag so the cookie banner does not show on the confirmation page
-                _sessionService.SetCookieFlagOnSession("true");
-                _sessionService.SetLastPage("form/check-your-answers");
-
-                //Collate information for confirmation page
-                var toldServiceQuestion = _configuration
-                    .GetSection("ApplicationSettings:QuestionStrings:ToldServiceQuestion")
-                    .GetValue<string>("id");
-                var goodBadFeedbackQuestion = _configuration
-                    .GetSection("ApplicationSettings:QuestionStrings:GoodBadFeedbackQuestion")
-                    .GetValue<string>("id");
-                var emailQuestion = _configuration
-                    .GetSection("ApplicationSettings:QuestionStrings:EmailQuestion")
-                    .GetValue<string>("id");
-                var phoneNumberQuestion = _configuration
-                    .GetSection("ApplicationSettings:QuestionStrings:PhoneNumberQuestion")
-                    .GetValue<string>("id");
-
-                var formalComplaint = _configuration
-                    .GetSection("ApplicationSettings:QuestionStrings:ToldServiceQuestion")
-                    .GetValue<string>("MadeFormalComplaintAnswer");
-                var toldNoComplaint = _configuration
-                    .GetSection("ApplicationSettings:QuestionStrings:ToldServiceQuestion")
-                    .GetValue<string>("ToldServiceNoComplaintAnswer");
-                var goodExperience = _configuration
-                    .GetSection("ApplicationSettings:QuestionStrings:GoodBadFeedbackQuestion")
-                    .GetValue<string>("GoodFeedbackAnswer");
-
-                var toldServiceAnswer = formVm.GetQuestion(toldServiceQuestion).Answer;
-
-                HttpContext.Session.SetString("OnlyGoodFeedback", formVm.GetQuestion(goodBadFeedbackQuestion).Answer == goodExperience ? "true" : "false");
-                HttpContext.Session.SetString("SubmittedEmail", string.IsNullOrEmpty(formVm.GetQuestion(emailQuestion).Answer) ? "false": "true");
-                HttpContext.Session.SetString("SubmittedPhoneNumber", string.IsNullOrEmpty(formVm.GetQuestion(phoneNumberQuestion).Answer) ? "false" : "true");
-                HttpContext.Session.SetString("AnsweredToldServiceQuestion", !string.IsNullOrWhiteSpace(toldServiceAnswer) ? "true" : "false");
-                HttpContext.Session.SetString("MadeComplaint", toldServiceAnswer == formalComplaint ? "true" : "false");
 
                 return RedirectToAction("Index", "Confirmation");
             }
@@ -314,17 +322,32 @@ namespace SYE.Controllers
             return submissionVm;
         }
 
-        private async Task SendEmailNotificationAsync(string fullName, string emailAddress, string locationId, string locationName, string submissionId, string submissionReference)
+        private async Task SendEmailNotificationAsync(string fullName, string emailAddress, string locationId, string locationName, string submissionId, string submissionReference, bool goodFeedback)
         {
             var emailTemplateId = string.Empty;
-            if (string.IsNullOrWhiteSpace(locationId.Replace("0", "")))
+            if (goodFeedback)
             {
-                emailTemplateId = _configuration.GetSection("EmailNotification:ConfirmationEmail").GetValue<string>("WithoutLocationEmailTemplateId");
+                if (string.IsNullOrWhiteSpace(locationId.Replace("0", "")))
+                {
+                    emailTemplateId = _configuration.GetSection("EmailNotification:ConfirmationEmail").GetValue<string>("GoodFeedbackWithoutLocationEmailTemplateId");
+                }
+                else
+                {
+                    emailTemplateId = _configuration.GetSection("EmailNotification:ConfirmationEmail").GetValue<string>("GoodFeedbackWithLocationEmailTemplateId");
+                }
             }
             else
             {
-                emailTemplateId = _configuration.GetSection("EmailNotification:ConfirmationEmail").GetValue<string>("WithLocationEmailTemplateId");
+                if (string.IsNullOrWhiteSpace(locationId.Replace("0", "")))
+                {
+                    emailTemplateId = _configuration.GetSection("EmailNotification:ConfirmationEmail").GetValue<string>("WithoutLocationEmailTemplateId");
+                }
+                else
+                {
+                    emailTemplateId = _configuration.GetSection("EmailNotification:ConfirmationEmail").GetValue<string>("WithLocationEmailTemplateId");
+                }
             }
+            
 
             var greetingTemplate = _configuration.GetSection("EmailNotification:ConfirmationEmail").GetValue<string>("GreetingTemplate");
             var clientReferenceTemplate = _configuration.GetSection("EmailNotification:ConfirmationEmail").GetValue<string>("ClientReferenceTemplate");

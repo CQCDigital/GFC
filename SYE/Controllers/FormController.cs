@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using AngleSharp.Text;
+using DocumentFormat.OpenXml;
 using GDSHelpers;
 using GDSHelpers.Models.FormSchema;
 using Microsoft.AspNetCore.Http;
@@ -345,9 +346,13 @@ namespace SYE.Controllers
                 var serviceNotFound = userSession.LocationName.Equals(_config.Value.SiteTextStrings.DefaultServiceName);
                 ViewBag.BackLink = new BackLinkVM { Show = true, Url = _pageHelper.GetPreviousPage(pageVm, _sessionService, _config, Url, serviceNotFound), Text = _config.Value.SiteTextStrings.BackLinkText };
 
+                //We need to store the nextPageId before calling ValidatePage, so we can check if it gets updated by a question's answer logic
+                var rootNextPageId = !string.IsNullOrWhiteSpace(pageVm.NextPageReferenceId) ? _pageHelper.GetNextPageIdFromPage(formVm, pageVm.NextPageReferenceId) : pageVm.NextPageId;
+
                 if (Request?.Form != null)
                 {
                     //Validate the Response against the page json and update PageVm to contain the answers
+                    //This will also update the NextPageId with any answer logic in the questions.
                     _gdsValidate.ValidatePage(pageVm, Request.Form, true, restrictedWords);
                 }
 
@@ -367,7 +372,7 @@ namespace SYE.Controllers
                 _sessionService.UpdatePageVmInFormVm(pageVm);
 
                 //No errors redirect to the Index page with our new PageId
-                var nextPageId = GetNextPageId(formVm, pageVm, userSession.LocationName, skipNextQuestions, serviceNotFound);              
+                var nextPageId = GetNextPageId(formVm, pageVm, userSession.LocationName, skipNextQuestions, serviceNotFound, rootNextPageId);              
 
                 //Check the nextPageId for preset controller names
                 switch (nextPageId)
@@ -396,12 +401,13 @@ namespace SYE.Controllers
             }
         }
 
-        private string GetNextPageId(FormVM formVm, PageVM pageVm, string location, bool skipNextQuestions, bool serviceNotFound)
+        private string GetNextPageId(FormVM formVm, PageVM pageVm, string location, bool skipNextQuestions, bool serviceNotFound, string rootNextPageId)
         {
 
             var nextPageId = !string.IsNullOrWhiteSpace(pageVm.NextPageReferenceId) ? _pageHelper.GetNextPageIdFromPage(formVm, pageVm.NextPageReferenceId) : pageVm.NextPageId;
 
-            if (pageVm.PathChangeQuestion != null)
+            //We should only apply the path change logic if 1) there is a path change question and 2) we HAVE NOT already changed the nextPageId with answerLogic (which is higher priority)
+            if (pageVm.PathChangeQuestion != null && nextPageId == rootNextPageId)
             {
                 //branch the user journey if a previous question has a specific answer
                 var questions = formVm.Pages.SelectMany(m => m.Questions).ToList();
@@ -418,6 +424,8 @@ namespace SYE.Controllers
             {
                 nextPageId = _config.Value.SiteTextStrings.ReviewPageId;
             }
+
+            //Special case to handle if we are currently on the first page of the form, which would ordinarily direct the user to 'search'
             if (pageVm.PageId == _config.Value.FormStartPage)
             {
                 if (location == _config.Value.SiteTextStrings.NonSelectedServiceName)

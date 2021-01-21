@@ -146,13 +146,30 @@ namespace SYE.Services
             if (currentPage != redirectTriggerPage)
             {
                 var userSession = GetUserSession();
+
                 //add the current page to the nav order if it doesn't exist
-                if (userSession.NavOrder.Contains(redirectTriggerPage) && (!userSession.NavOrder.Contains(currentPage)))
+                if (!userSession.NavOrder.Contains(currentPage))
                 {
                     var index = userSession.NavOrder.IndexOf(redirectTriggerPage);
-                    userSession.NavOrder.Insert(index, currentPage);
-                    SetUserSessionVars(userSession);
-                    EnsureNavOrder();
+                    //Handling edge cases where index is missing i.e. the redirectTriggerPage isn't in the NavOrder:
+                    // => manually re-specify indexTo, defaulting to an arbitrarily large number to remove all subsequent pages
+                    if (index == -1)
+                    {
+                        switch (currentPage)
+                        {
+                            case ("contact-information"):
+                                index = userSession.NavOrder.IndexOf("did-you-hear-about-this-form-from-a-charity");
+                                break;
+                        }
+                    }
+
+                    //Only update the navOrder if we now have an appropriate trigger page
+                    if (index != -1)
+                    {
+                        userSession.NavOrder.Insert(index, currentPage);
+                        SetUserSessionVars(userSession);
+                        EnsureNavOrder();
+                    }
                 }
             }
         }
@@ -419,9 +436,25 @@ namespace SYE.Services
 
             var indexFrom = userSession.NavOrder.IndexOf(fromPage);
             var indexTo = userSession.NavOrder.IndexOf(toPage);
+
+            //Handling edge cases where indexTo is missing: manually re-specify indexTo, defaulting to an arbitrarily large number to remove all subsequent pages
+            if (indexTo == -1)
+            {
+                switch (fromPage)
+                {
+                    case ("can-we-contact-you"):
+                        indexTo = userSession.NavOrder.IndexOf("did-you-hear-about-this-form-from-a-charity");
+                        break;
+                    default:
+                        indexTo = 999;
+                        break;
+                }
+            }
+            
             foreach (var page in userSession.NavOrder)
             {
-                if (userSession.NavOrder.IndexOf(page) <= indexFrom || userSession.NavOrder.IndexOf(page) >= indexTo) newNav.Add(page);
+                if (userSession.NavOrder.IndexOf(page) <= indexFrom || userSession.NavOrder.IndexOf(page) >= indexTo)
+                    newNav.Add(page);
             }
 
             //Update the users navigation history

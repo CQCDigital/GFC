@@ -242,29 +242,7 @@ namespace SYE.Tests.Helpers
         public void CheckPageHistory_with_candidates_with_one_unanswered_question_should_return_false()
         {
             //arrange
-            var mockSessionService = new Mock<ISessionService>();
-            FormVM formVm = new FormVM
-            {
-                Pages = new List<PageVM>
-                {
-                    new PageVM
-                    {
-                        PageId = "what-you-want-to-tell-us-about",
-                        Questions = new List<QuestionVM> {new QuestionVM {Answer = "answer1"}}
-                    },
-                    new PageVM
-                    {
-                        PageId = "did-you-hear-about-this-form-from-a-charity",
-                        Questions = new List<QuestionVM> {new QuestionVM {Answer = "answer1"}}
-                    },
-                    new PageVM
-                    {
-                        PageId = "give-your-feedback",
-                        Questions = new List<QuestionVM> {new QuestionVM {Answer = ""}}
-                    }
-                }
-            };
-
+            
             var candidatePages = new List<PreviousPageVM>
             {
                 new PreviousPageVM {PageId = "what-you-want-to-tell-us-about", QuestionId = "", Answer = ""},
@@ -293,12 +271,37 @@ namespace SYE.Tests.Helpers
                 },
             };
 
+            var pageVM = new PageVM { PageId = "pageId", PreviousPages = candidatePages, Questions = questions };
+
+            FormVM formVm = new FormVM
+            {
+                Pages = new List<PageVM>
+                {
+                    new PageVM
+                    {
+                        PageId = "what-you-want-to-tell-us-about",
+                        Questions = new List<QuestionVM> {new QuestionVM {Answer = "answer1"}}
+                    },
+                    new PageVM
+                    {
+                        PageId = "did-you-hear-about-this-form-from-a-charity",
+                        Questions = new List<QuestionVM> {new QuestionVM {Answer = "answer1"}}
+                    },
+                    new PageVM
+                    {
+                        PageId = "give-your-feedback",
+                        Questions = new List<QuestionVM> {new QuestionVM {Answer = ""}}
+                    },
+                    pageVM
+                }
+            };
+
             var navOrderList = new List<string>
                 {"what-you-want-to-tell-us-about", "did-you-hear-about-this-form-from-a-charity", "give-your-feedback"};
+            var mockSessionService = new Mock<ISessionService>();
             mockSessionService.Setup(x => x.GetFormVmFromSession()).Returns(formVm);
             mockSessionService.Setup(x => x.GetNavOrder()).Returns(navOrderList);
 
-            var pageVM = new PageVM { PageId = "pageId", PreviousPages = candidatePages, Questions = questions };
             //act
 
             var result = pageHelper.CheckPageHistory(pageVM, "check-your-answers", true, mockSessionService.Object, null, It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>());
@@ -310,28 +313,7 @@ namespace SYE.Tests.Helpers
         public void CheckPageHistory_with_candidates_but_non_answered_questions_should_return_false()
         {
             //arrange
-            var mockSessionService = new Mock<ISessionService>();
-            FormVM formVm = new FormVM
-            {
-                Pages = new List<PageVM>
-                    {
-                        new PageVM
-                        {
-                            PageId = "what-you-want-to-tell-us-about",
-                            Questions = new List<QuestionVM> {new QuestionVM {Answer = ""}}
-                        },
-                        new PageVM
-                        {
-                            PageId = "did-you-hear-about-this-form-from-a-charity",
-                            Questions = new List<QuestionVM> {new QuestionVM {Answer = ""}}
-                        },
-                        new PageVM
-                        {
-                            PageId = "give-your-feedback",
-                            Questions = new List<QuestionVM> {new QuestionVM {Answer = ""}}
-                        }
-                    }
-            };
+            
             var candidatePages = new List<PreviousPageVM>
                 {
                     new PreviousPageVM {PageId = "what-you-want-to-tell-us-about", QuestionId = "", Answer = ""},
@@ -359,11 +341,36 @@ namespace SYE.Tests.Helpers
                 },
             };
 
+            var pageVM = new PageVM {PageId = "pageId", PreviousPages = candidatePages, Questions = questions };
+
+            FormVM formVm = new FormVM
+            {
+                Pages = new List<PageVM>
+                {
+                    new PageVM
+                    {
+                        PageId = "what-you-want-to-tell-us-about",
+                        Questions = new List<QuestionVM> {new QuestionVM {Answer = ""}}
+                    },
+                    new PageVM
+                    {
+                        PageId = "did-you-hear-about-this-form-from-a-charity",
+                        Questions = new List<QuestionVM> {new QuestionVM {Answer = ""}}
+                    },
+                    new PageVM
+                    {
+                        PageId = "give-your-feedback",
+                        Questions = new List<QuestionVM> {new QuestionVM {Answer = ""}}
+                    },
+                    pageVM
+                }
+            };
+
             var navOrderList = new List<string> { "what-you-want-to-tell-us-about", "did-you-hear-about-this-form-from-a-charity", "give-your-feedback" };
+
+            var mockSessionService = new Mock<ISessionService>();
             mockSessionService.Setup(x => x.GetFormVmFromSession()).Returns(formVm);
             mockSessionService.Setup(x => x.GetNavOrder()).Returns(navOrderList);
-
-            var pageVM = new PageVM {PageId = "pageId", PreviousPages = candidatePages, Questions = questions };
 
             //act
             var result = pageHelper.CheckPageHistory(pageVM, "check-your-answers", true, mockSessionService.Object, null, It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>());

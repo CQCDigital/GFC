@@ -30,10 +30,15 @@
     <form asp-action="Index" asp-controller="Search" method="post">
 
         <fieldset class="govuk-fieldset">
-            <legend class="govuk-fieldset__legend govuk-fieldset__legend--xl">
+            <div class="govuk-fieldset__legend govuk-fieldset__legend--xl">
                 <h1 class="govuk-fieldset__heading">
                     Find the service you want to tell us about
                 </h1>
+            </div>
+            <legend class="govuk-visually-hidden">
+                <span>
+                    Find the service you want to tell us about
+                </span>
             </legend>
 
             @{
