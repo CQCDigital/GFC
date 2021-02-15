@@ -25,6 +25,10 @@ using System.Reflection;
 using System.Collections.Generic;
 using System.Runtime.Loader;
 using SYE.Helpers;
+using SYE.Services;
+using Hangfire;
+using Hangfire.MemoryStorage;
+using Microsoft.Extensions.Logging;
 
 namespace SYE.MiddlewareExtensions
 {
@@ -65,6 +69,16 @@ namespace SYE.MiddlewareExtensions
             }
             services.TryAddSingleton<IAsyncNotificationClient>(_ => new NotificationClient(notificationApiKey));
 
+            //Service Bus configuration
+            var serviceBusConfiguration = Config.GetSection("ConnectionStrings:ServiceBus").Get<ServiceBusConfiguration>();
+            helper.ConfirmPresent(serviceBusConfiguration);
+            services.TryAddSingleton<IServiceBusConfiguration>(serviceBusConfiguration);
+            services.TryAddSingleton<IServiceBusService>(provider => new ServiceBusService(provider.GetRequiredService<IServiceBusConfiguration>(), provider.GetRequiredService<ILogger<ServiceBusService>>()));
+            
+            //Hangfire fire-and-forget service (used for Service Bus)
+            services.AddHangfire(c => c.UseMemoryStorage());
+            //services.AddHangfireServer();
+            services.TryAddSingleton<IBackgroundJobClient>(new BackgroundJobClient(new MemoryStorage()));
 
             //Search and location service configuration
             var searchConfiguration = Config.GetSection("ConnectionStrings:SearchDb").Get<SearchConfiguration>();

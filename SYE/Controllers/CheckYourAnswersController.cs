@@ -158,46 +158,32 @@ namespace SYE.Controllers
                     //session timeout does this
                     return GetCustomErrorCode(EnumStatusCode.CYASubmissionFormNullError, "Error submitting service feedback. Null or empty formVm.");
                 }
-
-
+                
                 // Create first instance of the record, with no gfc_id or word doc
                 var submission = GenerateSubmission(formVm, "", "");
-                submission = _submissionService.CreateAsync(submission).Result;
 
-                // Get the new Id
-                var documentId = _cosmosService.GetDocumentId(submission.Id);
-                var seed = _configuration.GetSection("SubmissionDocument").GetValue<int>("DatabaseSeed");
-
-                if (documentId == 0)
+                try
+                {
+                    submission = PopulateSubmission(submission);
+                }
+                catch(ArgumentOutOfRangeException ex) when (ex.ParamName == "documentId")
                 {
                     return GetCustomErrorCode(EnumStatusCode.CYASubmissionReferenceNullError, "Error submitting feedback! Null or empty DocumentId");
                 }
 
-                var reference = (seed + documentId).ToString();
-
-                // Update GFC Id, this line is needed for the Word Doc             
-                submission.SubmissionId = reference;
-
-                // Create the Word Doc
-                var base64Doc = _documentService.CreateSubmissionDocument(submission);
-
-                // Update our model with the new id and word doc
-                submission.SubmissionId = reference;
-                submission.Base64Attachment = base64Doc;
-                submission.Status = SubmissionStatus.Saved.ToString();
-
-                // Update cosmos with our updated record
-                submission = _submissionService.UpdateAsync(submission.Id, submission).Result;
+                // Update cosmos with our updated record and send submission to Service Bus
+                submission = _submissionService.SendSubmission(submission.Id, submission).Result;
 
                 //Clear the session
                 HttpContext.Session.Clear();
                 TempData.Clear();//clear any residual items
-                HttpContext.Session.SetString("ReferenceNumber", reference);
+                HttpContext.Session.SetString("ReferenceNumber", submission.SubmissionId);
 
                 //Reset this flag so the cookie banner does not show on the confirmation page
                 _sessionService.SetCookieFlagOnSession("true");
                 _sessionService.SetLastPage("form/check-your-answers");
 
+                #region setting session variables for confirmation page
                 //Get variables for confirmation page content from appSettings
                 var toldServiceQuestion = _configuration
                     .GetSection("ApplicationSettings:QuestionStrings:ToldServiceQuestion")
@@ -236,9 +222,11 @@ namespace SYE.Controllers
                     .FirstOrDefault(a => a.QuestionId == phoneNumberQuestion)?.Answer) ? "false" : "true");
                 HttpContext.Session.SetString("AnsweredToldServiceQuestion", !string.IsNullOrWhiteSpace(toldServiceAnswer) ? "true" : "false");
                 HttpContext.Session.SetString("MadeComplaint", toldServiceAnswer == formalComplaint ? "true" : "false");
+                #endregion
 
+                #region sending confirmation emails
                 //Send confirmation email, taking into account whether location was given and whether this is good feedback.
-                if (vm?.SendConfirmationEmail == true && !string.IsNullOrWhiteSpace(reference))
+                if (vm?.SendConfirmationEmail == true && !string.IsNullOrWhiteSpace(submission.SubmissionId))
                 {
                     var fieldMappings = _configuration
                         .GetSection("EmailNotification:ConfirmationEmail:FieldMappings")
@@ -263,18 +251,19 @@ namespace SYE.Controllers
 
                         Task.Run(async () =>
                         {
-                            await SendEmailNotificationAsync(feedbackUserName, emailAddress, locationId, locationName, submissionId, reference, goodFeedback.ToBoolean())
+                            await SendEmailNotificationAsync(feedbackUserName, emailAddress, locationId, locationName, submissionId, submission.SubmissionId, goodFeedback.ToBoolean())
                                     .ContinueWith(notificationTask =>
                                     {
                                         if (notificationTask.IsFaulted)
                                         {
-                                            _logger.LogError(notificationTask.Exception, $"Error sending confirmation email with submission id: [{reference}].");
+                                            _logger.LogError(notificationTask.Exception, $"Error sending confirmation email with submission id: [{submission.SubmissionId}].");
                                         }
                                     })
                                     .ConfigureAwait(false);
                         });
                     }
                 }
+                #endregion
 
                 return RedirectToAction("Index", "Confirmation");
             }
@@ -285,6 +274,7 @@ namespace SYE.Controllers
             }
         }
 
+        #region private methods
         private SubmissionVM GenerateSubmission(FormVM formVm, string gfcReference, string base64Doc)
         {
             var submissionVm = new SubmissionVM
@@ -322,6 +312,37 @@ namespace SYE.Controllers
             return submissionVm;
         }
 
+        private SubmissionVM PopulateSubmission(SubmissionVM submissionVM)
+        {
+            //Generate the submission in the database
+            var submission = _submissionService.CreateAsync(submissionVM).Result;
+
+            // Get the new Id
+            var documentId = _cosmosService.GetDocumentId(submission.Id);
+            var seed = _configuration.GetSection("SubmissionDocument").GetValue<int>("DatabaseSeed");
+
+            if (documentId == 0)
+            {
+                throw new ArgumentOutOfRangeException("documentId");
+                //return GetCustomErrorCode(EnumStatusCode.CYASubmissionReferenceNullError, "Error submitting feedback! Null or empty DocumentId");
+            }
+
+            var reference = (seed + documentId).ToString();
+
+            // Update GFC Id, this line is needed for the Word Doc             
+            submission.SubmissionId = reference;
+
+            // Create the Word Doc
+            var base64Doc = _documentService.CreateSubmissionDocument(submission);
+
+            // Update our model with the new id and word doc
+            submission.SubmissionId = reference;
+            submission.Base64Attachment = base64Doc;
+            submission.Status = SubmissionStatus.Saved.ToString();
+            
+            return submission;
+        }
+        
         private async Task SendEmailNotificationAsync(string fullName, string emailAddress, string locationId, string locationName, string submissionId, string submissionReference, bool goodFeedback)
         {
             var emailTemplateId = string.Empty;
@@ -370,6 +391,6 @@ namespace SYE.Controllers
             }
 
         }
-
+        #endregion
     }
 }

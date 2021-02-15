@@ -50,6 +50,10 @@ namespace SYE
                     {
                         loggingBuilder.AddApplicationInsights();
                     }
+                    else
+                    {
+                        loggingBuilder.AddConsole();
+                    }
                 });
         }
     }

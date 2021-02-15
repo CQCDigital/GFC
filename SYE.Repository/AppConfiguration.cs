@@ -101,6 +101,19 @@ namespace SYE.Repository
         public string IndexName { get; set; }
     }
 
+    public interface IServiceBusConfiguration
+    {
+        bool Enabled { get; set; }
+        string ConnectionString { get; set; }
+        string QueueName { get; set; }
+    }
+    public class ServiceBusConfiguration : IServiceBusConfiguration
+    {
+        public bool Enabled { get; set; }
+        public string ConnectionString { get; set; }
+        public string QueueName { get; set; }
+    }
+
     public interface IEmailFieldMapping
     {
         string Name { get; set; }

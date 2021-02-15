@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SYE.MiddlewareExtensions;
 using System;
+using Hangfire;
 using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.AspNetCore.Rewrite;
 using Microsoft.AspNetCore.StaticFiles;
@@ -131,7 +132,13 @@ namespace SYE
             var provider = new FileExtensionContentTypeProvider { Mappings = { [".webmanifest"] = "application/manifest+json" } };
             app.UseStaticFiles(new StaticFileOptions { ContentTypeProvider = provider });
 
-
+            //Setting up Hangfire
+            if (env.IsEnvironment("Local"))
+            {
+                app.UseHangfireDashboard();
+            }
+            app.UseHangfireServer();
+            
             app.UseRouting();
 
             //app.UseAuthentication();
@@ -142,6 +149,10 @@ namespace SYE
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
+                if (env.IsEnvironment("Local"))
+                {
+                    endpoints.MapHangfireDashboard();
+                }
             });
             
         }
