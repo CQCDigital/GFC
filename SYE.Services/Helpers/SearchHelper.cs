@@ -38,6 +38,7 @@ namespace SYE.Services.Helpers
                 Id = GetValue(doc, "id"),
                 ProviderId = GetValue(doc, "providerId"),
                 Name = GetValue(doc, "locationName"),
+                ProviderName = GetValue(doc, "providerName"),
                 AlsoKnownAs = GetValue(doc, "alsoKnownAs"),
                 Address = GetValue(doc, "postalAddressLine1"),
                 Address2 = GetValue(doc, "postalAddressLine2"),

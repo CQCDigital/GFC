@@ -203,10 +203,19 @@
                                     </button>
                                 </h3>
 
-                                @if (!string.IsNullOrWhiteSpace(result.AlsoKnownAs) && result.AlsoKnownAs != result.Name)
+                                @if (!string.IsNullOrWhiteSpace(result.AlsoKnownAs) 
+                                     && !result.AlsoKnownAs.Trim().Equals(result.Name.Trim(), StringComparison.OrdinalIgnoreCase))
                                 {
                                     <p class="govuk-hint">
                                         @result.AlsoKnownAs
+                                    </p>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(result.ProviderName)
+                                     && !result.ProviderName.Trim().Equals(result.Name.Trim(), StringComparison.OrdinalIgnoreCase) 
+                                     && !result.ProviderName.Trim().Equals(result.AlsoKnownAs?.Trim(), StringComparison.OrdinalIgnoreCase))
+                                {
+                                    <p class="govuk-body govuk-!-font-weight-bold">
+                                        @result.ProviderName
                                     </p>
                                 }
                                 <p class="govuk-body">

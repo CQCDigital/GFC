@@ -12,6 +12,7 @@ namespace SYE.Models
         public string Id { get; set; }
         public string ProviderId { get; set; }
         public string Name { get; set; }
+        public string ProviderName { get; set; }
         public string AlsoKnownAs { get; set; }
         public string Category { get; set; }
         public string Address { get; set; }
